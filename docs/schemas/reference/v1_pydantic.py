@@ -384,6 +384,67 @@ class LineupImportResponse(_Model):
 
 
 # ---------------------------------------------------------------------------
+# GET /api/groups/{code}/snapshot — screenshotable "where will we be at T" view
+# ---------------------------------------------------------------------------
+# Powers the share-as-screenshot use case from ADR-006 § 4.15. The wire shape
+# denormalizes member names, artist names, and stage names ONTO the payload
+# so a captured screenshot is self-explanatory without further lookups.
+
+
+class SnapshotMember(_Model):
+    """A picker, embedded directly on each set in the snapshot payload."""
+
+    member_id: UUID
+    display_name: str
+    color_hex: str
+
+
+class SnapshotSet(_Model):
+    """One set within the snapshot window.
+
+    `artist_names` is denormalized so the screenshot view doesn't have to join
+    against `set_artist` and `artist` at render time. Order matches
+    set_artist.position (source-provided).
+    """
+
+    set_id: UUID
+    display_name: str
+    artist_names: list[str] = Field(min_length=1)
+    day_label: str
+    starts_at: datetime
+    ends_at: datetime
+    pickers: list[SnapshotMember]
+
+
+class SnapshotStage(_Model):
+    """One stage column in the snapshot. Sets ordered by starts_at ascending."""
+
+    stage_id: UUID
+    name: str
+    display_order: int
+    sets: list[SnapshotSet]
+
+
+class GroupSnapshotResponse(_Model):
+    """The complete payload behind a single screenshot.
+
+    Designed to render onto one screen and be intelligible without context.
+    Includes every field the screenshot's recipient might lack: group name,
+    event name, IANA timezone, the exact window the payload represents.
+    """
+
+    group_code: str
+    group_name: str
+    event_id: UUID
+    event_name: str
+    timezone: str  # IANA — recipient may be in a different tz; FE renders local.
+    snapshot_at: datetime  # the `at` parameter (server-clamped if missing).
+    window_minutes: int
+    members_total: int  # convenience: "5 of 8 friends going" headline.
+    stages: list[SnapshotStage]  # ordered by stage.display_order.
+
+
+# ---------------------------------------------------------------------------
 # GET /api/artists/{artist_name} — artist drill-down
 # ---------------------------------------------------------------------------
 

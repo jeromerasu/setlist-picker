@@ -58,8 +58,10 @@ Ten tables at v1: `group`, `member`, `event`, `stage`, `set`, `artist`, `artist_
 | `/api/groups` | POST | Create a group; returns `group_code`. |
 | `/api/groups/{code}/join` | POST | Join as a display name; returns `member_id` + cookie. |
 | `/api/groups/{code}` | GET | Group state (members, picks). |
-| `/api/groups/{code}/picks` | POST | Add a pick: `{member_id, set_id}`. Idempotent via composite PK. |
-| `/api/groups/{code}/picks/{set_id}` | DELETE | Remove a pick. |
+| `/api/groups/{code}/picks` | POST | Add or upsert a pick. Server runs LWW per ADR-006 § 4.5. |
+| `/api/groups/{code}/picks/sync` | POST | Bulk drain of the offline IndexedDB queue. |
+| `/api/groups/{code}/picks/{set_id}` | DELETE | Remove (tombstone) a pick. |
+| `/api/groups/{code}/snapshot` | GET | Screenshotable "where will we be at time T" view; per-stage sets in `[at, at + window_minutes]` with picker names + colors denormalized. ADR-006 § 4.15. |
 | `/api/events` | GET | List events (one-per-deploy in v1). |
 | `/api/events/{event_id}/lineup` | GET | Full lineup (stages + days + sets). |
 | `/api/events/import` | POST | Admin import (paste lineup JSON). Token-gated. |

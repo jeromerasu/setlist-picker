@@ -16,6 +16,17 @@ This ADR fixes the v1 schema. It must support:
 - Offline pick toggles with last-write-wins reconciliation ([ADR-004](ADR-004-offline-strategy.md)).
 - Lossless round-trip of the source lineup JSON under the adapter pattern ([ADR-005](ADR-005-music-data-source.md)) — verified against [`.local-data/tml26-w2.json`](../../.local-data/tml26-w2.json) (405 performances, 15 stages, 420 artists, 35 b2b sets, 27 sets straddling midnight, 73 sets whose display name differs from the headlining artist name).
 
+### Canonical UX flow (Jerome, 2026-06-18)
+
+1. User creates a group → server generates the group code (which IS the invite — see § 4.11).
+2. User shares the code out-of-band (text, screenshot, etc.).
+3. Friend opens the app, enters the code + a display name → server creates a `member` row scoped to that group.
+4. The FE persists `{group_code, member_id, display_name}` in localStorage as the user's "my groups" list. The server has no User entity (§ 4.12).
+5. Inside a group: festival calendar with per-set picker dots (existing schema covers this).
+6. Tap an artist → drill-down modal ([ADR-005](ADR-005-music-data-source.md), `artist_cache`).
+7. Pick = "I'm going to this set." Public within the group (§ 4.14). LWW on offline sync (§ 4.5).
+8. **Screenshotable "where will we be at time T" view** — the new snapshot endpoint (§ 4.15) returns a self-contained per-stage payload designed so a single screen capture is intelligible without any further context (event name, stage names, times, picker names + colors all on the same screen).
+
 The ARCHITECTURE.md § Data model block has been slim-summarized; this ADR is the authoritative source from here forward.
 
 ---
@@ -495,6 +506,59 @@ Single table summarizing every non-PK index that exists at V001 boot, with the q
 
 > Both SQLite (≥ 3.8.0) and Postgres support partial indexes. All `WHERE`-clause indexes above are portable.
 
+### 3.1 Justifying queries — full SQL for the load-bearing reads
+
+These are the queries the hot read paths execute. They MUST stay in this ADR so a future schema-tweak PR can re-verify nothing regressed.
+
+**Q1 — All active picks for a group, with member names + colors** (calendar's per-set dots, plus the `GET /api/groups/{code}` aggregate). Verifies the indexes from § 3 cover the canonical "all picks across all sets with member names" join.
+
+```sql
+SELECT p.member_id, p.set_id, p.state, p.state_clock_ms,
+       m.display_name, m.color_hex
+FROM   member m
+JOIN   pick   p ON p.member_id = m.member_id
+WHERE  m.group_code = $1            -- uses idx_member_group_active
+  AND  m.left_at IS NULL
+  AND  p.state = 'active';          -- uses idx_pick_member_active (partial)
+```
+
+Plan: index scan on `idx_member_group_active` for members of the group → for each member, index scan on `idx_pick_member_active` for active picks. No table scans.
+
+**Q2 — Snapshot for "where will the group be at time T"** (powers the new snapshot endpoint, § 4.15). Returns every set active at T or starting within the window, grouped by stage, with picker member names + colors.
+
+```sql
+WITH window_sets AS (
+    SELECT s.set_id, s.stage_id, s.display_name, s.day_label,
+           s.starts_at, s.ends_at
+    FROM   set s
+    WHERE  s.event_id  = $1                 -- uses idx_set_event_starts
+      AND  s.starts_at <  $at + ($window_minutes * interval '1 minute')
+      AND  s.ends_at   >  $at
+)
+SELECT ws.*,
+       st.name           AS stage_name,
+       st.display_order,
+       p.member_id,
+       m.display_name,
+       m.color_hex
+FROM   window_sets ws
+JOIN   stage  st ON st.stage_id  = ws.stage_id
+LEFT JOIN pick p ON p.set_id     = ws.set_id
+                AND p.state      = 'active'  -- uses idx_pick_set_active (partial)
+LEFT JOIN member m ON m.member_id = p.member_id
+                  AND m.group_code = $2
+                  AND m.left_at   IS NULL
+ORDER BY st.display_order, ws.starts_at;
+```
+
+Plan: index range scan on `idx_set_event_starts` narrows to the window → JOIN to stage by PK → LEFT JOIN to `idx_pick_set_active` (small partial index, fast) → LEFT JOIN to member by PK. The `m.group_code = $2` filter on the LEFT JOIN side ensures picks from members of OTHER groups (which can't happen with current schema but is defensive) don't leak. No table scans.
+
+**Q3 — Artist drill-down cache lookup** (`GET /api/artists/{name}`). Trivial — single PK lookup on `artist_cache(name_normalized)` after server-side normalization. Documented for completeness.
+
+```sql
+SELECT * FROM artist_cache WHERE name_normalized = $1;
+```
+
 ---
 
 ## 4. Design decisions log
@@ -650,6 +714,89 @@ Reasoning:
 - **One request and one response per endpoint** rather than reusing one model for both — request and response surfaces drift over time, and conflating them creates "is this a write field or a read field?" ambiguity.
 
 The reference file is **not** wired into the API yet (no FastAPI imports). It exists for the Phase 1 implementer to copy-and-adapt with confidence in the field set.
+
+### 4.11 Invite code = group code — no separate invite table
+
+**Chosen.** The 8-char Crockford base32 `group_code` IS the invite. The invite URL is `https://setlist-picker.example/g/AB7K9MNP`. There is no separate `invite_token` table, no expiry, no rotation.
+
+Reasoning:
+
+- **The URL is already the credential** per [ADR-003](ADR-003-auth-model.md). A separate invite token would be a second credential surface to leak.
+- **No expiry to manage** — codes live as long as the group does (90-day inactivity archives the group per [PRD § 5.1](../PRD.md)).
+- **Operational simplicity** — group creators don't have to think about "is my invite link still valid?" — it always is, until the group archives.
+
+Implication: a group code can't be rotated. If a code leaks publicly, the recourse is to create a new group and re-invite. Documented as accepted tradeoff per [ADR-003](ADR-003-auth-model.md) ("anyone with the URL has full group access — that's the deal, like a Google Doc share link").
+
+Alternative — **separate `invite_token` table with TTL** (e.g. `(token, group_code, expires_at, revoked_at)`): rejected. Adds plumbing for zero v1 benefit, contradicts ADR-003's "URL is the credential" model, and would require either a UI for re-issuing tokens or a CLI / admin endpoint (more surface, more PII-ish concerns about "who issued which invite").
+
+### 4.12 No User entity — "my groups" persists on the device
+
+**Chosen.** There is no server-side `user` (or `device`, or `account`) entity. The server only knows `group → member` rows. The FE persists `{group_code, member_id, display_name}[]` in **localStorage** as the user's "my groups" list. Each entry is independent — `member_id` is per-group, not per-person.
+
+Reasoning:
+
+- **Zero-PII commitment** per [ADR-003](ADR-003-auth-model.md) — no email, no account, no cross-device identity.
+- **One model for "device" and "person"** — both are absent. A "user" in this product is the intersection of a device and a group code. Modeling that on the server is overkill for v1.
+- **The FE's localStorage list is the only place** that knows "Jerome is in groups AB7K9MNP and XY42PQRS." The server can answer "give me group X's members" but cannot answer "give me Jerome's groups" — by design.
+
+Implication for the API surface: there is no `GET /api/users/me/groups` endpoint. The FE iterates its localStorage list, calling `GET /api/groups/{code}` for each. Stale entries (404 → group archived or deleted) are pruned by the FE.
+
+Forward-compat: a v2 "claim my group" magic-link flow ([ADR-003 § Forward compat](ADR-003-auth-model.md)) layers an OPTIONAL `user` table on top — Member rows survive unchanged, just gain a nullable `user_id` FK. The localStorage model still works for unauthenticated users.
+
+Alternative — **server-side device row keyed by an anonymous device cookie**: rejected. Adds a row per device-per-group with no behavior we can't already get from localStorage. Trades local complexity for server complexity in the wrong direction.
+
+### 4.13 Member rejoin = new Member row
+
+**Chosen.** When a user clears localStorage and re-enters the same group code + same display name, the server creates a **new** `member` row with a fresh `member_id`. The previous member row stays (with its picks intact); the FE has no way to recover it.
+
+Reasoning:
+
+- **No auth, no way to prove identity.** "I am the same Jerome who joined yesterday" is unverifiable. Allowing dedup on `(group_code, display_name)` would let any device claim any name in the group.
+- **Consistent with [ADR-003](ADR-003-auth-model.md)** — "a phone and laptop joining as Jerome are two distinct presences." This is the same case, separated in time instead of in space.
+- **The FE handles the UX** — if it detects (via local-history or a separate "I've been here" flow) that this user previously had picks in the group, it can prompt: "Looks like you joined as 'Jerome' before — want to re-pick those sets?" The re-pick happens via fresh `POST /picks` calls under the new `member_id`. No server-side identity migration.
+
+Implication: the old member row appears in the group's member list (with whatever picks it had) until the group archives. UI considerations (e.g. fading out members with no recent activity) are out of scope for this ADR.
+
+Alternative — **server-side dedup on `(group_code, lower(display_name))`** with the new join inheriting the old `member_id`: rejected. Contradicts ADR-003 and creates a name-squatting vulnerability (anyone joining with the same name takes over the original member's identity, including their picks).
+
+### 4.14 Picks are public within a group — no privacy flag
+
+**Chosen.** Every active pick is visible to every member of the group. There is no `is_private` flag, no "reveal at start time," no per-pick visibility scoping.
+
+Reasoning:
+
+- **Per [PRD § 1](../PRD.md)**, the whole product is "see who's where." Hiding picks defeats the use case.
+- **Schema simplicity** — no column means no logic branch in any read query, no "did the FE remember to filter?" footgun.
+- **Out of scope for v1** — surveillance / discomfort concerns are flagged in the open questions section of the PRD; v1 ships without them.
+
+Implication: a member who wants to hide a pick must un-pick it (tombstone). There is no other recourse.
+
+Forward-compat: adding a nullable `visibility` column to `pick` (e.g. `'public' | 'private' | 'reveal_at_start'`) is a backward-compatible migration. Existing rows default to `public`.
+
+Alternative — **`pick.visibility` enum from day 1**: rejected. Not in scope, adds a "did I remember to filter?" cliff to every pick read, with no v1 product need.
+
+### 4.15 Screenshotable "snapshot" endpoint — `GET /api/groups/{code}/snapshot`
+
+**Chosen.** Add `GET /api/groups/{code}/snapshot?at={iso_time}&window_minutes={int}` (default `at=now`, `window_minutes=60`). Returns a per-stage view of sets active or starting within `[at, at + window]`, each annotated with picker member names + colors. The wire shape is designed so a single rendered screen capture is intelligible without further context — event name, stage names, set times, picker names + colors are all on the same payload.
+
+Powered by **existing indexes** (`idx_set_event_starts`, `idx_pick_set_active`, `idx_member_group_active`). **No new index** required — Q2 in § 3.1 verifies the plan. **No schema change** required.
+
+Wire shape: `GroupSnapshotResponse` in [`docs/schemas/reference/v1_pydantic.py`](../schemas/reference/v1_pydantic.py).
+
+Design rules for "screenshotable":
+
+- **Event name + group name + snapshot time + IANA timezone** in the top-level payload — the screenshot's audience may not know the festival or the group.
+- **Stage names alongside stage IDs** — a screenshot won't be hovered for tooltips.
+- **`artist_names: list[str]`** denormalized onto each `SnapshotSet` — saves the screenshot renderer from a per-set artist lookup and ensures the b2b display reads correctly.
+- **Picker `display_name` + `color_hex`** denormalized onto each `SnapshotSet` — the screenshot must be self-explanatory; resolving an opaque `member_id` from a separate `members` block defeats the purpose.
+- **Stage ordering by `stage.display_order`**, sets within a stage ordered by `starts_at` ascending — so the rendered output is layout-deterministic across captures.
+
+Reasoning for splitting this out from `GET /api/groups/{code}`:
+
+- The group-state endpoint is **polled every 5 seconds** ([ARCHITECTURE.md § Real-time strategy](../ARCHITECTURE.md)). The snapshot endpoint is hit **on user demand** (open the screenshot view). Different cache strategies (the snapshot can be aggressively cached for 30s server-side; group state can't).
+- The snapshot payload bundles cross-table denormalized fields (artist names per set, member names per pick) that the polled endpoint doesn't need — bloating the polled endpoint hurts mobile data.
+
+Alternative — **derive the snapshot client-side from the polled group-state + lineup cache**: rejected. The FE assembly logic is non-trivial (window math, per-stage grouping, sort stability), and the screenshot use case demands a payload that round-trips identically across captures of the same `(at, window)` regardless of which member is screenshotting. A server-side endpoint guarantees that.
 
 ---
 
