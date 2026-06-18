@@ -71,6 +71,17 @@ class TokenType(str, Enum):
     refresh = "refresh"
 
 
+class AuthProvider(str, Enum):
+    """Mirror of user.auth_provider (ADR-006 § 2.1, § 4.20).
+
+    `google` is reserved for additive future-use; not implemented in v1.
+    """
+
+    local = "local"
+    apple = "apple"
+    google = "google"
+
+
 class SocialLinks(_Model):
     """Loose-shape artist social links from the lineup adapter."""
 
@@ -92,7 +103,11 @@ class SocialLinks(_Model):
 
 
 class UserCreate(_Model):
-    """Signup payload. The server lowercases username/email before storing."""
+    """Local-auth signup payload. Server lowercases username/email before storing.
+
+    Display name is stored as-typed — emojis preserved, casing preserved (ADR-006
+    § 4.21). Validation just bounds length.
+    """
 
     username: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
     password: str = Field(min_length=8, max_length=128)
@@ -105,11 +120,34 @@ class UserLogin(_Model):
     password: str = Field(min_length=8, max_length=128)
 
 
+class AppleSignInRequest(_Model):
+    """POST /api/auth/apple — native Sign In with Apple flow (ADR-006 § 4.20).
+
+    The native client invokes Apple's authorization, receives an identity token
+    (JWT signed by Apple), and POSTs it here. The server validates the token
+    against Apple's JWKS, extracts `sub`, then matches or creates the User.
+
+    `display_name` and `email` are provided by Apple ONLY on the user's first
+    sign-in to this app — the client forwards them on first auth and not after.
+    Server treats both as optional and ignores them if a User already exists for
+    the Apple `sub`.
+    """
+
+    identity_token: str  # The Apple-signed JWT
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
+    email: EmailStr | None = None
+
+
 class UserOut(_Model):
-    """Public-facing user shape returned by auth and /users/me endpoints."""
+    """Public-facing user shape returned by auth and /users/me endpoints.
+
+    `username` is null for SSO-provider users (ADR-006 § 2.1). `display_name`
+    falls back to `username` on the FE when both are present.
+    """
 
     id: UUID
-    username: str  # always lowercase on the wire
+    auth_provider: AuthProvider
+    username: str | None  # always lowercase on the wire when present
     email: EmailStr | None
     display_name: str | None
     avatar_color: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
@@ -457,6 +495,16 @@ class LineupImportResponse(_Model):
 # label the recipient might lack (event name, stage names, times, picker names)
 # is on the same payload. Display names resolved server-side via
 # COALESCE(member.display_name_override, user.display_name, user.username).
+#
+# Conditional GET (ADR-006 § 4.14). The server returns a `Last-Modified` header
+# computed from `MAX(pick.server_last_updated_at, member.joined_at,
+# member.left_at)` for the group. The mobile client sends
+# `If-Modified-Since: <previous Last-Modified>`. On no change the server
+# returns 304 Not Modified with no body — critical on metered mobile data.
+# The implementation may upgrade to `ETag` (hash of the rendered payload)
+# later without a wire change.
+# Same convention applies to GET /api/groups/{invite_code} (the polled
+# group-state endpoint, 15s cadence).
 
 
 class SnapshotMember(_Model):

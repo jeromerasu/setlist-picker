@@ -61,8 +61,9 @@ Public (no auth required):
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/auth/signup` | POST | Create user; returns user + JWT pair. |
+| `/api/auth/signup` | POST | Create `local`-auth user; returns user + JWT pair. |
 | `/api/auth/login` | POST | Username + password → JWT pair. Username comparison `LOWER() = LOWER()`. |
+| `/api/auth/apple` | POST | Native Sign In with Apple — `{identity_token, display_name?, email?}` → user + JWT pair. ADR-006 § 4.20. |
 | `/api/auth/refresh` | POST | Exchange refresh token for a new access + refresh pair. |
 
 Authenticated (Bearer token required):
@@ -130,7 +131,10 @@ Backend-only. Client credentials flow — no user OAuth. The backend stores the 
 
 ## Forward-compat watch list
 
-- **SSO** (Apple / Google Sign-In). ADR-006 § 5.6 flags this as an open question; if scoped in, it lands as ADR-007 with an additive `sso_provider` / `sso_subject` column pair on `user`.
+- **Mobile-native shift.** Jerome's 2026-06-18 update flagged that v1 will probably ship as a native app rather than a PWA. ADR-006 § 4.23 covers the schema implications (none — schema is platform-agnostic); ADR-001 (Tech stack) revision is pending separately.
+- **Apple Sign-In.** Built into V001 per ADR-006 § 4.20 if iOS is the v1 target (App Store Guideline 4.8 effectively requires it). `user.auth_provider` + `user.apple_subject_id` columns already in V001.
+- **Google Sign-In.** Reserved (`auth_provider = 'google'`); not implemented in V001. Additive when scoped — adds a `google_subject_id` column and `POST /api/auth/google`.
+- **Push notifications.** Out of scope for V001. When in scope, an additive column on `user` (single `expo_push_token` if RN/Expo) or a separate `device` table for per-device subscriptions. ADR-006 § 5.8.
 - **Refresh-token revocation.** Additive `refresh_token` table later; `jti` claim already in place.
 - **Password reset.** Additive `password_reset_token` table + SMTP integration.
 - **Multi-event groups.** Schema is event-agnostic at the group level; pivot is straightforward if user need emerges.

@@ -19,11 +19,23 @@ The pivot from ADR-003's anonymous model is driven by:
 
 This ADR must support:
 
-- Authenticated user identity (username + password; JWT-based session) — § Auth model below.
+- Authenticated user identity (username + password AND Apple Sign-In; JWT-based session) — § Auth model below.
 - Group lifecycle with an invite code distinct from the internal group id ([calendar-spec](../features/calendar-spec.md), [friends-list-spec](../features/friends-list-spec.md)).
 - Per-set member picks with last-write-wins reconciliation ([ADR-004](ADR-004-offline-strategy.md)).
 - Artist drill-down with cache + fallback chain ([ADR-005](ADR-005-music-data-source.md)).
 - Lossless round-trip of the source lineup JSON under the adapter pattern — verified against [`.local-data/tml26-w2.json`](../../.local-data/tml26-w2.json) (405 performances, 15 stages, 420 artists, 35 b2b sets, 27 sets straddling midnight, 73 sets whose display name differs from the headlining artist name).
+
+### Mobile-native direction (2026-06-18 update)
+
+Jerome flagged that v1 will likely ship as a native mobile app rather than a PWA. **The data schema in this ADR is platform-agnostic and does not change.** What does change (encoded in this PR):
+
+- Apple Sign-In becomes a likely v1 requirement (App Store Guideline 4.8) — schema columns + flow in § 4.20.
+- The offline client-side store on mobile is SQLite/AsyncStorage, not IndexedDB — § 4.23. The Pick LWW algorithm (§ 4.5) is unchanged.
+- Push notifications become an option later — forward-compat note in § 5.8 (no V001 column).
+- Display name handling on mobile keyboards (emoji + case) — § 4.21.
+- Invite code UX via Share Sheet — § 4.22 confirms 8-char Crockford base32.
+
+**ADR-001 (Tech stack) revision is OUT OF SCOPE for this PR** — Jerome will spawn it separately when the RN/Expo vs Flutter vs native call lands.
 
 ### Canonical UX flow (post-pivot)
 
@@ -96,35 +108,60 @@ The account of record. Server-authoritative identity; survives device wipes.
 | Column | Type | Nullable | Default | Rationale |
 |---|---|---|---|---|
 | `id` | `UUID` | NO | (UUIDv7) | § 4.1. |
-| `username` | `TEXT` | NO | — | Stored lowercased; the comparison key on login. Length 3–32, [a-z0-9_-] only. § 4.16. |
-| `email` | `TEXT` | YES | NULL | Stored lowercased when present. Optional in v1 (§ 4.18). |
-| `password_hash` | `TEXT` | NO | — | Argon2id-encoded string (`$argon2id$v=19$m=...,t=...,p=...$<salt>$<hash>`). § 4.17. |
-| `display_name` | `TEXT` | YES | NULL | UI-facing name. Falls back to `username` when null. |
+| `auth_provider` | `TEXT` | NO | `'local'` | Enum: `local` \| `apple` \| `google`. Identifies the signup path. `google` is reserved (not implemented in v1). App-layer-enforced enum; SQLite has no native enum. § 4.20. |
+| `username` | `TEXT` | YES | NULL | Stored lowercased; the comparison key on login for `local` users. Length 3–32, [a-z0-9_-] only. NULL for SSO-provider users (they sign in via the provider, not by username). § 4.16. |
+| `email` | `TEXT` | YES | NULL | Stored lowercased when present. Optional for `local` users (§ 4.18). Apple may return a private-relay address (`*@privaterelay.appleid.com`); we store it verbatim and treat it the same. |
+| `password_hash` | `TEXT` | YES | NULL | Argon2id-encoded string. Required for `local`; NULL for SSO. § 4.17. |
+| `apple_subject_id` | `TEXT` | YES | NULL | Apple's stable identifier from the Sign In with Apple identity token's `sub` claim. NULL unless `auth_provider = 'apple'`. § 4.20. |
+| `display_name` | `TEXT` | YES | NULL | UI-facing name. Falls back to `username` when null. Stored as-typed — emojis and casing preserved (§ 4.21). |
 | `avatar_color` | `CHAR(7)` | NO | — | `#RRGGBB`. Picked at signup from a default palette; user can change. |
 | `created_at` | `TIMESTAMPTZ` | NO | `now()` | Audit. |
 | `updated_at` | `TIMESTAMPTZ` | NO | `now()` | Updated by app code on any User mutation. |
-| `last_login_at` | `TIMESTAMPTZ` | YES | NULL | Updated by `/auth/login`. |
+| `last_login_at` | `TIMESTAMPTZ` | YES | NULL | Updated by `/auth/login` or `/auth/apple`. |
+
+App-layer invariants (no DB CHECK constraints — kept portable across SQLite/Postgres):
+
+- `auth_provider = 'local'` ⇒ `username IS NOT NULL` AND `password_hash IS NOT NULL` AND `apple_subject_id IS NULL`.
+- `auth_provider = 'apple'` ⇒ `apple_subject_id IS NOT NULL` AND `password_hash IS NULL`.
+- `auth_provider = 'google'` ⇒ reserved; not used in v1.
 
 Indexes:
 
 - PK `(id)`.
-- `uq_user_username (username)` — unique; case-insensitive **at the application layer** because we store lowercased (§ 4.16). The DB index is a normal `UNIQUE`.
+- `uq_user_username (username) WHERE username IS NOT NULL` — partial unique; case-insensitive **at the application layer** because we store lowercased (§ 4.16).
 - `uq_user_email (email) WHERE email IS NOT NULL` — partial unique.
+- `uq_user_apple_subject (apple_subject_id) WHERE apple_subject_id IS NOT NULL` — partial unique. The Apple `sub` claim is globally unique within Apple's identity system; this index matches one User to one Apple identity.
 
 FKs: none.
 
-Example row:
+Example rows:
 
 ```text
-id              | 0192d6f0-...-0a01
-username        | jerome
-email           | jerome@example.com
-password_hash   | $argon2id$v=19$m=65536,t=3,p=4$...
-display_name    | Jerome
-avatar_color    | #4F46E5
-created_at      | 2026-07-20T18:20:00+00:00
-updated_at      | 2026-07-25T14:01:33+00:00
-last_login_at   | 2026-07-25T14:01:33+00:00
+-- local-auth user
+id                 | 0192d6f0-...-0a01
+auth_provider      | local
+username           | jerome
+email              | jerome@example.com
+password_hash      | $argon2id$v=19$m=65536,t=3,p=4$...
+apple_subject_id   | NULL
+display_name       | Jerome 🎶
+avatar_color       | #4F46E5
+created_at         | 2026-07-20T18:20:00+00:00
+updated_at         | 2026-07-25T14:01:33+00:00
+last_login_at      | 2026-07-25T14:01:33+00:00
+
+-- apple-auth user (first sign-in)
+id                 | 0192d6f0-...-0a02
+auth_provider      | apple
+username           | NULL
+email              | abc123@privaterelay.appleid.com
+password_hash      | NULL
+apple_subject_id   | 001234.abc...xyz.4321
+display_name       | Sarah
+avatar_color       | #DC2626
+created_at         | 2026-07-20T18:21:11+00:00
+updated_at         | 2026-07-20T18:21:11+00:00
+last_login_at      | 2026-07-20T18:21:11+00:00
 ```
 
 ### 2.2 `group` (REFACTORED — now UUID PK + separate invite_code)
@@ -362,8 +399,9 @@ FKs: none (intentional).
 
 | Index | Table | Justifying query |
 |---|---|---|
-| `uq_user_username (username)` | user | Login by username (case-insensitive at the app layer — lookup with `LOWER(username) = LOWER($1)`). |
-| `uq_user_email (email) WHERE email IS NOT NULL` | user | Email uniqueness for signup; future password reset. |
+| `uq_user_username (username) WHERE username IS NOT NULL` | user | Login by username for `local`-auth users; partial because SSO users have NULL username. |
+| `uq_user_email (email) WHERE email IS NOT NULL` | user | Email uniqueness for signup; future password reset; SSO users with private-relay emails fit the same constraint. |
+| `uq_user_apple_subject (apple_subject_id) WHERE apple_subject_id IS NOT NULL` | user | One-User-per-Apple-identity. Lookup path for `/api/auth/apple`. |
 | `uq_group_invite_code (invite_code)` | group | URL → group resolution at every group-scoped endpoint. |
 | `idx_group_archive_sweep (last_active_at) WHERE archived_at IS NULL` | group | Nightly archival sweep. |
 | `uq_member_user_group (user_id, group_id)` | member | One Member per (User, Group); rejoin re-activates. |
@@ -446,13 +484,25 @@ WHERE  m.user_id = $1                 -- uses idx_member_user_active
 ORDER BY g.last_active_at DESC;
 ```
 
-**Q4 — Login by username.**
+**Q4 — Login by username (local-auth users only).**
 
 ```sql
-SELECT * FROM "user" WHERE LOWER(username) = LOWER($1);  -- uses uq_user_username
+SELECT * FROM "user"
+WHERE auth_provider = 'local'
+  AND LOWER(username) = LOWER($1);  -- uses uq_user_username (partial)
 ```
 
-The DB index is plain `UNIQUE(username)`; correctness depends on the app always writing lowercased values (§ 4.16). Login compares with `LOWER()` on both sides as defence-in-depth.
+The DB index is partial `UNIQUE(username) WHERE username IS NOT NULL`; correctness depends on the app always writing lowercased values (§ 4.16). Login compares with `LOWER()` on both sides as defence-in-depth. SSO users sign in via `/api/auth/apple` (§ 4.20), not this query.
+
+**Q5 — Apple Sign-In match.**
+
+```sql
+SELECT * FROM "user"
+WHERE auth_provider = 'apple'
+  AND apple_subject_id = $1;       -- uses uq_user_apple_subject (partial)
+```
+
+Run after the server validates Apple's identity token against Apple's JWKS and extracts the `sub` claim. No match → create new User with `auth_provider = 'apple'`; match → reuse the existing row.
 
 ---
 
@@ -564,13 +614,13 @@ Reasoning (split from polled group-state): polled `/groups/{code}` runs every 15
 
 ### 4.14 Polling cadence — 15–30s with conditional GETs (Last-Modified)
 
-**Chosen.** The FE polls `GET /api/groups/{invite_code}` at **15s** when the calendar view is foregrounded; **30s** when the snapshot view is open. Both endpoints return a `Last-Modified` header derived from `MAX(pick.server_last_updated_at, member.joined_at, member.left_at)` for the group. The FE sends `If-Modified-Since`; the server returns **304 Not Modified** when the group state hasn't changed, no body.
+**Chosen.** The FE polls `GET /api/groups/{invite_code}` at **15s** when the calendar view is foregrounded; the snapshot endpoint `GET /api/groups/{invite_code}/snapshot` is hit on user demand and re-polled at **30s** while the snapshot view stays open. **Both endpoints** return a `Last-Modified` header derived from `MAX(pick.server_last_updated_at, member.joined_at, member.left_at)` for the group. The FE sends `If-Modified-Since`; the server returns **304 Not Modified** with no body when the group state hasn't changed.
 
 Reasoning:
 
-- **15s is fast enough to feel real-time** for the per-set member dots; 30s on snapshot is fine because the user is staring at a static screen capture they'll share.
-- **Conditional GETs save bandwidth** on the festival floor where mobile data is metered/spotty. Most polls during quiet periods hit 304.
-- **Last-Modified over ETag** — simpler. The granularity (server-assigned `TIMESTAMPTZ` to the millisecond on `pick.server_last_updated_at`) is enough. Rare same-ms churn falls back to a 200 with the fresh payload.
+- **15s is fast enough to feel real-time** for the per-set member dots; 30s on the snapshot is fine because the user is staring at a static screen capture they'll share.
+- **Conditional GETs save bandwidth** on the festival floor where mobile data is metered/spotty (extra weight on a native iOS/Android app vs a PWA — § 4.23). Most polls during quiet periods hit 304.
+- **Last-Modified over ETag** — simpler. The granularity (server-assigned `TIMESTAMPTZ` to the millisecond on `pick.server_last_updated_at`) is enough. Rare same-ms churn falls back to a 200 with the fresh payload. The implementation is free to upgrade to ETag (hash of the same denormalized payload) later without a wire change — the FE accepts either header.
 
 Alternative — **WebSockets**: deferred to v2 per [ARCHITECTURE.md § Real-time strategy](../ARCHITECTURE.md). Polling first, WS only if user reports indicate polling lag.
 
@@ -586,9 +636,9 @@ Reasoning:
 - Picks remain attached to the original Member row — no lost history.
 - The earlier "claim by display name" flow from the pre-pivot draft is obsolete; the (User, Group) pair is the identity.
 
-### 4.16 Username — lowercase store + lowercase compare
+### 4.16 Username — lowercase store + lowercase compare (`local` auth_provider only)
 
-**Chosen.** Application code lowercases on every username write (signup, `PATCH /api/users/me`). Login + lookup compare with `LOWER() = LOWER()` on both sides as defence-in-depth. Database `UNIQUE(username)` is a plain index; correctness depends on the app's lowercase invariant.
+**Chosen.** Application code lowercases on every username write (signup, `PATCH /api/users/me`). Login + lookup compare with `LOWER() = LOWER()` on both sides as defence-in-depth. Database `UNIQUE(username) WHERE username IS NOT NULL` is partial; correctness depends on the app's lowercase invariant. SSO-provider users (`auth_provider != 'local'`) have NULL username — they don't go through this query path.
 
 Reasoning:
 
@@ -616,15 +666,17 @@ Library: `argon2-cffi` (Python). Mature, well-maintained, drop-in.
 
 ### 4.18 Email — optional in v1; no password-reset flow
 
-**Chosen.** `user.email` is `NULL`-able. Signup doesn't require it. No password-reset endpoint in v1; "I forgot my password" is a manual support case.
+**Chosen.** `user.email` is `NULL`-able. `local` signup doesn't require it. No password-reset endpoint in v1; "I forgot my password" is a manual support case.
 
 Reasoning:
 
 - **Lowest signup friction** — preserves a sliver of [PRD § 2 Goals](../PRD.md)' "under 30 seconds" intent post-pivot.
-- **No SMTP integration in v1** — adds operational complexity (deliverability, bounce handling, transactional email vendor selection).
-- **Forward-compat** — adding the reset flow later requires only: an additive `password_reset_token` table + an SMTP integration. The User schema change (making email required) is a separate decision.
+- **No SMTP integration in v1** — adds operational complexity.
+- **Forward-compat** — adding the reset flow later requires only: an additive `password_reset_token` table + SMTP integration.
 
-Alternative — **require email at signup**: rejected. Adds friction without a v1 product benefit (since there's no reset flow yet either way).
+Apple-auth caveat (§ 4.20): Apple Sign-In returns an email on first authentication — either the user's real address or a private-relay address (`*@privaterelay.appleid.com`). We store whatever Apple returns verbatim. Subsequent sign-ins from the same Apple identity match on `apple_subject_id`, not email, so a user toggling their "Hide My Email" preference doesn't fork into two accounts.
+
+Alternative — **require email at signup**: rejected. Adds friction without a v1 product benefit.
 
 ### 4.19 JWT — HS256, 24h access + 7d refresh, no v1 revocation
 
@@ -638,6 +690,75 @@ Reasoning:
 
 Alternative — **session cookies + server-side session store**: rejected. JWTs avoid the session store; FastAPI middleware is straightforward. v2 can add server-side state if revocation matters.
 
+### 4.20 Apple Sign-In — v1 path if shipping on iOS
+
+**Chosen** (pending Jerome's iOS-ship confirmation in § 5.6). Sign In with Apple is implemented in V001 with the schema columns from § 2.1 (`auth_provider = 'apple'`, `apple_subject_id`).
+
+**Reasoning — Apple's App Store policy:**
+
+- Per Apple's [App Review Guideline 4.8](https://developer.apple.com/app-store/review/guidelines/#sign-in-with-apple), apps that offer **any** third-party social login (Google, Facebook, Twitter, etc.) on iOS **must** also offer Sign In with Apple. Apps that offer only their own account system don't have to, but a native app that adds Google later without Apple risks reviewer rejection.
+- Building Sign In with Apple from the start avoids a churn cycle when (not if) Google Sign-In is added — `auth_provider` enum already reserves the `google` value.
+
+**Flow (native client):**
+
+1. Native app invokes Apple's `ASAuthorizationAppleIDProvider` (iOS) / Apple's web JS (fallback).
+2. Apple returns an identity token (JWT signed by Apple) + optionally `full_name` and `email` (only on first sign-in for a given app).
+3. App POSTs to `POST /api/auth/apple` with `{identity_token, display_name?, email?}`.
+4. Server fetches Apple's JWKS (cached), validates the token's signature + `aud` (our app's bundle id) + `iss` (`https://appleid.apple.com`) + `exp`.
+5. Server extracts `sub` (Apple's stable user id), runs Q5 (§ 3.1) — match or create User.
+6. Server returns `AuthResponse` (user + JWT pair, same shape as `/auth/login`).
+
+**Forward-compat:** Google Sign-In lands later as `POST /api/auth/google` with the same response shape, populating `auth_provider = 'google'` + a separate `google_subject_id` column (additive migration; not in V001).
+
+**Identity merging is not in scope** — a user who signs up with Apple then later wants to "link" a `local` username/password is told "create a new account or contact support." A merge flow needs a separate ADR.
+
+Alternative — **defer Apple to post-launch**: rejected if iOS is the v1 target. Adding Apple later risks store review delays.
+
+Alternative — **server-side login redirect (Apple OAuth on backend)**: rejected for a native app. The native SDK gives a better UX (system sheet, FaceID) and is the App Store-required path.
+
+### 4.21 Display name — stored as-typed (preserve emojis + case)
+
+**Chosen.** `user.display_name`, `member.display_name_override`, and `group.name` are stored verbatim — emojis preserved, casing preserved, leading/trailing whitespace stripped, internal whitespace untouched. The FE renders them as-typed.
+
+Reasoning:
+
+- **Identity signal.** "Sarah 🦄" and "Sarah" are different identities to the user; stripping the emoji erodes self-expression.
+- **Mobile keyboard reality.** iOS/Android keyboards emit shifted-first-letter and emojis trivially; normalizing would feel adversarial.
+- **No collision risk.** Display name uniqueness within a group is not enforced (group identity is `member_id`, not name); two "Sarahs" coexist.
+
+Length: 1–80 graphemes (validated as a Unicode-grapheme count, not byte length, so a 40-emoji name stays under the cap). Pydantic validates with `min_length=1, max_length=80` on the `str` — Python's `len()` counts code points which is acceptable as a first approximation; a stricter grapheme-cluster validator can land later if abuse appears.
+
+Username (`local` auth_provider) is separately constrained to `[a-z0-9_-]{3,32}` (§ 4.16) — that's the typed-identifier channel; display name is the expressed-identity channel.
+
+Alternative — **normalize at write** (strip emojis, NFKC, title-case): rejected. Removes user agency for no v1 win.
+
+### 4.22 Invite code — 8-char Crockford base32 (confirmed)
+
+**Chosen** (confirmed, no change from earlier drafts). `group.invite_code` is 8 characters from the Crockford base32 alphabet (`0123456789ABCDEFGHJKMNPQRSTVWXYZ` — no `I`, `L`, `O`, `U`).
+
+Reasoning:
+
+- **~1.1 trillion codes** (32⁸) — safe against enumeration; a random-keyspace search at 1 RPS per IP would take longer than the heat death of common-sense patience.
+- **No ambiguous characters.** Crockford strips `I`/`1`, `O`/`0`, `L`/`1`, `U` (vulgarity-adjacent) — important when users type the code from a screenshot or hear it over a voice call.
+- **Mobile Share Sheet friendly.** 8 chars copy/paste cleanly; no separators required (no `XXXX-XXXX` to confuse Share Sheet parsers).
+- **Url-safe.** All Crockford characters are ASCII; the code goes directly in `/g/AB7K9MNP` paths.
+
+Server normalizes on read: uppercase input + map `i`→`1`, `l`→`1`, `o`→`0` (Crockford's canonical decode map) so a user who fat-fingers `ab7k9mnp` or `AB7K9MNO` (with `O` for `0`) gets a sensible lookup.
+
+Alternative — **UUID short-string (base62, 6 chars)**: rejected. Smaller keyspace; case-sensitive (harder to read aloud); includes `I`/`l`/`O`/`0` ambiguities.
+
+Alternative — **dictionary words** (`coral-piano-twelve`): rejected. Longer to type on mobile; locale-loaded (English-only); poor entropy density.
+
+### 4.23 Mobile-native vs PWA — schema unchanged; offline store is per-platform
+
+**Chosen (informational).** This ADR's schema design is platform-agnostic. Jerome's mobile-app direction (RN/Expo, Flutter, or native — ADR-001 revision pending, **out of scope for this PR**) does not change the server schema. It does change:
+
+- **Client-side offline store.** Per [ADR-004](ADR-004-offline-strategy.md), the v1 offline write queue was specified as IndexedDB (PWA assumption). On a native app, the equivalent is **SQLite (iOS Core Data / Android Room / Expo's `expo-sqlite`)** or **AsyncStorage** depending on the framework. **The Pick LWW algorithm in § 4.5 is unchanged** — only the client-side serialization layer differs. ADR-004's queue prose needs updating; cascade-flagged in § 5.2.
+- **Push notifications.** A native app can register for push (APNs / FCM). v1 stays poll-only; **forward-compat reservation** for `user.expo_push_token` (Expo) or `user.apns_token` + `user.fcm_token` (bare native) — flagged in § 5.8. Not in V001 — additive migration when push lands.
+- **Conditional GET headers.** Same as PWA — Last-Modified / If-Modified-Since (§ 4.14). Native HTTP clients (`URLSession`, `fetch`, `OkHttp`) all support these natively.
+
+Alternative — **continue specifying IndexedDB even on native**: rejected. Each platform has a more natural local store; forcing a PWA abstraction on a native app helps no one.
+
 ---
 
 ## 5. Open questions (flagged for Jerome)
@@ -649,6 +770,7 @@ This ADR contradicts [PRD § 1, § 2, § 4](../PRD.md). Sign-off here implies a 
 ### 5.2 ADR-004 + friends-list-spec follow-ups
 
 - **[ADR-004 § Consequences](ADR-004-offline-strategy.md)** says "same `member_id` doesn't happen across devices in v1." That assumption is now false (one User → one Member per group → same `member_id` across all their devices). The LWW analysis still works (client clocks order the writes), but the prose needs updating. **Confirm:** follow-up PR?
+- **[ADR-004 § Decision](ADR-004-offline-strategy.md)** also names "IndexedDB write queue" and "Workbox service worker" as the v1 offline store. Per § 4.23 of this ADR, native mobile would use SQLite (Core Data / Room / `expo-sqlite`) or AsyncStorage instead. **Confirm:** the ADR-004 follow-up should generalize the offline store name and split per-platform notes? (The Pick LWW algorithm in § 4.5 of this ADR is the contract; the storage layer is the implementation.)
 - **[friends-list-spec BE-FL-002](../features/friends-list-spec.md)** ("least-used color from the 12-palette at join time") is now dead — color lives on User (§ 4.12). **Confirm:** follow-up PR removes BE-FL-002 and updates the per-set-dots story?
 
 ### 5.3 Client clock skew tolerance
@@ -675,17 +797,35 @@ Per § 4.12, two users in the same group with the same `avatar_color` will look 
 
 **Recommendation: (A) for v1**; can promote to (B) additively if user feedback indicates the regression hurts.
 
-### 5.6 SSO — Apple Sign-In / Google Sign-In as v1?
+### 5.6 Apple Sign-In v1 — confirm in/out (bumped from "should we consider?")
 
-Skips password management entirely. **Recommendation: yes if a mature Python library is available** (`authlib` covers OIDC providers including Google; Apple needs JWT signing of the client secret). The win is no password storage, no reset flow, simpler attack surface. The cost is two more env-var pairs (per provider) and OAuth callback handling.
+**Bumped from earlier "should we?" to: Apple Sign-In is v1 if we ship on iOS.** Per Apple's [App Review Guideline 4.8](https://developer.apple.com/app-store/review/guidelines/#sign-in-with-apple), any app on iOS that offers third-party social login must also offer Sign In with Apple. Implementing it now (V001) avoids a churn cycle later when Google Sign-In is added.
 
-**Recommendation if pursued:** add as a parallel signup path. Users who chose username+password still work; SSO users have `password_hash = NULL` and a `sso_provider`/`sso_subject` column pair (additive migration). Probably split into ADR-007 to keep this ADR focused.
+The schema is wired for it (§ 2.1 columns `auth_provider`, `apple_subject_id`) and § 4.20 specifies the flow + `POST /api/auth/apple` endpoint.
 
-**Confirm:** punt to v2, or scope SSO into v1 as a follow-up ADR?
+**Confirm:** is iOS the v1 target?
+
+- (A) **Yes — Apple Sign-In in V001.** Schema as designed; § 4.20 implementation in Phase 1 alongside username/password.
+- (B) **No — web/PWA-only v1, Apple deferred.** Pull `auth_provider` + `apple_subject_id` from V001; promote to additive migration later. (The `auth_provider` default would still be useful to keep around as a single-value column, but it adds noise.)
+- (C) **Both — iOS + Android shipping together.** Triggers also implementing Google Sign-In (Android's analog); promotes Google into V001 with a `google_subject_id` column and `POST /api/auth/google` endpoint.
+
+**Recommendation: (A) or (C).** Building Apple now is cheap; backfilling it later is the expensive path.
 
 ### 5.7 Cross-project memory references
 
-The pivot brief referenced sibling-project memory files (`feedback_be_snake_case_json`) for the lowercase-username and snake-case-JSON rules. Those files aren't in this project; I did **not** import or cite them, and re-documented the rules in plain language here (§ 4.16) and in [CLAUDE.md § API Conventions](../../CLAUDE.md). **Confirm:** OK to treat any future sibling-project lessons the same way — document them in setlist-picker's own files rather than reference paths in another repo?
+The earlier pivot brief referenced sibling-project memory files (e.g. `feedback_be_snake_case_json`) for the lowercase-username and snake-case-JSON rules. Those files aren't in this project; I did **not** import or cite them, and re-documented the rules in plain language here (§ 4.16) and in [CLAUDE.md § API Conventions](../../CLAUDE.md). **Confirm:** OK to treat any future sibling-project lessons the same way — document them in setlist-picker's own files rather than reference paths in another repo?
+
+### 5.8 Push notifications — forward-compat reservation (out of scope V001)
+
+Native apps unlock push (APNs on iOS, FCM on Android, or Expo's unified push if RN/Expo is the stack). v1 stays poll-only (§ 4.14). When push lands later, it'll need a per-device-or-per-user token column on `user` — typical shapes:
+
+- `user.expo_push_token TEXT NULL` (single column if Expo is the stack), OR
+- `user.apns_token TEXT NULL` + `user.fcm_token TEXT NULL` (separate columns for bare iOS + Android), OR
+- A separate `device` table if a user has multiple devices and we want per-device subscription (the more correct long-term shape).
+
+**Reserved** — additive migration when push is in scope. No column in V001.
+
+**Confirm:** any preference on which shape we should plan for so the Phase 1 implementer doesn't accidentally close off the cleanest path?
 
 ---
 
