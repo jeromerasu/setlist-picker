@@ -9,13 +9,14 @@ the canonical wire-shape reference.
 Conventions (per CLAUDE.md and ADR-006):
 
 - snake_case field names everywhere (Pydantic v2 default).
-- TZ-aware datetimes. The wire format is ISO-8601 with offset.
+- TZ-aware datetimes on the wire as ISO-8601 with offset.
 - Pick state_clock_ms is the client-assigned Unix epoch ms; see ADR-006 § 4.5.
-- Request models and response models are intentionally separate even when they
-  look similar — request/response surfaces drift over time.
-- Models below are grouped by endpoint, in the order they appear in
-  ARCHITECTURE.md § API surface plus the additions called out in the feature
-  specs (rename, leave, bulk pick sync).
+- Username + email are stored lowercased; the server lowercases on every write.
+- Auth: JWT (HS256), 24h access + 7d refresh. Every endpoint except
+  /auth/{signup,login,refresh} requires Authorization: Bearer <access_token>.
+- Group-scoped endpoints additionally require the caller to be an active Member
+  of the group identified by the path's invite_code; the server derives
+  member_id from (current_user.id, group.id) — clients do NOT send member_id.
 
 Mypy-strict-clean and ruff-clean as written.
 """
@@ -27,7 +28,7 @@ from enum import Enum
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # ---------------------------------------------------------------------------
@@ -42,7 +43,7 @@ class _Model(BaseModel):
 
 
 class PickState(str, Enum):
-    """Mirror of pick.state. Stored as string per ADR-006 § 2.9."""
+    """Mirror of pick.state. Stored as string per ADR-006 § 2.10."""
 
     active = "active"
     tombstoned = "tombstoned"
@@ -65,12 +66,13 @@ class CacheStatus(str, Enum):
     miss = "miss"
 
 
-class SocialLinks(_Model):
-    """Loose-shape artist social links from the lineup adapter.
+class TokenType(str, Enum):
+    access = "access"
+    refresh = "refresh"
 
-    All fields optional — different sources populate different subsets.
-    Field set verified against .local-data/tml26-w2.json.
-    """
+
+class SocialLinks(_Model):
+    """Loose-shape artist social links from the lineup adapter."""
 
     spotify: str | None = None
     instagram: str | None = None
@@ -83,65 +85,170 @@ class SocialLinks(_Model):
 
 
 # ---------------------------------------------------------------------------
+# Auth — POST /api/auth/signup, /login, /refresh
+# ---------------------------------------------------------------------------
+# Username + password + optional email. JWT pair returned. ADR-006 § 1 + § 4.16,
+# 4.17, 4.18, 4.19.
+
+
+class UserCreate(_Model):
+    """Signup payload. The server lowercases username/email before storing."""
+
+    username: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
+    password: str = Field(min_length=8, max_length=128)
+    email: EmailStr | None = None
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
+
+
+class UserLogin(_Model):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class UserOut(_Model):
+    """Public-facing user shape returned by auth and /users/me endpoints."""
+
+    id: UUID
+    username: str  # always lowercase on the wire
+    email: EmailStr | None
+    display_name: str | None
+    avatar_color: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
+    created_at: datetime
+    last_login_at: datetime | None
+
+
+class UserUpdate(_Model):
+    """PATCH /api/users/me — partial update."""
+
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
+    email: EmailStr | None = None
+    avatar_color: str | None = Field(default=None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    # Password change is intentionally a separate endpoint (out of scope here).
+
+
+class TokenPair(_Model):
+    """JWT pair returned by signup / login / refresh.
+
+    access_token: 24h. refresh_token: 7d.
+    Both signed HS256 with JWT_SECRET. Claims: sub (user.id), iat, exp, type.
+    Refresh token also carries jti for v2 revocation (not used in v1).
+    """
+
+    access_token: str
+    refresh_token: str
+    token_type: Literal["bearer"] = "bearer"
+    access_expires_at: datetime
+    refresh_expires_at: datetime
+
+
+class AuthResponse(_Model):
+    """Wrapper returned by /auth/signup and /auth/login."""
+
+    user: UserOut
+    tokens: TokenPair
+
+
+class TokenRefreshRequest(_Model):
+    refresh_token: str
+
+
+# ---------------------------------------------------------------------------
+# GET /api/users/me — current user
+# ---------------------------------------------------------------------------
+# Response: UserOut (defined above).
+
+
+# ---------------------------------------------------------------------------
+# GET /api/users/me/groups — the authenticated user's groups
+# ---------------------------------------------------------------------------
+
+
+class MyGroupListItem(_Model):
+    group_id: UUID
+    name: str
+    invite_code: str = Field(min_length=8, max_length=8)
+    event_id: UUID
+    created_by_user_id: UUID
+    last_active_at: datetime
+    archived_at: datetime | None
+    member_id: UUID  # the caller's Member row in this group
+    joined_at: datetime
+
+
+class MyGroupListResponse(_Model):
+    groups: list[MyGroupListItem]
+
+
+# ---------------------------------------------------------------------------
 # POST /api/groups — create a group
 # ---------------------------------------------------------------------------
 
 
-class CreateGroupRequest(_Model):
-    """Optional: pass an initial name. Defaults to 'Friends 🎵' server-side."""
+class GroupCreate(_Model):
+    """Authenticated user creates a group. The creator auto-becomes a Member."""
 
     name: str | None = Field(default=None, min_length=1, max_length=80)
-    event_id: UUID  # v1: one group ↔ one event; the FE picks which event to attach.
-
-
-class CreateGroupResponse(_Model):
-    group_code: str = Field(min_length=8, max_length=8)
-    name: str
     event_id: UUID
+
+
+class GroupCreateResponse(_Model):
+    group_id: UUID
+    name: str
+    invite_code: str = Field(min_length=8, max_length=8)
+    event_id: UUID
+    created_by_user_id: UUID
     created_at: datetime
+    member_id: UUID  # the creator's Member row
 
 
 # ---------------------------------------------------------------------------
-# POST /api/groups/{code}/join — join as a display name
+# POST /api/groups/join — join via invite code
 # ---------------------------------------------------------------------------
 
 
-class JoinGroupRequest(_Model):
-    display_name: str = Field(min_length=1, max_length=40)
-    # Client-generated UUIDv7 so offline-first join works; server validates the
-    # UUID is well-formed and not already taken in this group. See ADR-006 § 4.1.
-    member_id: UUID
+class GroupJoinRequest(_Model):
+    invite_code: str = Field(min_length=8, max_length=8)
+    display_name_override: str | None = Field(default=None, min_length=1, max_length=80)
 
 
-class JoinGroupResponse(_Model):
+class MemberOut(_Model):
+    """Per-group membership identity. Used in join responses and group state."""
+
     member_id: UUID
-    group_code: str
-    display_name: str
-    color_hex: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
+    user_id: UUID
+    group_id: UUID
+    display_name: str  # resolved: override → user.display_name → user.username
+    display_name_override: str | None
+    avatar_color: str
     joined_at: datetime
+    left_at: datetime | None
+
+
+class GroupJoinResponse(_Model):
+    group: MyGroupListItem
+    member: MemberOut
+    is_new_member: bool  # False if the user was already a Member (rejoin re-activates).
 
 
 # ---------------------------------------------------------------------------
-# GET /api/groups/{code} — group state (members + picks)
+# POST /api/groups/{invite_code}/leave — soft-remove the calling user
 # ---------------------------------------------------------------------------
+# No request body (current_user + path identifies the Member).
 
 
-class MemberSummary(_Model):
-    """Embedded in GroupStateResponse and in the lineup-detail member dots."""
-
+class GroupLeaveResponse(_Model):
     member_id: UUID
-    display_name: str
-    color_hex: str
-    joined_at: datetime
-    left_at: datetime | None = None
+    left_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# GET /api/groups/{invite_code} — group state (members + picks)
+# ---------------------------------------------------------------------------
+# Polled every 15s per ADR-006 § 4.14. Supports If-Modified-Since → 304.
 
 
 class PickSummary(_Model):
-    """Tombstoned picks ARE included so the FE can reconcile its IndexedDB queue.
-
-    The FE will typically filter to state=active for rendering; tombstones are
-    needed for the LWW comparison on the client side.
-    """
+    """Tombstoned picks ARE included so the FE can reconcile its IndexedDB queue."""
 
     member_id: UUID
     set_id: UUID
@@ -150,8 +257,6 @@ class PickSummary(_Model):
 
 
 class EventSummary(_Model):
-    """Embedded in GroupStateResponse — saves the FE a second call (see § 5.5)."""
-
     event_id: UUID
     name: str
     start_date: date
@@ -161,61 +266,46 @@ class EventSummary(_Model):
 
 
 class GroupStateResponse(_Model):
-    group_code: str
+    group_id: UUID
+    invite_code: str
     name: str
     event: EventSummary
-    members: list[MemberSummary]
+    members: list[MemberOut]
     picks: list[PickSummary]
     archived_at: datetime | None
     last_active_at: datetime
 
 
 # ---------------------------------------------------------------------------
-# PATCH /api/groups/{code} — rename
+# PATCH /api/groups/{invite_code} — rename
 # ---------------------------------------------------------------------------
 
 
-class RenameGroupRequest(_Model):
+class GroupRenameRequest(_Model):
     name: str = Field(min_length=1, max_length=80)
 
 
-class RenameGroupResponse(_Model):
-    group_code: str
+class GroupRenameResponse(_Model):
+    group_id: UUID
+    invite_code: str
     name: str
 
 
 # ---------------------------------------------------------------------------
-# POST /api/groups/{code}/leave — soft-remove the calling member
+# POST /api/groups/{invite_code}/picks — add or upsert a pick
 # ---------------------------------------------------------------------------
+# member_id is NOT in the request — the server derives it from (current_user,
+# group). Prevents picks-on-behalf-of-another-member.
 
 
-class LeaveGroupRequest(_Model):
-    member_id: UUID
-
-
-class LeaveGroupResponse(_Model):
-    member_id: UUID
-    left_at: datetime
-
-
-# ---------------------------------------------------------------------------
-# POST /api/groups/{code}/picks — add (or upsert) a pick
-# ---------------------------------------------------------------------------
-
-
-class PickToggleRequest(_Model):
-    """Single pick toggle. The LWW comparison runs server-side per ADR-006 § 4.5."""
-
-    member_id: UUID
+class PickCreate(_Model):
     set_id: UUID
     state: PickState
     state_clock_ms: int = Field(ge=0)
 
 
-class PickToggleResponse(_Model):
-    """The server returns the final accepted state (which may differ from the
-    request if the incoming clock was older than what was already stored).
-    """
+class PickResult(_Model):
+    """Server-final state after LWW resolution (ADR-006 § 4.5)."""
 
     member_id: UUID
     set_id: UUID
@@ -225,34 +315,24 @@ class PickToggleResponse(_Model):
 
 
 # ---------------------------------------------------------------------------
-# POST /api/groups/{code}/picks/sync — bulk drain of the offline queue
+# POST /api/groups/{invite_code}/picks/sync — bulk drain of the offline queue
 # ---------------------------------------------------------------------------
 
 
 class PickSyncRequest(_Model):
-    """The IndexedDB queue contents from ADR-004, sent in order."""
-
-    member_id: UUID  # the calling member; all toggles must match.
-    toggles: list[PickToggleRequest]
+    toggles: list[PickCreate]
 
 
 class PickSyncResponse(_Model):
-    accepted: list[PickToggleResponse]
-    # No separate `rejected` list — rejections appear in `accepted` with
-    # accepted=False, so the FE can update its local state uniformly.
+    results: list[PickResult]
 
 
 # ---------------------------------------------------------------------------
-# DELETE /api/groups/{code}/picks/{set_id} — explicit unpick (online flow)
+# DELETE /api/groups/{invite_code}/picks/{set_id} — explicit unpick
 # ---------------------------------------------------------------------------
 
 
 class PickRemoveRequest(_Model):
-    """For online unpick the FE generates a fresh clock and sends it here.
-    Equivalent to POSTing /picks with state=tombstoned.
-    """
-
-    member_id: UUID
     state_clock_ms: int = Field(ge=0)
 
 
@@ -287,10 +367,6 @@ class StageDetail(_Model):
 
 
 class ArtistRef(_Model):
-    """Embedded in SetDetail. Lean shape; full drill-down comes from
-    GET /api/artists/{artist_name}.
-    """
-
     artist_id: UUID
     name: str
     position: int = Field(ge=0)
@@ -302,7 +378,7 @@ class SetDetail(_Model):
     set_id: UUID
     stage_id: UUID
     display_name: str
-    day_label: str  # FRIDAY / SATURDAY / SUNDAY (source-provided)
+    day_label: str  # FRIDAY / SATURDAY / SUNDAY
     starts_at: datetime
     ends_at: datetime
     external_id: str
@@ -321,12 +397,7 @@ class EventLineupResponse(_Model):
 
 
 class LineupSourceArtist(_Model):
-    """Mirrors the source JSON artist shape (e.g. tml26-w2.json).
-
-    Verified field set: every key from the source maps to an optional field
-    here. The adapter is responsible for translating this into Artist +
-    ArtistSourceRef + (eventually) set_artist rows.
-    """
+    """Mirrors the source JSON artist shape (verified against tml26-w2.json)."""
 
     id: str
     name: str
@@ -347,25 +418,21 @@ class LineupSourceStage(_Model):
 
 
 class LineupSourcePerformance(_Model):
-    """One row from `performances[]` in the source JSON."""
-
     id: str
-    name: str  # may differ from artists[0].name for b2b sets
+    name: str
     artists: list[LineupSourceArtist] = Field(min_length=1)
     stage: LineupSourceStage
-    date: date  # source provides as 'YYYY-MM-DD'
-    day: str  # FRIDAY / SATURDAY / SUNDAY
-    startTime: str  # ISO-8601 with offset, source-formatted as 'YYYY-MM-DD HH:MM:SS+HH:MM'
+    date: date
+    day: str
+    startTime: str  # source-formatted as 'YYYY-MM-DD HH:MM:SS+HH:MM'
     endTime: str
 
 
 class LineupImportRequest(_Model):
-    """Admin paste-import payload. Token-gated per PRD § 5.5."""
-
     event_name: str
     start_date: date
     end_date: date
-    timezone: str  # IANA
+    timezone: str
     location: str | None = None
     source_adapter: Literal["event_api_v1", "manual"]
     external_id: str | None = None
@@ -384,41 +451,32 @@ class LineupImportResponse(_Model):
 
 
 # ---------------------------------------------------------------------------
-# GET /api/groups/{code}/snapshot — screenshotable "where will we be at T" view
+# GET /api/groups/{invite_code}/snapshot — screenshotable view (ADR-006 § 4.13)
 # ---------------------------------------------------------------------------
-# Powers the share-as-screenshot use case from ADR-006 § 4.15. The wire shape
-# denormalizes member names, artist names, and stage names ONTO the payload
-# so a captured screenshot is self-explanatory without further lookups.
+# All-member visibility. Designed for self-contained screen captures: every
+# label the recipient might lack (event name, stage names, times, picker names)
+# is on the same payload. Display names resolved server-side via
+# COALESCE(member.display_name_override, user.display_name, user.username).
 
 
 class SnapshotMember(_Model):
-    """A picker, embedded directly on each set in the snapshot payload."""
-
+    user_id: UUID
     member_id: UUID
     display_name: str
-    color_hex: str
+    avatar_color: str
 
 
 class SnapshotSet(_Model):
-    """One set within the snapshot window.
-
-    `artist_names` is denormalized so the screenshot view doesn't have to join
-    against `set_artist` and `artist` at render time. Order matches
-    set_artist.position (source-provided).
-    """
-
     set_id: UUID
     display_name: str
     artist_names: list[str] = Field(min_length=1)
     day_label: str
     starts_at: datetime
     ends_at: datetime
-    pickers: list[SnapshotMember]
+    pickers: list[SnapshotMember]  # active picks only; all members' picks (not just caller).
 
 
 class SnapshotStage(_Model):
-    """One stage column in the snapshot. Sets ordered by starts_at ascending."""
-
     stage_id: UUID
     name: str
     display_order: int
@@ -426,22 +484,16 @@ class SnapshotStage(_Model):
 
 
 class GroupSnapshotResponse(_Model):
-    """The complete payload behind a single screenshot.
-
-    Designed to render onto one screen and be intelligible without context.
-    Includes every field the screenshot's recipient might lack: group name,
-    event name, IANA timezone, the exact window the payload represents.
-    """
-
-    group_code: str
+    group_id: UUID
+    invite_code: str
     group_name: str
     event_id: UUID
     event_name: str
-    timezone: str  # IANA — recipient may be in a different tz; FE renders local.
-    snapshot_at: datetime  # the `at` parameter (server-clamped if missing).
+    timezone: str  # IANA
+    snapshot_at: datetime
     window_minutes: int
-    members_total: int  # convenience: "5 of 8 friends going" headline.
-    stages: list[SnapshotStage]  # ordered by stage.display_order.
+    members_total: int  # "5 of 8 friends going" headline
+    stages: list[SnapshotStage]
 
 
 # ---------------------------------------------------------------------------
@@ -462,8 +514,6 @@ class TopTrack(_Model):
 
 
 class ArtistDetailResponse(_Model):
-    """Per features/artist-drilldown-spec § API contract."""
-
     artist_name: str
     spotify_artist_id: str | None
     image_url: str | None
@@ -481,10 +531,9 @@ class ArtistDetailResponse(_Model):
 
 class ErrorResponse(_Model):
     """Standardized error body. CLAUDE.md NF-002 requires the top-level handler
-    log full tracebacks via logger.exception(...); the wire body is just the
-    summary.
+    log full tracebacks via logger.exception(...); the wire body is the summary.
     """
 
-    error_code: str  # e.g. 'group_not_found', 'pick_clock_skew'
+    error_code: str  # e.g. 'invalid_credentials', 'group_not_found', 'pick_clock_skew'
     message: str
     request_id: str | None = None
