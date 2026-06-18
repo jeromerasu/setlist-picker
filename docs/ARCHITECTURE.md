@@ -47,63 +47,9 @@ See [ADR-002](decisions/ADR-002-monorepo-structure.md).
 
 ## Data model
 
-```
-group
-  group_code   (PK, 8-char base32)
-  name         (text)
-  created_at   (timestamp)
-  last_active  (timestamp)
-  archived     (bool)
+Ten tables at v1: `group`, `member`, `event`, `stage`, `set`, `artist`, `artist_source_ref`, `set_artist`, `pick`, `artist_cache`. The group is anonymous (8-char Crockford base32 PK); members and content entities use UUIDv7; picks tombstone on unpick with a client-assigned `state_clock_ms` for last-write-wins reconciliation; artists are deduplicated globally on `name_normalized`; the cache lives independently of the artist registry.
 
-member
-  member_id    (PK, uuid)
-  group_code   (FK → group)
-  display_name (text)
-  color_hex    (text)               -- assigned at join time, used for avatar + pick dots
-  joined_at    (timestamp)
-
-event
-  event_id     (PK)
-  name         (text)
-  start_date   (date)
-  end_date     (date)
-  source       (text)               -- 'seed' | 'admin_import' | other
-  imported_at  (timestamp)
-
-stage
-  stage_id     (PK)
-  event_id     (FK → event)
-  name         (text)
-  display_order (int)
-
-set
-  set_id       (PK)
-  event_id     (FK → event)
-  stage_id     (FK → stage)
-  artist_name  (text, indexed)
-  start        (timestamp tz)
-  end          (timestamp tz)
-
-pick
-  member_id    (FK → member)
-  set_id       (FK → set)
-  picked_at    (timestamp)
-  PRIMARY KEY (member_id, set_id)
-
-artist_cache
-  artist_name           (PK, lowercased)
-  spotify_artist_id     (text, nullable)
-  genres                (JSON array)
-  similar_artists       (JSON array of {name, similarity_source})
-  top_track             (JSON {name, preview_url, spotify_url, image_url})
-  fetched_at            (timestamp)
-  fetch_failure_count   (int)        -- backoff on repeated failures
-```
-
-Notes:
-- `member_id` is a UUID assigned at join. The group code + display name combination is not unique on its own — multiple browsers / sessions joining with the same display name produce different `member_id`s. That's intentional: a phone and laptop joining as "Jerome" are two distinct presences.
-- `pick` is a join table with composite PK so toggling is idempotent.
-- `artist_cache` is keyed by `lower(artist_name)` to handle case variance in lineup data.
+**The authoritative schema spec — every column, FK, index, design decision, and open question — is [ADR-006: Initial data schema](decisions/ADR-006-initial-data-schema.md).** The Pydantic wire-shape reference for every v1 endpoint is at [docs/schemas/reference/v1_pydantic.py](schemas/reference/v1_pydantic.py).
 
 ## API surface (v1, planned)
 
