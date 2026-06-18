@@ -1,0 +1,52 @@
+{
+  "festival_id": "example-festival-2026",
+  "name": "Example Festival 2026",
+  "stages": ["Main Stage", "Side Stage A", "Side Stage B"],
+  "days": [
+    {
+      "date": "2026-07-17",
+      "sets": [
+        {
+          "id": "set-1",
+          "artist": "Example Artist",
+          "stage": "Main Stage",
+          "start": "2026-07-17T20:00:00Z",
+          "end": "2026-07-17T21:30:00Z"
+        },
+        {
+          "id": "set-2",
+          "artist": "Another Artist",
+          "stage": "Side Stage A",
+          "start": "2026-07-17T20:30:00Z",
+          "end": "2026-07-17T22:00:00Z"
+        },
+        {
+          "id": "set-3",
+          "artist": "Third Artist",
+          "stage": "Side Stage B",
+          "start": "2026-07-17T21:00:00Z",
+          "end": "2026-07-17T22:30:00Z"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-18",
+      "sets": [
+        {
+          "id": "set-4",
+          "artist": "Headliner Artist",
+          "stage": "Main Stage",
+          "start": "2026-07-18T22:00:00Z",
+          "end": "2026-07-18T23:30:00Z"
+        },
+        {
+          "id": "set-5",
+          "artist": "Support Artist",
+          "stage": "Side Stage A",
+          "start": "2026-07-18T20:00:00Z",
+          "end": "2026-07-18T21:00:00Z"
+        }
+      ]
+    }
+  ]
+}
