@@ -12,6 +12,10 @@ This guide stays current as code lands. Every PR that adds, removes, or renames 
 | Datastore | SQLite (v1); Postgres-ready via SQLAlchemy dialect | `services/api/data/` (gitignored) |
 | Build orchestration | Turborepo for TS apps + packages; `uv` for Python service | `turbo.json`, `services/api/pyproject.toml` |
 
+## Data model + auth
+
+The v1 data schema (users, groups, members, events, stages, sets, artists, picks, artist_cache) AND the auth model (JWT-based with username + password) are specified in [decisions/ADR-006-initial-data-schema.md](decisions/ADR-006-initial-data-schema.md). ADR-006 supersedes [ADR-003](decisions/ADR-003-auth-model.md) (anonymous group-code access). The Pydantic wire-shape reference for every v1 endpoint — including the auth flows — lives at [schemas/reference/v1_pydantic.py](schemas/reference/v1_pydantic.py); it's a design artifact, not yet wired into `services/api/`. Every PR that adds or renames a column or endpoint MUST update ADR-006 (or supersede it with ADR-NNN) and the Pydantic reference.
+
 ## Backend entry points
 
 (Stub — populates as code lands. Pattern: `File | Purpose`.)
