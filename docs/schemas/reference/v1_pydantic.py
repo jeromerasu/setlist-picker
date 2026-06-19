@@ -13,10 +13,12 @@ Conventions (per CLAUDE.md and ADR-006):
 - Pick state_clock_ms is the client-assigned Unix epoch ms; see ADR-006 § 4.5.
 - Username + email are stored lowercased; the server lowercases on every write.
 - Auth: JWT (HS256), 24h access + 7d refresh. Every endpoint except
-  /auth/{signup,login,refresh} requires Authorization: Bearer <access_token>.
-- Group-scoped endpoints additionally require the caller to be an active Member
-  of the group identified by the path's invite_code; the server derives
-  member_id from (current_user.id, group.id) — clients do NOT send member_id.
+  /auth/{signup,login,refresh,apple,google} requires
+  Authorization: Bearer <access_token>.
+- Group-scoped endpoints additionally require the caller to be a Member of the
+  group identified by the path's invite_code; the server derives member_id from
+  (current_user.id, group.id) — clients do NOT send member_id. Leaving a group
+  hard-deletes the Member row and cascades to picks (ADR-006 § 4.28).
 
 Mypy-strict-clean and ruff-clean as written.
 """
@@ -72,14 +74,44 @@ class TokenType(str, Enum):
 
 
 class AuthProvider(str, Enum):
-    """Mirror of user.auth_provider (ADR-006 § 2.1, § 4.20).
+    """Mirror of user.auth_provider (ADR-006 § 2.1, § 4.20, § 4.24).
 
-    `google` is reserved for additive future-use; not implemented in v1.
+    All three values are live in v1: local (username/password), apple
+    (Sign In with Apple, iOS), google (Google Sign-In, Android + iOS).
     """
 
     local = "local"
     apple = "apple"
     google = "google"
+
+
+class DevicePlatform(str, Enum):
+    """Mirror of device.platform (ADR-006 § 2.12, § 4.26)."""
+
+    ios = "ios"
+    android = "android"
+
+
+class PushProvider(str, Enum):
+    """Mirror of device.push_provider (ADR-006 § 2.12, § 4.26).
+
+    v1 only writes `expo`; apns/fcm exist so a future migration off Expo
+    doesn't require a schema change.
+    """
+
+    expo = "expo"
+    apns = "apns"
+    fcm = "fcm"
+
+
+class ActivityKind(str, Enum):
+    """Mirror of group_activity.kind (ADR-006 § 2.13, § 4.27)."""
+
+    group_created = "group_created"
+    member_joined = "member_joined"
+    member_left = "member_left"
+    pick_added = "pick_added"
+    pick_removed = "pick_removed"
 
 
 class SocialLinks(_Model):
@@ -123,9 +155,10 @@ class UserLogin(_Model):
 class AppleSignInRequest(_Model):
     """POST /api/auth/apple — native Sign In with Apple flow (ADR-006 § 4.20).
 
-    The native client invokes Apple's authorization, receives an identity token
-    (JWT signed by Apple), and POSTs it here. The server validates the token
-    against Apple's JWKS, extracts `sub`, then matches or creates the User.
+    The native client (via expo-apple-authentication) invokes Apple's
+    authorization, receives an identity token (JWT signed by Apple), and POSTs
+    it here. The server validates the token against Apple's JWKS, extracts
+    `sub`, then matches or creates the User.
 
     `display_name` and `email` are provided by Apple ONLY on the user's first
     sign-in to this app — the client forwards them on first auth and not after.
@@ -134,6 +167,25 @@ class AppleSignInRequest(_Model):
     """
 
     identity_token: str  # The Apple-signed JWT
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
+    email: EmailStr | None = None
+
+
+class GoogleSignInRequest(_Model):
+    """POST /api/auth/google — native Google Sign-In flow (ADR-006 § 4.24).
+
+    Mirror of AppleSignInRequest. The native client invokes Google's auth flow
+    (via expo-auth-session or Google's native SDK), receives an ID token (JWT
+    signed by Google), and POSTs it here. The server validates against Google's
+    JWKS (`https://www.googleapis.com/oauth2/v3/certs`), checks
+    `iss == https://accounts.google.com` and `aud` matches our Google client id,
+    extracts `sub`, then matches or creates the User.
+
+    `display_name` and `email` are forwarded from Google's response; the server
+    uses them only on first sign-in for a given `sub`.
+    """
+
+    id_token: str  # The Google-signed JWT
     display_name: str | None = Field(default=None, min_length=1, max_length=80)
     email: EmailStr | None = None
 
@@ -250,7 +302,11 @@ class GroupJoinRequest(_Model):
 
 
 class MemberOut(_Model):
-    """Per-group membership identity. Used in join responses and group state."""
+    """Per-group membership identity. Used in join responses and group state.
+
+    Hard-delete on leave (ADR-006 § 4.28): no `left_at`. Re-joining after a
+    Leave creates a fresh Member row with a new `member_id`.
+    """
 
     member_id: UUID
     user_id: UUID
@@ -259,24 +315,27 @@ class MemberOut(_Model):
     display_name_override: str | None
     avatar_color: str
     joined_at: datetime
-    left_at: datetime | None
 
 
 class GroupJoinResponse(_Model):
     group: MyGroupListItem
     member: MemberOut
-    is_new_member: bool  # False if the user was already a Member (rejoin re-activates).
+    is_new_member: bool  # False if the user was already a Member.
 
 
 # ---------------------------------------------------------------------------
-# POST /api/groups/{invite_code}/leave — soft-remove the calling user
+# POST /api/groups/{invite_code}/leave — HARD-delete the calling Member
 # ---------------------------------------------------------------------------
-# No request body (current_user + path identifies the Member).
+# No request body (current_user + path identifies the Member). Cascades to
+# the caller's picks for this group (ADR-006 § 4.28). The FE MUST show a
+# confirmation dialog ("Leave group? Your picks will be deleted.") before
+# invoking this endpoint.
 
 
 class GroupLeaveResponse(_Model):
-    member_id: UUID
-    left_at: datetime
+    deleted_member_id: UUID
+    deleted_pick_count: int  # how many picks were cascaded
+    left_at: datetime  # server-clock time of the delete (audit / UI toast)
 
 
 # ---------------------------------------------------------------------------
@@ -286,7 +345,9 @@ class GroupLeaveResponse(_Model):
 
 
 class PickSummary(_Model):
-    """Tombstoned picks ARE included so the FE can reconcile its IndexedDB queue."""
+    """Tombstoned picks ARE included so the FE can reconcile its local queue
+    (expo-sqlite per ADR-004).
+    """
 
     member_id: UUID
     set_id: UUID
@@ -355,6 +416,7 @@ class PickResult(_Model):
 # ---------------------------------------------------------------------------
 # POST /api/groups/{invite_code}/picks/sync — bulk drain of the offline queue
 # ---------------------------------------------------------------------------
+# Drains the expo-sqlite `pending_pick_op` table on reconnect (ADR-004).
 
 
 class PickSyncRequest(_Model):
@@ -408,6 +470,7 @@ class ArtistRef(_Model):
     artist_id: UUID
     name: str
     position: int = Field(ge=0)
+    spotify_artist_id: str | None = None  # ADR-006 § 4.29 — trust-latest on import
     image_url: str | None = None
     social_links: SocialLinks | None = None
 
@@ -570,6 +633,80 @@ class ArtistDetailResponse(_Model):
     top_track: TopTrack | None
     cache_status: CacheStatus
     fetched_at: datetime | None
+
+
+# ---------------------------------------------------------------------------
+# POST /api/users/me/devices — register a push token (ADR-006 § 2.12, § 4.26)
+# ---------------------------------------------------------------------------
+# v1 ships the table + endpoint shape but the send pipeline is post-V001.
+# Clients (Expo) call this on app launch + on push-permission grant, so the
+# token registry is hot the moment we start sending notifications.
+
+
+class DeviceRegisterRequest(_Model):
+    """Idempotent on (user_id, push_token) — re-registering the same token
+    bumps `last_seen_at` rather than inserting a duplicate row.
+    """
+
+    platform: DevicePlatform
+    push_token: str = Field(min_length=1, max_length=4096)
+    push_provider: PushProvider = PushProvider.expo  # v1: always expo
+
+
+class DeviceOut(_Model):
+    device_id: UUID
+    user_id: UUID
+    platform: DevicePlatform
+    push_provider: PushProvider
+    created_at: datetime
+    last_seen_at: datetime
+    revoked_at: datetime | None
+
+
+class DeviceListResponse(_Model):
+    devices: list[DeviceOut]
+
+
+# ---------------------------------------------------------------------------
+# DELETE /api/users/me/devices/{device_id} — revoke a push token
+# ---------------------------------------------------------------------------
+# Marks revoked_at = now(). The row is retained for audit; the send pipeline
+# filters on `revoked_at IS NULL`.
+
+
+class DeviceRevokeResponse(_Model):
+    device_id: UUID
+    revoked_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# GET /api/groups/{invite_code}/activity — group activity feed
+# ---------------------------------------------------------------------------
+# ADR-006 § 2.13, § 4.27. Reads `group_activity` ordered DESC. Pruning is a
+# server-side cron (out of scope V001); see ADR-006 § 4.27 for the rule.
+
+
+class GroupActivityItem(_Model):
+    """One row of group_activity.
+
+    `payload` is kind-specific (ADR-006 § 4.27 table) — display name and
+    avatar color are denormalized in `payload` so the feed renders without
+    JOINs against `user` (and survives a `member_left` row outliving its
+    Member due to the SET NULL FK).
+    """
+
+    activity_id: UUID
+    group_id: UUID
+    member_id: UUID | None  # NULL once the Member row is deleted (member_left).
+    kind: ActivityKind
+    payload: dict[str, object]
+    created_at: datetime
+
+
+class GroupActivityListResponse(_Model):
+    items: list[GroupActivityItem]
+    # Cursor pagination: opaque token of the oldest item's created_at + id.
+    next_cursor: str | None = None
 
 
 # ---------------------------------------------------------------------------
