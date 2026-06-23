@@ -22,6 +22,8 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `services/api/app/main.py` | `create_app()` factory + module-level `app` export |
 | `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
+| `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/refresh` |
+| `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me` |
 
 ## `services/api/`
 
@@ -40,6 +42,8 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `routes/__init__.py` | Package marker |
 | `routes/health.py` | `GET /healthz` → `{"status":"ok","service":"setlist-picker-api"}` |
+| `routes/auth.py` | Signup, login, token refresh endpoints |
+| `routes/users.py` | `GET /PATCH /api/users/me` — authenticated user profile |
 
 ### `services/api/app/db/`
 
@@ -63,11 +67,25 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 ### `services/api/app/auth/`
 
-(empty — populates in BE-003)
+| File | Purpose |
+|---|---|
+| `auth/__init__.py` | Re-exports all auth symbols |
+| `auth/hashing.py` | `hash_password`, `verify_password`, `dummy_verify` (argon2-cffi; timing-safe) |
+| `auth/jwt.py` | `encode_access`, `encode_refresh`, `decode`; `Claims` Pydantic model |
+| `auth/palette.py` | `AVATAR_PALETTE` — 12 hex colors for deterministic avatar assignment |
+| `auth/dependencies.py` | `current_user` FastAPI dep — decodes Bearer token, loads User, logs rejections |
+
+### `services/api/app/schemas/`
+
+| File | Purpose |
+|---|---|
+| `schemas/auth.py` | `UserCreate`, `UserLogin`, `TokenPair`, `AuthResponse`, `TokenRefreshRequest`, `AppleSignInRequest`, `GoogleSignInRequest`, `UserOut`, `UserUpdate` |
 
 ### `services/api/app/services/`
 
-(empty — populates in BE-003)
+| File | Purpose |
+|---|---|
+| `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user` — all use `begin_nested()` for safe IntegrityError handling |
 
 ### `services/api/app/middleware/`
 

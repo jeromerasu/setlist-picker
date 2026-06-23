@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from app.db.session import get_db
 from app.main import create_app
 
 TEST_DB_URL = os.environ.get(
@@ -35,8 +36,14 @@ async def test_session_maker(
 
 
 @pytest.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """HTTP test client with get_db overridden to use the transactional test session."""
     app = create_app()
+
+    async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
+        yield db_session
+
+    app.dependency_overrides[get_db] = _override_get_db
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",

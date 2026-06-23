@@ -1,4 +1,4 @@
-from pydantic import PostgresDsn, field_validator
+from pydantic import PostgresDsn, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     database_url: PostgresDsn = PostgresDsn("postgresql+asyncpg://postgres:dev@localhost/setlist")
     echo_sql: bool = False
+    jwt_secret: SecretStr = SecretStr("change-me-in-production-32-bytes!")
+    jwt_access_ttl_hours: int = 24
+    jwt_refresh_ttl_days: int = 7
 
     @field_validator("database_url", mode="before")
     @classmethod
