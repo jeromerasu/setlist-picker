@@ -45,3 +45,6 @@ Thumbs.db
 
 # Misc
 *.log
+
+# Local data (not for version control)
+.local-data/
