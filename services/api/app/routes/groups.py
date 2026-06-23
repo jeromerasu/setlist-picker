@@ -55,7 +55,8 @@ async def get_group_state_endpoint(
     from fastapi import HTTPException
 
     state = await get_group_state(db, caller, invite_code)
-    last_modified_dt = state.last_active_at
+    # Floor to seconds — RFC 7231 If-Modified-Since has no sub-second resolution
+    last_modified_dt = state.last_active_at.replace(microsecond=0)
     last_modified_str = format_last_modified(last_modified_dt)
 
     ims_header = request.headers.get("if-modified-since")
