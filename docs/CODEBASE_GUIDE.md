@@ -9,7 +9,7 @@ This guide stays current as code lands. Every PR that adds, removes, or renames 
 | Web client | TypeScript + Next.js (App Router) + PWA | `apps/web/` |
 | Backend API | Python 3.12 + FastAPI + SQLAlchemy 2.0 async + Pydantic v2 | `services/api/` |
 | Shared types | TypeScript types generated from OpenAPI | `packages/types/` |
-| Datastore | SQLite (v1); Postgres-ready via SQLAlchemy dialect | `services/api/data/` (gitignored) |
+| Datastore | Postgres 16 (asyncpg); Alembic migrations | `services/api/alembic/` |
 | Build orchestration | Turborepo for TS apps + packages; `uv` for Python service | `turbo.json`, `services/api/pyproject.toml` |
 
 ## Data model + auth
@@ -18,39 +18,48 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 ## Backend entry points
 
-(Stub — populates as code lands. Pattern: `File | Purpose`.)
-
 | File | Purpose |
 |---|---|
-| _(none yet)_ | |
+| `services/api/app/main.py` | `create_app()` factory + module-level `app` export |
+| `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
 
 ## `services/api/`
 
-Stub. Each `##` package section below holds a `File | Purpose` table per file as code lands.
-
 ### `services/api/app/`
 
-(empty)
+| File | Purpose |
+|---|---|
+| `app/__init__.py` | Package marker |
+| `app/main.py` | `create_app(settings?)` — FastAPI factory with lifespan logging |
+| `app/config.py` | `Settings(BaseSettings)` — env-var loader (pydantic-settings) |
+| `app/logging.py` | `configure_logging(level)` — installs structlog JSON renderer |
 
-### `services/api/app/api/`
+### `services/api/app/routes/`
 
-(empty)
+| File | Purpose |
+|---|---|
+| `routes/__init__.py` | Package marker |
+| `routes/health.py` | `GET /healthz` → `{"status":"ok","service":"setlist-picker-api"}` |
 
-### `services/api/app/models/`
+### `services/api/app/db/`
 
-(empty)
+(empty — populates in BE-002)
+
+### `services/api/app/auth/`
+
+(empty — populates in BE-003)
 
 ### `services/api/app/services/`
 
-(empty)
+(empty — populates in BE-003)
 
-### `services/api/app/integrations/`
+### `services/api/app/middleware/`
 
-(empty)
+(empty — populates in BE-002)
 
 ### `services/api/alembic/`
 
-(empty)
+(empty — populates in BE-002)
 
 ## `apps/web/`
 
