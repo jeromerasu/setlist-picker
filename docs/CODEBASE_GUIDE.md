@@ -24,7 +24,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
-| `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}` |
+| `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/snapshot` |
 | `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup` |
 | `services/api/app/routes/picks.py` | `POST /api/groups/{invite_code}/picks`, `POST .../picks/sync`, `DELETE .../picks/{set_id}` |
 
@@ -90,6 +90,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse` |
 | `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail`, `EventLineupResponse` |
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
+| `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
 
 ### `services/api/app/services/`
 
@@ -101,6 +102,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → username → "Member" |
 | `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
 | `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard and activity logging |
+| `services/snapshot_service.py` | `get_snapshot` — Q2 query: sets in window + stage + active picks + member/user denormalized |
 | `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
 
 ### `services/api/app/utils/`
