@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Setlist Picker",
+    "slug": "setlist-picker",
+    "scheme": "setlistpicker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0a0712",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "bundleIdentifier": "com.setlistpicker.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.setlistpicker.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0a0712"
+      }
+    },
+    "extra": {
+      "apiUrl": ""
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

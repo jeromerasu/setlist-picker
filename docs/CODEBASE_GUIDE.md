@@ -147,25 +147,51 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 The full schema is specified in [ADR-006](decisions/ADR-006-initial-data-schema.md). V001 creates 13 tables: `user`, `event`, `group`, `member`, `device`, `stage`, `set`, `artist`, `artist_source_ref`, `set_artist`, `pick`, `artist_cache`, `group_activity`.
 
+## `apps/mobile/`
+
+React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobile/`.
+
+### Entry points
+
+| File | Purpose |
+|---|---|
+| `apps/mobile/App.tsx` | Root: `QueryClientProvider` + `NavigationContainer` + `StatusBar` + `BottomTabs` |
+| `apps/mobile/src/navigation/BottomTabs.tsx` | 3-tab shell: Home / Search / You |
+| `apps/mobile/src/screens/placeholder/*.tsx` | Wave-1 placeholder screens; Wave-3 tickets fill real content |
+
+### `apps/mobile/src/`
+
+| File / Dir | Purpose |
+|---|---|
+| `src/api/client.ts` | `fetchWithAuth<T>` — base-URL + Bearer + 401→refresh→retry; `ApiError`, `UnauthenticatedError` |
+| `src/api/queryClient.ts` | TanStack `QueryClient` (15s `staleTime`, offline-first) |
+| `src/auth/token-store.ts` | `getTokens / setTokens / clearTokens` — `expo-secure-store` wrapper |
+| `src/types/api.ts` | Snake_case TypeScript interfaces mirroring BE Pydantic shapes |
+| `src/theme/` | Fonts, gradients, motion, spacing — FE-101 populates |
+| `src/components/` | Shared primitives — FE-101 populates |
+| `src/screens/auth/` | Auth flow — FE-102 populates |
+
+### `apps/mobile/__tests__/`
+
+| File | Tests |
+|---|---|
+| `App.smoke.test.tsx` | Renders without throwing; 3 tab labels present |
+| `api/client.test.ts` | Bearer header; 401-refresh-retry; clearTokens on refresh failure; error parsing |
+| `auth/token-store.test.ts` | Round-trip; clear removes keys |
+
+### Config
+
+| File | Purpose |
+|---|---|
+| `app.json` | Expo config — scheme `setlistpicker`, dark mode |
+| `babel.config.js` | `babel-preset-expo` (+ `nativewind/babel` outside test env) |
+| `tailwind.config.ts` | DESIGN-TOKENS full color/font/spacing/radius map |
+| `tsconfig.json` | `strict: true`, `@/* → src/*` alias |
+| `.eslintrc.cjs` | `@typescript-eslint` + `react-hooks`; snake_case allowed for API types |
+
 ## `apps/web/`
 
-Stub.
-
-### `apps/web/src/app/`
-
-(empty)
-
-### `apps/web/src/components/`
-
-(empty)
-
-### `apps/web/src/lib/`
-
-(empty)
-
-### `apps/web/src/hooks/`
-
-(empty)
+Stub — no content yet.
 
 ## `packages/types/`
 
