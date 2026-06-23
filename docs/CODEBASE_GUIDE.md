@@ -22,7 +22,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `services/api/app/main.py` | `create_app()` factory + module-level `app` export |
 | `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
-| `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/refresh` |
+| `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me` |
 
 ## `services/api/`
