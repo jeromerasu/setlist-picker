@@ -25,7 +25,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/snapshot` |
-| `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup` |
+| `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup`, `POST /api/events/import` (admin) |
 | `services/api/app/routes/picks.py` | `POST /api/groups/{invite_code}/picks`, `POST .../picks/sync`, `DELETE .../picks/{set_id}` |
 
 ## `services/api/`
@@ -77,6 +77,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `auth/jwt.py` | `encode_access`, `encode_refresh`, `decode`; `Claims` Pydantic model |
 | `auth/palette.py` | `AVATAR_PALETTE` — 12 hex colors for deterministic avatar assignment |
 | `auth/dependencies.py` | `current_user` FastAPI dep — decodes Bearer token, loads User, logs rejections |
+| `auth/admin.py` | `current_admin` FastAPI dep — `X-Admin-Token` header; constant-time compare; 401 on mismatch |
 | `auth/jwks.py` | `fetch_jwks(url)` — shared JWKS fetcher with 1h TTL cache (cachetools) |
 | `auth/apple.py` | `AppleClaims`, `validate_apple_identity_token` — RS256 JWT + iss/aud check |
 | `auth/google.py` | `GoogleClaims`, `validate_google_id_token` — RS256 JWT + both iss forms |
@@ -91,6 +92,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail`, `EventLineupResponse` |
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
+| `schemas/lineup.py` | `LineupSourceArtist`, `LineupSourceStage`, `LineupSourcePerformance`, `LineupImportRequest`, `LineupImportResponse` |
 
 ### `services/api/app/services/`
 
@@ -104,6 +106,13 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard and activity logging |
 | `services/snapshot_service.py` | `get_snapshot` — Q2 query: sets in window + stage + active picks + member/user denormalized |
 | `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
+| `services/lineup_import_service.py` | `import_lineup` — full event/stage/set/artist UPSERT in one transaction; LWW for spotify/image; merge social_links |
+
+### `services/api/scripts/`
+
+| File | Purpose |
+|---|---|
+| `scripts/import_lineup.py` | CLI: `--file`, `--event-name`, `--start-date`, `--end-date`, `--timezone`, `--source-adapter`, `--external-id` → calls `import_lineup` via `AsyncSession` |
 
 ### `services/api/app/utils/`
 

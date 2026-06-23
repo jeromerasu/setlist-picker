@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     google_client_id: str = "replace-with-google-client-id"
     google_jwks_url: str = "https://www.googleapis.com/oauth2/v3/certs"
 
+    admin_token: SecretStr = SecretStr("test-admin-token")
+
     cors_origins: list[str] = []
     trusted_hosts: list[str] = ["*"]
 

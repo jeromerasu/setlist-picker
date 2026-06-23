@@ -1,0 +1,92 @@
+{
+  "performances": [
+    {
+      "id": "perf-001",
+      "name": "Artist Alpha",
+      "artists": [
+        {
+          "id": "artist-001",
+          "name": "Artist Alpha",
+          "spotify": "spotify:artist:alpha123",
+          "image": "https://example.com/alpha.jpg",
+          "instagram": "https://instagram.com/artistalpha"
+        }
+      ],
+      "stage": {"id": "stage-mainstage", "name": "Mainstage"},
+      "date": "2026-07-24",
+      "day": "FRIDAY",
+      "startTime": "2026-07-24 14:00:00+02:00",
+      "endTime": "2026-07-24 15:00:00+02:00"
+    },
+    {
+      "id": "perf-002",
+      "name": "Artist Beta",
+      "artists": [
+        {
+          "id": "artist-002",
+          "name": "Artist Beta",
+          "spotify": null,
+          "image": null
+        }
+      ],
+      "stage": {"id": "stage-mainstage", "name": "Mainstage"},
+      "date": "2026-07-24",
+      "day": "FRIDAY",
+      "startTime": "2026-07-24 15:30:00+02:00",
+      "endTime": "2026-07-24 16:30:00+02:00"
+    },
+    {
+      "id": "perf-003",
+      "name": "B2B Set",
+      "artists": [
+        {
+          "id": "artist-003",
+          "name": "Collab One",
+          "spotify": "spotify:artist:collab1"
+        },
+        {
+          "id": "artist-004",
+          "name": "Collab Two",
+          "spotify": "spotify:artist:collab2"
+        }
+      ],
+      "stage": {"id": "stage-freedom", "name": "Freedom Stage"},
+      "date": "2026-07-24",
+      "day": "FRIDAY",
+      "startTime": "2026-07-24 18:00:00+02:00",
+      "endTime": "2026-07-24 19:30:00+02:00"
+    },
+    {
+      "id": "perf-004",
+      "name": "Midnight Special",
+      "artists": [
+        {
+          "id": "artist-005",
+          "name": "Night Owl",
+          "spotify": null
+        }
+      ],
+      "stage": {"id": "stage-mainstage", "name": "Mainstage"},
+      "date": "2026-07-25",
+      "day": "SATURDAY",
+      "startTime": "2026-07-25 23:30:00+02:00",
+      "endTime": "2026-07-26 01:00:00+02:00"
+    },
+    {
+      "id": "perf-005",
+      "name": "Sunday Closer",
+      "artists": [
+        {
+          "id": "artist-006",
+          "name": "Beyoncé",
+          "spotify": "spotify:artist:beyonce"
+        }
+      ],
+      "stage": {"id": "stage-freedom", "name": "Freedom Stage"},
+      "date": "2026-07-26",
+      "day": "SUNDAY",
+      "startTime": "2026-07-26 20:00:00+02:00",
+      "endTime": "2026-07-26 22:00:00+02:00"
+    }
+  ]
+}

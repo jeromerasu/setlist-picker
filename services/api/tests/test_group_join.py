@@ -228,12 +228,8 @@ async def test_join_group_back_to_back_first_join_one_member_row(
     token, user_id = await signup_and_get_token(client, "backtoback_joiner")
     headers = {"Authorization": f"Bearer {token}"}
 
-    r1 = await client.post(
-        "/api/groups/join", json={"invite_code": invite_code}, headers=headers
-    )
-    r2 = await client.post(
-        "/api/groups/join", json={"invite_code": invite_code}, headers=headers
-    )
+    r1 = await client.post("/api/groups/join", json={"invite_code": invite_code}, headers=headers)
+    r2 = await client.post("/api/groups/join", json={"invite_code": invite_code}, headers=headers)
     assert r1.status_code in (200, 201)
     assert r2.status_code in (200, 201)
 
