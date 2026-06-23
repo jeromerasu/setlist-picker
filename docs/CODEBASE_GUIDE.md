@@ -270,3 +270,14 @@ Stub.
 | `src/screens/groups/CreateGroup.tsx` | 2-field form: group name + event button; `navigation.replace('GroupDetail')` on success |
 | `__tests__/hooks/useCreateGroup.test.ts` | 1 test: POST body has name + event_id |
 | `__tests__/screens/CreateGroup.test.tsx` | 7 tests: renders, disabled, enabled, whitespace, nav, route-param fill, mutate |
+
+### FE-003 — Event picker
+
+| File | Purpose |
+|---|---|
+| `src/utils/eventTile.ts` | `deriveMono(name)` + `deriveTileGradient(name)` — stable hash-based tile appearance |
+| `src/hooks/useEvents.ts` | Debounced TanStack query → `GET /api/events?q=`; 300ms debounce; staleTime: 60s |
+| `src/screens/groups/EventPicker.tsx` | Search + list of events with 46×46 mono-letter tiles; tap navigates back with selectedEvent |
+| `__tests__/utils/eventTile.test.ts` | 5 tests: mono extraction, special chars, fallback, tile stability |
+| `__tests__/hooks/useEvents.test.ts` | 2 tests: q param passed, debounce batching |
+| `__tests__/screens/EventPicker.test.tsx` | 5 tests: renders events, search triggers, empty state, tap nav, back chip |
