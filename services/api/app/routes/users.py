@@ -9,6 +9,8 @@ from app.auth.dependencies import current_user
 from app.db.models.user import User
 from app.db.session import get_db
 from app.schemas.auth import UserOut, UserUpdate
+from app.schemas.groups import MyGroupListResponse
+from app.services.group_service import list_my_groups
 from app.services.user_service import patch_user
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -32,6 +34,14 @@ async def get_me(
     caller: Annotated[User, Depends(current_user)],
 ) -> UserOut:
     return _user_out(caller)
+
+
+@router.get("/me/groups", response_model=MyGroupListResponse)
+async def get_my_groups(
+    caller: Annotated[User, Depends(current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> MyGroupListResponse:
+    return await list_my_groups(db, caller)
 
 
 @router.patch("/me", response_model=UserOut)
