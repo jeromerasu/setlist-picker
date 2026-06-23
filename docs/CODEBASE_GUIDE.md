@@ -261,3 +261,12 @@ Stub.
 | `__tests__/hooks/useMyGroups.test.ts` | 2 tests: data returned, hook function exists |
 | `__tests__/components/GroupCard.test.tsx` | 4 tests: renders, tap, truncation, archived pill |
 | `__tests__/screens/GroupsList.test.tsx` | 7 tests: empty, N cards, create/join nav, refresh, HUES rotation, error |
+
+### FE-002 — Create group form
+
+| File | Purpose |
+|---|---|
+| `src/hooks/useCreateGroup.ts` | Mutation hook → `POST /api/groups`; returns `GroupCreateResponse` |
+| `src/screens/groups/CreateGroup.tsx` | 2-field form: group name + event button; `navigation.replace('GroupDetail')` on success |
+| `__tests__/hooks/useCreateGroup.test.ts` | 1 test: POST body has name + event_id |
+| `__tests__/screens/CreateGroup.test.tsx` | 7 tests: renders, disabled, enabled, whitespace, nav, route-param fill, mutate |
