@@ -25,6 +25,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}` |
+| `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup` |
 
 ## `services/api/`
 
@@ -86,6 +87,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `schemas/auth.py` | `UserCreate`, `UserLogin`, `TokenPair`, `AuthResponse`, `TokenRefreshRequest`, `AppleSignInRequest`, `GoogleSignInRequest`, `UserOut`, `UserUpdate` |
 | `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse` |
+| `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail`, `EventLineupResponse` |
 
 ### `services/api/app/services/`
 
@@ -95,6 +97,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/activity_service.py` | `ActivityKind` enum, `log_activity()` — inserts `GroupActivity` rows |
 | `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state` |
 | `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → username → "Member" |
+| `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
 
 ### `services/api/app/utils/`
 

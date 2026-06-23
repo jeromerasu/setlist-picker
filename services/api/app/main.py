@@ -11,7 +11,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.config import Settings
 from app.logging import configure_logging
 from app.middleware.request_id import RequestIdMiddleware
-from app.routes import auth, groups, health, users
+from app.routes import auth, events, groups, health, users
 
 _logger = structlog.get_logger()
 
@@ -45,6 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth.router)
     app.include_router(users.router)
     app.include_router(groups.router)
+    app.include_router(events.router)
     return app
 
 
