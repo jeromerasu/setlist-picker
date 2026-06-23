@@ -335,3 +335,13 @@ Stub.
 | `src/types/global.d.ts` | Stub `expo-av` module declaration (package not yet installed) |
 | `src/__mocks__/expo-av.ts` | Jest mock for expo-av |
 | `__tests__/screens/ArtistDetail.test.tsx` | 9 tests: name, genres, track, play, null track, similar nav, loading, error, back |
+
+### FE-008 — Right Now snapshot
+
+| File | Purpose |
+|---|---|
+| `src/hooks/useSnapshot.ts` | TanStack query → `GET /api/groups/:code/snapshot?at=`; staleTime 30s |
+| `src/utils/captureScreenshot.ts` | `captureAndShare(ref, filename)` — react-native-view-shot + RN Share |
+| `src/screens/snapshot/RightNowSnapshot.tsx` | Flattens stages→sets; AvatarStack shows pickers; share button captures card |
+| `src/__mocks__/react-native-view-shot.ts` | Jest stub (package not installed; stubbed in moduleNameMapper) |
+| `__tests__/screens/RightNowSnapshot.test.tsx` | 6 tests: header, set rows, loading, error, back, empty state |

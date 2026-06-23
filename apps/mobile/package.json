@@ -56,7 +56,8 @@
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
-      "^expo-av$": "<rootDir>/src/__mocks__/expo-av.ts"
+      "^expo-av$": "<rootDir>/src/__mocks__/expo-av.ts",
+      "^react-native-view-shot$": "<rootDir>/src/__mocks__/react-native-view-shot.ts"
     }
   }
 }
