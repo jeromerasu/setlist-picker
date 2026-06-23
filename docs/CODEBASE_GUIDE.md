@@ -247,3 +247,17 @@ Stub.
 - New shared types go in `packages/types`.
 - New dependencies go in the appropriate package table (`pyproject.toml` for Python, `package.json` for TS).
 - Don't bloat purpose cells — 1–2 sentences max.
+
+### FE-001 — Groups list (Home screen)
+
+| File | Purpose |
+|---|---|
+| `src/navigation/types.ts` | `HomeStackParamList` — nav param types for all Home-stack screens |
+| `src/navigation/HomeStack.tsx` | Home tab's native stack; `GroupsList` as root |
+| `src/theme/heroes.ts` | `HUES[6]` gradient pairs + `getHue(index)` helper |
+| `src/hooks/useMyGroups.ts` | TanStack Query hook → `GET /api/users/me/groups`; `staleTime: 15s` |
+| `src/screens/groups/GroupCard.tsx` | Tappable card: hero-color band + group name + archived pill |
+| `src/screens/groups/GroupsList.tsx` | Home screen: scroll of GroupCards + empty/error states + Create/Join CTAs |
+| `__tests__/hooks/useMyGroups.test.ts` | 2 tests: data returned, hook function exists |
+| `__tests__/components/GroupCard.test.tsx` | 4 tests: renders, tap, truncation, archived pill |
+| `__tests__/screens/GroupsList.test.tsx` | 7 tests: empty, N cards, create/join nav, refresh, HUES rotation, error |

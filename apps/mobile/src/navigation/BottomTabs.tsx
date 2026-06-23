@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
-import { HomePlaceholder } from "@/screens/placeholder/HomePlaceholder";
+import { HomeStack } from "./HomeStack";
 import { SearchPlaceholder } from "@/screens/placeholder/SearchPlaceholder";
 import { YouPlaceholder } from "@/screens/placeholder/YouPlaceholder";
 
@@ -39,7 +39,7 @@ export function BottomTabs() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomePlaceholder} />
+      <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Search" component={SearchPlaceholder} />
       <Tab.Screen name="You" component={YouPlaceholder} />
     </Tab.Navigator>
