@@ -23,7 +23,8 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/main.py` | `create_app()` factory + module-level `app` export |
 | `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
-| `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me` |
+| `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
+| `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}` |
 
 ## `services/api/`
 
@@ -77,18 +78,29 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `auth/jwks.py` | `fetch_jwks(url)` — shared JWKS fetcher with 1h TTL cache (cachetools) |
 | `auth/apple.py` | `AppleClaims`, `validate_apple_identity_token` — RS256 JWT + iss/aud check |
 | `auth/google.py` | `GoogleClaims`, `validate_google_id_token` — RS256 JWT + both iss forms |
+| `auth/invite_code.py` | `generate_invite_code()`, `normalize()` — Crockford Base32 (8 chars, I→1/L→1/O→0) |
 
 ### `services/api/app/schemas/`
 
 | File | Purpose |
 |---|---|
 | `schemas/auth.py` | `UserCreate`, `UserLogin`, `TokenPair`, `AuthResponse`, `TokenRefreshRequest`, `AppleSignInRequest`, `GoogleSignInRequest`, `UserOut`, `UserUpdate` |
+| `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse` |
 
 ### `services/api/app/services/`
 
 | File | Purpose |
 |---|---|
 | `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user`, `get_or_create_apple_user`, `get_or_create_google_user` — IntegrityError handled via `begin_nested()` |
+| `services/activity_service.py` | `ActivityKind` enum, `log_activity()` — inserts `GroupActivity` rows |
+| `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state` |
+| `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → username → "Member" |
+
+### `services/api/app/utils/`
+
+| File | Purpose |
+|---|---|
+| `utils/http_dates.py` | `format_last_modified`, `parse_if_modified_since` — RFC 7231 IMF-fixdate helpers |
 
 ### `services/api/app/middleware/`
 

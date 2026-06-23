@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncGenerator
+from datetime import date
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -12,6 +13,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from app.db.models.event import Event
 from app.db.session import get_db
 from app.main import create_app
 
@@ -64,3 +66,34 @@ async def db_session(
         finally:
             await session.close()
             await conn.rollback()
+
+
+@pytest.fixture
+async def test_event(db_session: AsyncSession) -> Event:
+    """A persisted Event row for use in group tests."""
+    event = Event(
+        name="Test Festival",
+        start_date=date(2026, 6, 20),
+        end_date=date(2026, 6, 22),
+        location="San Francisco, CA",
+        timezone="America/Los_Angeles",
+        source_adapter="manual",
+    )
+    db_session.add(event)
+    await db_session.flush()
+    return event
+
+
+async def signup_and_get_token(
+    client: AsyncClient,
+    username: str = "testuser",
+    password: str = "correct horse",
+) -> tuple[str, str]:
+    """Sign up a user and return (access_token, user_id)."""
+    r = await client.post(
+        "/api/auth/signup",
+        json={"username": username, "password": password},
+    )
+    assert r.status_code == 201, r.text
+    body = r.json()
+    return body["tokens"]["access_token"], body["user"]["id"]
