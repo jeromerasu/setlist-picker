@@ -183,7 +183,15 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `src/components/BackChip.tsx` | `<BackChip onPress>` — round back button |
 | `src/components/SearchInput.tsx` | `<SearchInput value onChangeText placeholder>` — styled search field |
 | `src/components/EmptyState.tsx` | `<EmptyState icon title body cta>` — full-screen empty placeholder |
-| `src/screens/auth/` | Auth flow — FE-102 populates |
+| `src/auth/AuthContext.tsx` | `AuthProvider` + `useAuth()` hook — JWT state, `signIn(pair)`, `signOut()` |
+| `src/auth/useLocalAuth.ts` | `useLocalAuth()` — `login(username, password)` + `signup(username, password, display_name)` |
+| `src/auth/useAppleSignIn.ts` | `useAppleSignIn()` — stub for Wave-3 expo-apple-authentication wiring |
+| `src/auth/useGoogleSignIn.ts` | `useGoogleSignIn()` — stub for Wave-3 expo-auth-session wiring |
+| `src/screens/auth/AuthLanding.tsx` | Landing screen: Apple / Google / email CTAs |
+| `src/screens/auth/LocalLogin.tsx` | Email+password login form |
+| `src/screens/auth/LocalSignup.tsx` | Account creation form |
+| `src/navigation/AuthStack.tsx` | `AuthStack` — native-stack for `AuthLanding → LocalLogin / LocalSignup`; `AuthStackParamList` type |
+| `src/navigation/RootNavigator.tsx` | `RootNavigator` — renders `AuthStack` or `BottomTabs` based on `isAuthenticated` |
 
 ### `apps/mobile/__tests__/`
 
@@ -193,6 +201,10 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `api/client.test.ts` | Bearer header; 401-refresh-retry; clearTokens on refresh failure; error parsing |
 | `auth/token-store.test.ts` | Round-trip; clear removes keys |
 | `components/primitives.test.tsx` | 21 snapshot tests covering all 12 FE-101 primitive components |
+| `auth/AuthContext.test.tsx` | 5 tests: loading state, stored tokens restore auth, signIn/signOut, hook-outside-provider throws |
+| `auth/useLocalAuth.test.ts` | 5 tests: login 200, login error, network error, signup 200, snake_case body |
+| `screens/AuthLanding.test.tsx` | 3 tests: CTA presence, email→LocalLogin, signup link→LocalSignup |
+| `screens/LocalLogin.test.tsx` | 3 tests: disabled when empty, submit calls login+signIn, back chip goBack |
 
 ### Config
 

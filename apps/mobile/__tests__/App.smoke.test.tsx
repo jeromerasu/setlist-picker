@@ -16,6 +16,7 @@ jest.mock("@react-navigation/native", () => ({
     const R = require("react");
     return R.createElement(R.Fragment, null, children);
   },
+  useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
 }));
 
 jest.mock("@react-navigation/bottom-tabs", () => ({
@@ -30,6 +31,25 @@ jest.mock("@react-navigation/bottom-tabs", () => ({
       return R.createElement(RN.Text, { testID: `tab-${name}` }, name);
     },
   }),
+}));
+
+jest.mock("@react-navigation/native-stack", () => ({
+  createNativeStackNavigator: () => ({
+    Navigator: ({ children }: { children: unknown }) => {
+      const R = require("react");
+      return R.createElement(R.Fragment, null, children);
+    },
+    Screen: () => null,
+  }),
+}));
+
+// Force authenticated state so RootNavigator renders BottomTabs, not AuthStack
+jest.mock("@/auth/AuthContext", () => ({
+  AuthProvider: ({ children }: { children: unknown }) => {
+    const R = require("react");
+    return R.createElement(R.Fragment, null, children);
+  },
+  useAuth: () => ({ isLoading: false, isAuthenticated: true, signIn: jest.fn(), signOut: jest.fn() }),
 }));
 
 import App from "../App";
