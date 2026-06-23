@@ -23,7 +23,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/main.py` | `create_app()` factory + module-level `app` export |
 | `services/api/app/routes/health.py` | `GET /healthz` — liveness probe |
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
-| `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
+| `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`, `GET /api/users/me/groups`, `POST /api/users/me/devices`, `DELETE /api/users/me/devices/{device_id}` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/snapshot` |
 | `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup`, `POST /api/events/import` (admin) |
 | `services/api/app/routes/artists.py` | `GET /api/artists/{artist_name}` — cache-first, Spotify+Last.fm+genre-overlap; 503 on total miss |
@@ -95,6 +95,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
 | `schemas/lineup.py` | `LineupSourceArtist`, `LineupSourceStage`, `LineupSourcePerformance`, `LineupImportRequest`, `LineupImportResponse` |
 | `schemas/artists.py` | `ArtistDetailResponse`, `SimilarArtist`, `TopTrack`, `CacheStatus` |
+| `schemas/devices.py` | `DeviceRegisterRequest`, `DeviceOut`, `DeviceRevokeResponse`, `DevicePlatform`, `PushProvider` |
 
 ### `services/api/app/services/`
 
@@ -115,6 +116,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/artist_providers/lastfm.py` | `LastFmProvider` — `artist.getsimilar`; returns `[]` on 5xx |
 | `services/artist_providers/genre_overlap.py` | `GenreOverlapProvider` — Jaccard similarity over `artist_cache.genres` rows |
 | `services/artist_providers/protocol.py` | `MusicDataProvider`, `SimilarArtistsProvider` Protocols; `ProviderArtist`, `RateLimited` |
+| `services/device_service.py` | `register_device`, `revoke_device`; `DeviceNotFoundError` |
 
 ### `services/api/scripts/`
 
