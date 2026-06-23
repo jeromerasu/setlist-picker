@@ -281,3 +281,13 @@ Stub.
 | `__tests__/utils/eventTile.test.ts` | 5 tests: mono extraction, special chars, fallback, tile stability |
 | `__tests__/hooks/useEvents.test.ts` | 2 tests: q param passed, debounce batching |
 | `__tests__/screens/EventPicker.test.tsx` | 5 tests: renders events, search triggers, empty state, tap nav, back chip |
+
+### FE-004 — Join group
+
+| File | Purpose |
+|---|---|
+| `src/utils/inviteCode.ts` | `normalizeCode(raw)` — uppercase + Crockford B32 substitutions (I→1, L→1, O→0), clips to 8 chars |
+| `src/hooks/useJoinGroup.ts` | Mutation → `POST /api/groups/join` with normalized invite_code |
+| `src/screens/groups/JoinGroup.tsx` | Code input (maxLength 8); submit enabled when code=8; on success replaces to GroupDetail; 404→inline error |
+| `__tests__/utils/inviteCode.test.ts` | 5 tests: uppercase, I→1, L→1, O→0, clip |
+| `__tests__/screens/JoinGroup.test.tsx` | 8 tests: renders, enabled, disabled, normalization, back, mutate, success nav, 404 error |
