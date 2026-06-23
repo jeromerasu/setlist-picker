@@ -270,9 +270,12 @@ async def get_group_state(
     member_rows = members_result.all()
     members_out = resolve_member_out_batch([(m, u) for m, u in member_rows])
 
-    # Load picks
+    # Load all picks (active + tombstoned) sorted for deterministic FE diffing
     picks_result = await db.execute(
-        select(Pick).join(Member, Member.id == Pick.member_id).where(Member.group_id == group.id)
+        select(Pick)
+        .join(Member, Member.id == Pick.member_id)
+        .where(Member.group_id == group.id)
+        .order_by(Pick.member_id.asc(), Pick.set_id.asc())
     )
     picks = picks_result.scalars().all()
     picks_out = [
@@ -284,6 +287,11 @@ async def get_group_state(
         )
         for p in picks
     ]
+    _logger.debug(
+        "group.state_picks_loaded",
+        group_id=str(group.id),
+        pick_count=len(picks_out),
+    )
 
     event_out = EventSummary(
         event_id=event.event_id,
