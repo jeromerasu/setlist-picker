@@ -2,7 +2,7 @@ import { clearTokens, getTokens, setTokens } from "@/auth/token-store";
 import type { ErrorResponse, TokenPair } from "@/types/api";
 
 const BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.EXPO_PUBLIC_API_URL ?? "https://setlist-picker-dev.onrender.com";
 
 export class ApiError extends Error {
   constructor(
@@ -61,14 +61,10 @@ export async function fetchWithAuth<T>(
 
   if (res.status === 401 && pair?.refresh_token) {
     // Attempt a token refresh, then retry once
-    const refreshRes = await _doFetch(
-      "/api/auth/refresh",
-      null,
-      {
-        method: "POST",
-        body: JSON.stringify({ refresh_token: pair.refresh_token }),
-      },
-    );
+    const refreshRes = await _doFetch("/api/auth/refresh", null, {
+      method: "POST",
+      body: JSON.stringify({ refresh_token: pair.refresh_token }),
+    });
 
     if (refreshRes.ok) {
       const newPair = (await refreshRes.json()) as TokenPair;
