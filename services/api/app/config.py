@@ -21,6 +21,12 @@ class Settings(BaseSettings):
 
     admin_token: SecretStr = SecretStr("test-admin-token")
 
+    spotify_client_id: str = ""
+    spotify_client_secret: SecretStr = SecretStr("")
+    lastfm_api_key: SecretStr = SecretStr("")
+    artist_cache_ttl_seconds: int = 604800  # 7 days
+    artist_max_backoff_hours: int = 24
+
     cors_origins: list[str] = []
     trusted_hosts: list[str] = ["*"]
 

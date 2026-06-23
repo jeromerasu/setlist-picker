@@ -26,6 +26,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`; `GET /api/users/me/groups` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/snapshot` |
 | `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup`, `POST /api/events/import` (admin) |
+| `services/api/app/routes/artists.py` | `GET /api/artists/{artist_name}` — cache-first, Spotify+Last.fm+genre-overlap; 503 on total miss |
 | `services/api/app/routes/picks.py` | `POST /api/groups/{invite_code}/picks`, `POST .../picks/sync`, `DELETE .../picks/{set_id}` |
 
 ## `services/api/`
@@ -93,6 +94,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
 | `schemas/lineup.py` | `LineupSourceArtist`, `LineupSourceStage`, `LineupSourcePerformance`, `LineupImportRequest`, `LineupImportResponse` |
+| `schemas/artists.py` | `ArtistDetailResponse`, `SimilarArtist`, `TopTrack`, `CacheStatus` |
 
 ### `services/api/app/services/`
 
@@ -107,6 +109,12 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/snapshot_service.py` | `get_snapshot` — Q2 query: sets in window + stage + active picks + member/user denormalized |
 | `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
 | `services/lineup_import_service.py` | `import_lineup` — full event/stage/set/artist UPSERT in one transaction; LWW for spotify/image; merge social_links |
+| `services/artist_service.py` | `get_artist_detail` — cache-first (7d TTL), exponential backoff on failure, fan-out to Spotify+Last.fm+genre-overlap |
+| `services/artist_prewarm.py` | `prewarm_artists_from_event` — background batch populate for all artists in an event; 5-concurrent cap |
+| `services/artist_providers/spotify.py` | `SpotifyProvider` — client-credentials token cache, search+top-tracks; raises `RateLimited` on 429 |
+| `services/artist_providers/lastfm.py` | `LastFmProvider` — `artist.getsimilar`; returns `[]` on 5xx |
+| `services/artist_providers/genre_overlap.py` | `GenreOverlapProvider` — Jaccard similarity over `artist_cache.genres` rows |
+| `services/artist_providers/protocol.py` | `MusicDataProvider`, `SimilarArtistsProvider` Protocols; `ProviderArtist`, `RateLimited` |
 
 ### `services/api/scripts/`
 
