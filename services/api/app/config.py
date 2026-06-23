@@ -1,3 +1,4 @@
+from pydantic import PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,3 +7,12 @@ class Settings(BaseSettings):
 
     env: str = "dev"
     log_level: str = "INFO"
+    database_url: PostgresDsn = PostgresDsn("postgresql+asyncpg://postgres:dev@localhost/setlist")
+    echo_sql: bool = False
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def coerce_asyncpg_scheme(cls, v: object) -> object:
+        if isinstance(v, str) and v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v

@@ -43,7 +43,23 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 ### `services/api/app/db/`
 
-(empty — populates in BE-002)
+| File | Purpose |
+|---|---|
+| `db/__init__.py` | Re-exports `Base`, `async_session_maker`, `get_db` |
+| `db/base.py` | `Base(DeclarativeBase)` + `TIMESTAMPTZ` type alias |
+| `db/uuid7.py` | `uuid7() -> uuid.UUID` wrapper around `uuid_utils.uuid7()` |
+| `db/session.py` | Lazy-init `AsyncEngine`, `get_session_maker()`, `get_db()` FastAPI dep |
+| `db/models/user.py` | `User` ORM model (ADR-006 § 2.1) |
+| `db/models/event.py` | `Event` ORM model (§ 2.4) |
+| `db/models/group.py` | `Group` ORM model (§ 2.2) |
+| `db/models/member.py` | `Member` ORM model (§ 2.3) |
+| `db/models/device.py` | `Device` ORM model (§ 2.12) |
+| `db/models/stage.py` | `Stage` ORM model (§ 2.5) |
+| `db/models/set_.py` | `Set` ORM model (§ 2.6; named `set_.py` to avoid Python builtin conflict) |
+| `db/models/artist.py` | `Artist`, `ArtistSourceRef`, `SetArtist` ORM models (§ 2.7–2.9) |
+| `db/models/pick.py` | `Pick` ORM model (§ 2.10) |
+| `db/models/artist_cache.py` | `ArtistCache` ORM model (§ 2.11) |
+| `db/models/group_activity.py` | `GroupActivity` ORM model (§ 2.13) |
 
 ### `services/api/app/auth/`
 
@@ -55,11 +71,20 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 ### `services/api/app/middleware/`
 
-(empty — populates in BE-002)
+| File | Purpose |
+|---|---|
+| `middleware/request_id.py` | `RequestIdMiddleware` — injects `request_id` UUID into structlog context per request |
 
 ### `services/api/alembic/`
 
-(empty — populates in BE-002)
+| File | Purpose |
+|---|---|
+| `alembic/env.py` | Async-aware migration runner (`asyncio.run(run_async_migrations())`) |
+| `alembic/versions/0001_v001_baseline.py` | V001 hand-written migration: 13 tables + 27 indexes per ADR-006 |
+
+## Schema
+
+The full schema is specified in [ADR-006](decisions/ADR-006-initial-data-schema.md). V001 creates 13 tables: `user`, `event`, `group`, `member`, `device`, `stage`, `set`, `artist`, `artist_source_ref`, `set_artist`, `pick`, `artist_cache`, `group_activity`.
 
 ## `apps/web/`
 

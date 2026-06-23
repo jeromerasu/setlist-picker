@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from app.config import Settings
 from app.logging import configure_logging
+from app.middleware.request_id import RequestIdMiddleware
 from app.routes import health
 
 _logger = structlog.get_logger()
@@ -24,6 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _logger.info("app.shutdown")
 
     app = FastAPI(title="setlist-picker", version="0.1.0", lifespan=lifespan)
+    app.add_middleware(RequestIdMiddleware)
     app.include_router(health.router)
     return app
 
