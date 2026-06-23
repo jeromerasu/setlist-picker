@@ -323,3 +323,15 @@ Stub.
 | `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
 | `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
 | `__tests__/screens/Schedule.test.tsx` | 6 tests: event name, day tabs, tab switch, set tap nav, loading, back |
+
+### FE-007 — Artist detail (cyber-retro)
+
+| File | Purpose |
+|---|---|
+| `src/theme/cyber.ts` | Cyber-retro design tokens: neon pink/cyan/green/acid-yellow, dark bg |
+| `src/hooks/useArtistDetail.ts` | TanStack query → `GET /api/artists/:name`; staleTime Infinity |
+| `src/hooks/useAudioPreview.ts` | `play(url)` / `stop()` via expo-av; `isPlaying` state |
+| `src/screens/artist/ArtistDetail.tsx` | Genres + top_track preview (single) + similar artists → push ArtistDetail |
+| `src/types/global.d.ts` | Stub `expo-av` module declaration (package not yet installed) |
+| `src/__mocks__/expo-av.ts` | Jest mock for expo-av |
+| `__tests__/screens/ArtistDetail.test.tsx` | 9 tests: name, genres, track, play, null track, similar nav, loading, error, back |
