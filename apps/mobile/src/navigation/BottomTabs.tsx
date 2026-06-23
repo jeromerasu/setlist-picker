@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
 import { HomeStack } from "./HomeStack";
 import { SearchPlaceholder } from "@/screens/placeholder/SearchPlaceholder";
-import { YouPlaceholder } from "@/screens/placeholder/YouPlaceholder";
+import { AccountProfile } from "@/screens/profile/AccountProfile";
 
 const Tab = createBottomTabNavigator();
 
@@ -41,7 +41,7 @@ export function BottomTabs() {
     >
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Search" component={SearchPlaceholder} />
-      <Tab.Screen name="You" component={YouPlaceholder} />
+      <Tab.Screen name="You" component={AccountProfile} />
     </Tab.Navigator>
   );
 }

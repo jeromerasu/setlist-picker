@@ -345,3 +345,14 @@ Stub.
 | `src/screens/snapshot/RightNowSnapshot.tsx` | Flattens stages→sets; AvatarStack shows pickers; share button captures card |
 | `src/__mocks__/react-native-view-shot.ts` | Jest stub (package not installed; stubbed in moduleNameMapper) |
 | `__tests__/screens/RightNowSnapshot.test.tsx` | 6 tests: header, set rows, loading, error, back, empty state |
+
+### FE-009 — Account profile
+
+| File | Purpose |
+|---|---|
+| `src/hooks/useUpdateProfile.ts` | Mutation → `PATCH /api/profile` with display_name + avatar_color |
+| `src/hooks/useLeaveGroup.ts` | Mutation → `DELETE /api/groups/:code/leave`; invalidates my-groups on success |
+| `src/screens/profile/AvatarColorPicker.tsx` | 10-swatch color palette with selected ring highlight |
+| `src/screens/profile/LeaveGroupModal.tsx` | Bottom-sheet modal with cancel/confirm (danger) actions |
+| `src/screens/profile/AccountProfile.tsx` | Name input + color picker + save; group list with Leave; sign out |
+| `__tests__/screens/AccountProfile.test.tsx` | 10 tests: input, save disabled/enabled, payload, swatch, groups, modal, confirm, cancel, sign out |
