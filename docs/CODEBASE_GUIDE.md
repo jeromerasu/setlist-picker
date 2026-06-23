@@ -98,6 +98,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state` |
 | `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → username → "Member" |
 | `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
+| `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
 
 ### `services/api/app/utils/`
 
