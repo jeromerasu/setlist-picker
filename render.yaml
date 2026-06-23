@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: setlist-picker-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: services/api
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DATABASE_URL
+        fromDatabase:
+          name: setlist-picker-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "[]"
+      - key: TRUSTED_HOSTS
+        value: '["setlist-picker-api.onrender.com"]'
+      - key: APPLE_BUNDLE_ID
+        sync: false
+      - key: APPLE_JWKS_URL
+        value: https://appleid.apple.com/auth/keys
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_JWKS_URL
+        value: https://www.googleapis.com/oauth2/v3/certs
+
+databases:
+  - name: setlist-picker-db
+    databaseName: setlist
+    user: setlist
+    plan: free
+    region: oregon
