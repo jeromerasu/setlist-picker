@@ -167,8 +167,22 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `src/api/queryClient.ts` | TanStack `QueryClient` (15s `staleTime`, offline-first) |
 | `src/auth/token-store.ts` | `getTokens / setTokens / clearTokens` — `expo-secure-store` wrapper |
 | `src/types/api.ts` | Snake_case TypeScript interfaces mirroring BE Pydantic shapes |
-| `src/theme/` | Fonts, gradients, motion, spacing — FE-101 populates |
-| `src/components/` | Shared primitives — FE-101 populates |
+| `src/theme/tokens.ts` | Single source of truth: `colors`, `gradients`, `radius`, `spacing`, `sizes`, `motion` constants |
+| `src/theme/fonts.ts` | `FONT_MAP` — 14 Orbitron / Playfair / Manrope / SpaceMono / VT323 entries (TTFs in `assets/fonts/`) |
+| `src/theme/motion.ts` | Re-exports `motion` from tokens + `easing` presets |
+| `src/theme/spacing.ts` | Re-exports `spacing` + `sizes` from tokens |
+| `src/components/GlassCard.tsx` | `<GlassCard variant border withInsetHighlight>` — glass surface container |
+| `src/components/Avatar.tsx` | `<Avatar initials color size ringColor>` — single circle avatar |
+| `src/components/AvatarStack.tsx` | `<AvatarStack members size>` — overlapping row, +N overflow badge |
+| `src/components/StageDot.tsx` | `<StageDot color size withGlow>` — per-stage timeline dot |
+| `src/components/NeonGradientButton.tsx` | `<NeonGradientButton label onPress disabled size>` — primary CTA |
+| `src/components/GradientText.tsx` | `<GradientText font weight size>` — gradient-filled display text |
+| `src/components/GlassBottomNav.tsx` | `<GlassBottomNav items>` — glass floating nav bar |
+| `src/components/PillTab.tsx` | `<PillTab label active onPress>` — segment pill |
+| `src/components/OutlineButton.tsx` | `<OutlineButton label onPress>` — bordered secondary button |
+| `src/components/BackChip.tsx` | `<BackChip onPress>` — round back button |
+| `src/components/SearchInput.tsx` | `<SearchInput value onChangeText placeholder>` — styled search field |
+| `src/components/EmptyState.tsx` | `<EmptyState icon title body cta>` — full-screen empty placeholder |
 | `src/screens/auth/` | Auth flow — FE-102 populates |
 
 ### `apps/mobile/__tests__/`
@@ -178,6 +192,7 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `App.smoke.test.tsx` | Renders without throwing; 3 tab labels present |
 | `api/client.test.ts` | Bearer header; 401-refresh-retry; clearTokens on refresh failure; error parsing |
 | `auth/token-store.test.ts` | Round-trip; clear removes keys |
+| `components/primitives.test.tsx` | 21 snapshot tests covering all 12 FE-101 primitive components |
 
 ### Config
 
