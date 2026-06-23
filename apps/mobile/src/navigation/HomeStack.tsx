@@ -4,6 +4,7 @@ import { CreateGroup } from "@/screens/groups/CreateGroup";
 import { EventPicker } from "@/screens/groups/EventPicker";
 import { JoinGroup } from "@/screens/groups/JoinGroup";
 import { GroupDetail } from "@/screens/groups/GroupDetail";
+import { Schedule } from "@/screens/schedule/Schedule";
 import type { HomeStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -16,6 +17,7 @@ export function HomeStack() {
       <Stack.Screen name="EventPicker" component={EventPicker} />
       <Stack.Screen name="JoinGroup" component={JoinGroup} />
       <Stack.Screen name="GroupDetail" component={GroupDetail} />
+      <Stack.Screen name="Schedule" component={Schedule} />
       {/* Additional screens registered as tickets land */}
     </Stack.Navigator>
   );

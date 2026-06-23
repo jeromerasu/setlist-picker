@@ -306,3 +306,20 @@ Stub.
 | `src/screens/groups/GroupDetail.tsx` | Root screen; day-bucketed artist list; loading / error states |
 | `__tests__/utils/dayBuckets.test.ts` | 3 tests: bucket grouping, empty, pickedSetIds |
 | `__tests__/screens/GroupDetail.test.tsx` | 9 tests: renders, day buckets, loading, error, toggle, nav artist, schedule, snapshot, picked heart |
+
+### FE-006 — Schedule
+
+| File | Purpose |
+|---|---|
+| `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes` — pixel math for grid layout |
+| `src/utils/dayList.ts` | `uniqueDays(sets)` (insertion-order), `setsForDay(sets, day)` |
+| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup → `{ sets, eventName, isLoading }` |
+| `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
+| `src/screens/schedule/DayMenu.tsx` | Horizontal scrollable day tab pills |
+| `src/screens/schedule/Timeline.tsx` | Absolute-positioned hour labels + tick lines overlay (pointerEvents=none) |
+| `src/screens/schedule/AllStagesGrid.tsx` | Dual-scroll (h+v) stage columns with absolute-positioned set blocks |
+| `src/screens/schedule/Schedule.tsx` | Root: DayMenu + AllStagesGrid; tap set → ArtistDetail |
+| `__tests__/utils/gridLayout.test.ts` | 6 tests: timeToMinutes, setTop, setHeight, clamp, groupByStage |
+| `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
+| `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
+| `__tests__/screens/Schedule.test.tsx` | 6 tests: event name, day tabs, tab switch, set tap nav, loading, back |
