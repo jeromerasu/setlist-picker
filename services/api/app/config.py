@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     jwt_access_ttl_hours: int = 24
     jwt_refresh_ttl_days: int = 7
 
+    apple_bundle_id: str = "com.setlistpicker.app"
+    apple_jwks_url: str = "https://appleid.apple.com/auth/keys"
+
+    google_client_id: str = "replace-with-google-client-id"
+    google_jwks_url: str = "https://www.googleapis.com/oauth2/v3/certs"
+
     @field_validator("database_url", mode="before")
     @classmethod
     def coerce_asyncpg_scheme(cls, v: object) -> object:

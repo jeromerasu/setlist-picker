@@ -80,6 +80,66 @@ async def authenticate(db: AsyncSession, username: str, password: str) -> User:
     return user
 
 
+async def get_or_create_apple_user(
+    db: AsyncSession,
+    apple_sub: str,
+    email: str | None,
+    display_name: str | None,
+) -> tuple[User, bool]:
+    """Return (user, created). created=True on first sign-in."""
+    result = await db.execute(select(User).where(User.apple_subject_id == apple_sub))
+    user = result.scalar_one_or_none()
+    if user is not None:
+        user.last_login_at = datetime.now(timezone.utc)
+        await db.flush()
+        _logger.info("auth.apple_login", user_id=str(user.id))
+        return user, False
+
+    user_id = uuid7()
+    user = User(
+        id=user_id,
+        auth_provider="apple",
+        apple_subject_id=apple_sub,
+        email=email,
+        display_name=display_name,
+        avatar_color=_pick_avatar(user_id),
+    )
+    db.add(user)
+    await db.flush()
+    _logger.info("auth.apple_user_created", user_id=str(user.id))
+    return user, True
+
+
+async def get_or_create_google_user(
+    db: AsyncSession,
+    google_sub: str,
+    email: str | None,
+    display_name: str | None,
+) -> tuple[User, bool]:
+    """Return (user, created). created=True on first sign-in."""
+    result = await db.execute(select(User).where(User.google_subject_id == google_sub))
+    user = result.scalar_one_or_none()
+    if user is not None:
+        user.last_login_at = datetime.now(timezone.utc)
+        await db.flush()
+        _logger.info("auth.google_login", user_id=str(user.id))
+        return user, False
+
+    user_id = uuid7()
+    user = User(
+        id=user_id,
+        auth_provider="google",
+        google_subject_id=google_sub,
+        email=email,
+        display_name=display_name,
+        avatar_color=_pick_avatar(user_id),
+    )
+    db.add(user)
+    await db.flush()
+    _logger.info("auth.google_user_created", user_id=str(user.id))
+    return user, True
+
+
 async def patch_user(db: AsyncSession, user: User, payload: UserUpdate) -> User:
     if payload.display_name is not None:
         user.display_name = payload.display_name

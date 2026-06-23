@@ -3,20 +3,29 @@ from __future__ import annotations
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.apple import validate_apple_identity_token
+from app.auth.google import validate_google_id_token
 from app.auth.jwt import decode, encode_access, encode_refresh
 from app.db.session import get_db
 from app.schemas.auth import (
+    AppleSignInRequest,
     AuthResponse,
+    GoogleSignInRequest,
     TokenPair,
     TokenRefreshRequest,
     UserCreate,
     UserLogin,
     UserOut,
 )
-from app.services.user_service import authenticate, create_local_user
+from app.services.user_service import (
+    authenticate,
+    create_local_user,
+    get_or_create_apple_user,
+    get_or_create_google_user,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 _logger = structlog.get_logger()
@@ -101,3 +110,49 @@ async def refresh(payload: TokenRefreshRequest) -> TokenPair:
         access_expires_at=access_exp,
         refresh_expires_at=refresh_exp,
     )
+
+
+@router.post("/apple", response_model=AuthResponse)
+async def apple_signin(
+    payload: AppleSignInRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+) -> AuthResponse:
+    try:
+        claims = await validate_apple_identity_token(payload.identity_token)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail={"error_code": str(exc)}) from exc
+
+    email = payload.email or claims.email
+    user, created = await get_or_create_apple_user(
+        db,
+        apple_sub=claims.sub,
+        email=email,
+        display_name=payload.display_name,
+    )
+    response.status_code = 201 if created else 200
+    pair, _ = _make_token_pair(user.id)
+    return AuthResponse(user=_user_out(user), tokens=pair)
+
+
+@router.post("/google", response_model=AuthResponse)
+async def google_signin(
+    payload: GoogleSignInRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+) -> AuthResponse:
+    try:
+        claims = await validate_google_id_token(payload.id_token)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail={"error_code": str(exc)}) from exc
+
+    email = payload.email or claims.email
+    user, created = await get_or_create_google_user(
+        db,
+        google_sub=claims.sub,
+        email=email,
+        display_name=payload.display_name,
+    )
+    response.status_code = 201 if created else 200
+    pair, _ = _make_token_pair(user.id)
+    return AuthResponse(user=_user_out(user), tokens=pair)

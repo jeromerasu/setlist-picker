@@ -42,7 +42,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `routes/__init__.py` | Package marker |
 | `routes/health.py` | `GET /healthz` → `{"status":"ok","service":"setlist-picker-api"}` |
-| `routes/auth.py` | Signup, login, token refresh endpoints |
+| `routes/auth.py` | Signup, login, refresh, Apple Sign-In, Google Sign-In |
 | `routes/users.py` | `GET /PATCH /api/users/me` — authenticated user profile |
 
 ### `services/api/app/db/`
@@ -74,6 +74,9 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `auth/jwt.py` | `encode_access`, `encode_refresh`, `decode`; `Claims` Pydantic model |
 | `auth/palette.py` | `AVATAR_PALETTE` — 12 hex colors for deterministic avatar assignment |
 | `auth/dependencies.py` | `current_user` FastAPI dep — decodes Bearer token, loads User, logs rejections |
+| `auth/jwks.py` | `fetch_jwks(url)` — shared JWKS fetcher with 1h TTL cache (cachetools) |
+| `auth/apple.py` | `AppleClaims`, `validate_apple_identity_token` — RS256 JWT + iss/aud check |
+| `auth/google.py` | `GoogleClaims`, `validate_google_id_token` — RS256 JWT + both iss forms |
 
 ### `services/api/app/schemas/`
 
@@ -85,7 +88,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 
 | File | Purpose |
 |---|---|
-| `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user` — all use `begin_nested()` for safe IntegrityError handling |
+| `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user`, `get_or_create_apple_user`, `get_or_create_google_user` — IntegrityError handled via `begin_nested()` |
 
 ### `services/api/app/middleware/`
 
