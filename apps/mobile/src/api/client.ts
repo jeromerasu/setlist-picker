@@ -1,7 +1,7 @@
 import { clearTokens, getTokens, setTokens } from "@/auth/token-store";
 import type { ErrorResponse, TokenPair } from "@/types/api";
 
-const BASE_URL =
+export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ?? "https://setlist-picker-dev.onrender.com";
 
 export class ApiError extends Error {

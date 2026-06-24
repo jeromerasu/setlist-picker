@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { TokenPair } from "@/types/api";
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
+import { BASE_URL as API_BASE } from "../api/client";
 
 interface AppleSignInResult {
   isLoading: boolean;
