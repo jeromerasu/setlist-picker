@@ -64,12 +64,16 @@ async def import_lineup(
     try:
         event = await _upsert_event(db, payload)
 
-        # Cache: external_id → stage_id within this import
+        # Cache: external_id → stage, and first-seen position (0-based) per stage.
         stage_cache: dict[str, Stage] = {}
+        stage_order: dict[str, int] = {}
 
         for perf in payload.performances:
+            if perf.stage.id not in stage_order:
+                stage_order[perf.stage.id] = len(stage_order)
             stage = await _upsert_stage(
-                db, event, perf.stage.id, perf.stage.name, stage_cache, counts
+                db, event, perf.stage.id, perf.stage.name, stage_cache, counts,
+                position=stage_order[perf.stage.id],
             )
 
             starts_at = datetime.fromisoformat(perf.startTime)
@@ -182,6 +186,7 @@ async def _upsert_stage(
     name: str,
     cache: dict[str, Stage],
     counts: dict[str, int],
+    position: int,
 ) -> Stage:
     if external_id in cache:
         return cache[external_id]
@@ -207,7 +212,7 @@ async def _upsert_stage(
         name=name,
         display_order=display_order,
         external_id=external_id,
-        color_hex=_STAGE_COLORS[display_order % len(_STAGE_COLORS)],
+        color_hex=_STAGE_COLORS[position % len(_STAGE_COLORS)],
     )
     db.add(stage)
     await db.flush()

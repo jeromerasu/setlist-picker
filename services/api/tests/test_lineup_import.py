@@ -367,7 +367,7 @@ async def test_cli_invokes_service_with_parsed_args(tmp_path: pathlib.Path) -> N
 
 
 # ---------------------------------------------------------------------------
-# REALIGN-001: _STAGE_COLORS invariants
+# REALIGN-001: _STAGE_COLORS palette invariants
 # ---------------------------------------------------------------------------
 
 
@@ -385,52 +385,97 @@ def test_stage_colors_all_distinct() -> None:
 
 
 # ---------------------------------------------------------------------------
-# REALIGN-001: deterministic color assignment at import time
+# REALIGN-001: color assignment by import position
 # ---------------------------------------------------------------------------
 
 
-async def test_import_assigns_color_hex_matching_palette_formula(
+def _make_n_stage_payload(n: int) -> dict[str, object]:
+    """Return a LineupImportRequest payload with n distinct stages, one set each."""
+    performances = [
+        {
+            "id": f"perf-{i}",
+            "name": f"Set {i}",
+            "artists": [{"id": f"art-{i}", "name": f"Artist {i}"}],
+            "stage": {"id": f"stage-{i}", "name": f"Stage {i}"},
+            "date": "2026-07-25",
+            "day": "FRIDAY",
+            "startTime": f"2026-07-25T{14 + (i % 8):02d}:00:00+02:00",
+            "endTime": f"2026-07-25T{15 + (i % 8):02d}:00:00+02:00",
+        }
+        for i in range(n)
+    ]
+    return {
+        "event_name": f"Color Test Fest {n}",
+        "start_date": "2026-07-25",
+        "end_date": "2026-07-27",
+        "timezone": "Europe/Brussels",
+        "location": "Boom, Belgium",
+        "source_adapter": "event_api_v1",
+        "external_id": f"color-test-{n}",
+        "performances": performances,
+    }
+
+
+async def test_import_assigns_color_hex_by_first_seen_position(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
-    """Each new stage receives color_hex = _STAGE_COLORS[display_order % 15]."""
+    """color_hex = _STAGE_COLORS[first-seen position % 15], not display_order-based."""
     result = await _import(client, _load_sample_payload())
-
-    from sqlalchemy import select as sa_select
 
     rows = (
         await db_session.execute(
-            sa_select(Stage)
+            select(Stage)
             .where(Stage.event_id == result["event_id"])
             .order_by(Stage.display_order.asc())
         )
     ).scalars().all()
 
     assert len(rows) == 2  # tml_sample has 2 stages
-    for stage in rows:
-        assert _HEX_RE.match(stage.color_hex), f"Bad color on stage {stage.name}: {stage.color_hex}"
-        expected = _STAGE_COLORS[stage.display_order % len(_STAGE_COLORS)]
-        assert stage.color_hex == expected, (
-            f"Stage '{stage.name}' display_order={stage.display_order}: "
-            f"expected {expected!r}, got {stage.color_hex!r}"
+    # Positions are 0 and 1 (first-seen order = display_order order here)
+    for expected_position, stage in enumerate(rows):
+        assert _HEX_RE.match(stage.color_hex), f"Bad hex: {stage.color_hex}"
+        expected_color = _STAGE_COLORS[expected_position % len(_STAGE_COLORS)]
+        assert stage.color_hex == expected_color, (
+            f"Stage '{stage.name}' position={expected_position}: "
+            f"expected {expected_color!r}, got {stage.color_hex!r}"
         )
 
 
-async def test_reimport_does_not_change_color_hex(
+async def test_import_15_stages_all_distinct_colors(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
-    """Re-importing identical payload preserves color_hex on existing stages."""
-    payload = _load_sample_payload({"external_id": "color-stable-test"})
-    first = await _import(client, payload)
+    """A 15-stage import must produce 15 distinct color_hex values."""
+    result = await _import(client, _make_n_stage_payload(15))
 
-    from sqlalchemy import select as sa_select
+    rows = (
+        await db_session.execute(
+            select(Stage)
+            .where(Stage.event_id == result["event_id"])
+            .order_by(Stage.display_order.asc())
+        )
+    ).scalars().all()
+
+    assert len(rows) == 15
+    colors = [r.color_hex for r in rows]
+    assert colors == list(_STAGE_COLORS), (
+        f"Expected all 15 palette entries in order; got {colors}"
+    )
+    assert len(set(colors)) == 15, "Duplicate color in 15-stage import"
+
+
+async def test_reimport_preserves_color_hex(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    """Re-importing the same payload must not change color_hex on existing stages."""
+    payload = _load_sample_payload({"external_id": "color-stable-reimport"})
+    first = await _import(client, payload)
 
     rows_before = (
         await db_session.execute(
-            sa_select(Stage)
-            .where(Stage.event_id == first["event_id"])
-            .order_by(Stage.display_order.asc())
+            select(Stage).where(Stage.event_id == first["event_id"])
         )
     ).scalars().all()
     colors_before = {r.stage_id: r.color_hex for r in rows_before}
@@ -440,5 +485,5 @@ async def test_reimport_does_not_change_color_hex(
     for r in rows_before:
         await db_session.refresh(r)
         assert r.color_hex == colors_before[r.stage_id], (
-            f"color_hex changed on re-import for stage {r.name}"
+            f"color_hex changed on re-import for stage '{r.name}'"
         )
