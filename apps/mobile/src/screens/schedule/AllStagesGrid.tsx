@@ -358,6 +358,7 @@ const styles = StyleSheet.create({
   stageHeaderText: {
     fontFamily: "Manrope-Bold",
     fontSize: 13,
+    color: colors.text.primary,
   },
   // Time grid — prototype lines 322-336
   timeGrid: {
