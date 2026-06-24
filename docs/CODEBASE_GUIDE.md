@@ -14,7 +14,7 @@ This guide stays current as code lands. Every PR that adds, removes, or renames 
 
 ## Data model + auth
 
-The v1 data schema (users, groups, members, events, stages, sets, artists, picks, artist_cache) AND the auth model (JWT-based with username + password) are specified in [decisions/ADR-006-initial-data-schema.md](decisions/ADR-006-initial-data-schema.md). ADR-006 supersedes [ADR-003](decisions/ADR-003-auth-model.md) (anonymous group-code access). The Pydantic wire-shape reference for every v1 endpoint — including the auth flows — lives at [schemas/reference/v1_pydantic.py](schemas/reference/v1_pydantic.py); it's a design artifact, not yet wired into `services/api/`. Every PR that adds or renames a column or endpoint MUST update ADR-006 (or supersede it with ADR-NNN) and the Pydantic reference.
+The v1 data schema (users, groups, members, events, stages, sets, artists, picks, artist_cache) AND the auth model (JWT-based with email + password) are specified in [decisions/ADR-006-initial-data-schema.md](decisions/ADR-006-initial-data-schema.md). ADR-006 supersedes [ADR-003](decisions/ADR-003-auth-model.md) (anonymous group-code access). The Pydantic wire-shape reference for every v1 endpoint — including the auth flows — lives at [schemas/reference/v1_pydantic.py](schemas/reference/v1_pydantic.py); it's a design artifact, not yet wired into `services/api/`. Every PR that adds or renames a column or endpoint MUST update ADR-006 (or supersede it with ADR-NNN) and the Pydantic reference.
 
 ## Backend entry points
 
@@ -104,7 +104,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user`, `get_or_create_apple_user`, `get_or_create_google_user` — IntegrityError handled via `begin_nested()` |
 | `services/activity_service.py` | `ActivityKind` enum, `log_activity()` — inserts `GroupActivity` rows |
 | `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state` |
-| `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → username → "Member" |
+| `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → "Member" |
 | `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
 | `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard and activity logging |
 | `services/snapshot_service.py` | `get_snapshot` — Q2 query: sets in window + stage + active picks + member/user denormalized |
@@ -184,7 +184,7 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `src/components/SearchInput.tsx` | `<SearchInput value onChangeText placeholder>` — styled search field |
 | `src/components/EmptyState.tsx` | `<EmptyState icon title body cta>` — full-screen empty placeholder |
 | `src/auth/AuthContext.tsx` | `AuthProvider` + `useAuth()` hook — JWT state, `signIn(pair)`, `signOut()` |
-| `src/auth/useLocalAuth.ts` | `useLocalAuth()` — `login(username, password)` + `signup(username, password, display_name)` |
+| `src/auth/useLocalAuth.ts` | `useLocalAuth()` — `login(email, password)` + `signup(email, password, display_name)` |
 | `src/auth/useAppleSignIn.ts` | `useAppleSignIn()` — stub for Wave-3 expo-apple-authentication wiring |
 | `src/auth/useGoogleSignIn.ts` | `useGoogleSignIn()` — stub for Wave-3 expo-auth-session wiring |
 | `src/screens/auth/AuthLanding.tsx` | Landing screen: Apple / Google / email CTAs |

@@ -38,7 +38,6 @@ def _user_out(user: object) -> UserOut:
     return UserOut(
         id=user.id,
         auth_provider=user.auth_provider,
-        username=user.username,
         email=user.email,
         display_name=user.display_name,
         avatar_color=user.avatar_color,
@@ -83,7 +82,7 @@ async def login(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AuthResponse:
     try:
-        user = await authenticate(db, payload.username, payload.password)
+        user = await authenticate(db, payload.email, payload.password)
     except ValueError as exc:
         raise HTTPException(status_code=401, detail={"error_code": "invalid_credentials"}) from exc
 

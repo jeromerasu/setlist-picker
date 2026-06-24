@@ -39,7 +39,7 @@ async def snap_setup(
 
     Seeds: 1 user, 1 group attached to test_event, 1 stage.
     """
-    token, _ = await signup_and_get_token(client, "snap_user")
+    token, _ = await signup_and_get_token(client, "snap_user@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Snap Group"},
@@ -279,7 +279,7 @@ async def test_snapshot_resolves_display_name_via_coalesce(
     snap_setup: tuple[str, str, uuid.UUID, uuid.UUID, Stage],
     test_event: Event,
 ) -> None:
-    """COALESCE: override > user.display_name > username."""
+    """COALESCE: override > user.display_name > "Member"."""
     token, invite_code, group_id, member_id, stage = snap_setup
 
     # Override the member's display_name_override
@@ -323,7 +323,7 @@ async def test_snapshot_members_total_counts_all_group_members(
 
     # Add 4 more members
     for i in range(4):
-        extra_token, _ = await signup_and_get_token(client, f"extra{i}")
+        extra_token, _ = await signup_and_get_token(client, f"extra{i}@example.com")
         r2 = await client.post(
             "/api/groups/join",
             json={"invite_code": invite_code, "display_name_override": f"Extra {i}"},
@@ -499,7 +499,7 @@ async def test_snapshot_not_a_member_returns_403(
     snap_setup: tuple[str, str, uuid.UUID, uuid.UUID, Stage],
 ) -> None:
     _, invite_code, _, _, _ = snap_setup
-    other_token, _ = await signup_and_get_token(client, "non_member_snap")
+    other_token, _ = await signup_and_get_token(client, "non_member_snap@example.com")
     r = await client.get(
         f"/api/groups/{invite_code}/snapshot?at={_SNAP_AT}",
         headers={"Authorization": f"Bearer {other_token}"},
@@ -613,7 +613,7 @@ async def test_snapshot_no_n_plus_1(
     tokens = [token]
     mids = [member_id]
     for i in range(9):
-        t, _ = await signup_and_get_token(client, f"np_user_{i}")
+        t, _ = await signup_and_get_token(client, f"np_user_{i}@example.com")
         tokens.append(t)
         r = await client.post(
             "/api/groups/join",

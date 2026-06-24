@@ -116,7 +116,7 @@ def test_backoff_doubles_up_to_24h_cap() -> None:
 
 @pytest.fixture
 async def auth_headers(client: AsyncClient) -> dict[str, str]:
-    token, _ = await signup_and_get_token(client, "artist_test_user")
+    token, _ = await signup_and_get_token(client, "artist_test_user@example.com")
     return {"Authorization": f"Bearer {token}"}
 
 

@@ -24,7 +24,7 @@ async def group_with_member(
     test_event: Event,
 ) -> tuple[str, str, str, str, str]:
     """Returns (owner_token, member_token, invite_code, group_id, member_user_id)."""
-    owner_token, _ = await signup_and_get_token(client, "state_owner")
+    owner_token, _ = await signup_and_get_token(client, "state_owner@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "State Test Group"},
@@ -34,7 +34,7 @@ async def group_with_member(
     invite_code = r.json()["invite_code"]
     group_id = r.json()["group_id"]
 
-    member_token, member_user_id = await signup_and_get_token(client, "state_member")
+    member_token, member_user_id = await signup_and_get_token(client, "state_member@example.com")
     await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -49,7 +49,7 @@ async def test_get_group_state_unauthenticated_returns_401(client: AsyncClient) 
 
 
 async def test_get_group_state_not_found_returns_404(client: AsyncClient) -> None:
-    token, _ = await signup_and_get_token(client, "state_notfound")
+    token, _ = await signup_and_get_token(client, "state_notfound@example.com")
     r = await client.get("/api/groups/ZZZZZZZZ", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 404
     assert r.json()["detail"]["error_code"] == "group_not_found"
@@ -60,7 +60,7 @@ async def test_get_group_state_non_member_returns_403(
     group_with_member: tuple[str, str, str, str, str],
 ) -> None:
     _, _, invite_code, _, _ = group_with_member
-    outsider_token, _ = await signup_and_get_token(client, "outsider_state")
+    outsider_token, _ = await signup_and_get_token(client, "outsider_state@example.com")
     r = await client.get(
         f"/api/groups/{invite_code}",
         headers={"Authorization": f"Bearer {outsider_token}"},
@@ -239,7 +239,7 @@ async def picks_setup(
     Returns (owner_token, member_token, invite_code,
              owner_member_id, member2_member_id, set1_id, set2_id).
     """
-    owner_token, _ = await signup_and_get_token(client, "picks_owner")
+    owner_token, _ = await signup_and_get_token(client, "picks_owner@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Picks Group"},
@@ -249,7 +249,7 @@ async def picks_setup(
     invite_code = r.json()["invite_code"]
     owner_member_id = uuid.UUID(r.json()["member_id"])
 
-    member_token, _ = await signup_and_get_token(client, "picks_member")
+    member_token, _ = await signup_and_get_token(client, "picks_member@example.com")
     jr = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},

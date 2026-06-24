@@ -25,7 +25,7 @@ async def event_and_token(
     test_event: Event,
 ) -> tuple[str, str, str]:
     """Returns (access_token, user_id, str(event_id))."""
-    token, user_id = await signup_and_get_token(client, "groupcreator")
+    token, user_id = await signup_and_get_token(client, "groupcreator@example.com")
     return token, user_id, str(test_event.event_id)
 
 
@@ -38,7 +38,7 @@ async def test_create_group_unauthenticated_returns_401(
 
 
 async def test_create_group_event_not_found_returns_404(client: AsyncClient) -> None:
-    token, _ = await signup_and_get_token(client, "notfound_user")
+    token, _ = await signup_and_get_token(client, "notfound_user@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(uuid.uuid4())},

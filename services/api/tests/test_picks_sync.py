@@ -24,7 +24,7 @@ async def sync_setup(
     test_event: Event,
 ) -> tuple[str, str, uuid.UUID, list[uuid.UUID]]:
     """Returns (token, invite_code, member_id, [set_id_1, set_id_2, set_id_3])."""
-    token, _ = await signup_and_get_token(client, "sync_user")
+    token, _ = await signup_and_get_token(client, "sync_user@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Sync Group"},

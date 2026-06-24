@@ -86,13 +86,13 @@ async def test_event(db_session: AsyncSession) -> Event:
 
 async def signup_and_get_token(
     client: AsyncClient,
-    username: str = "testuser",
+    email: str = "testuser@example.com",
     password: str = "correct horse",
 ) -> tuple[str, str]:
     """Sign up a user and return (access_token, user_id)."""
     r = await client.post(
         "/api/auth/signup",
-        json={"username": username, "password": password},
+        json={"email": email, "password": password},
     )
     assert r.status_code == 201, r.text
     body = r.json()

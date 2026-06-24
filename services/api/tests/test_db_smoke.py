@@ -24,7 +24,7 @@ from app.db.uuid7 import uuid7
 
 def _user(
     *,
-    username: str | None = "jerome",
+    email: str | None = "jerome@example.com",
     avatar_color: str = "#a78bfa",
     auth_provider: str = "local",
     password_hash: str | None = "hashed",
@@ -34,7 +34,7 @@ def _user(
     return User(
         id=uuid7(),
         auth_provider=auth_provider,
-        username=username if auth_provider == "local" else None,
+        email=email if auth_provider == "local" else None,
         password_hash=password_hash if auth_provider == "local" else None,
         apple_subject_id=apple_subject_id,
         google_subject_id=google_subject_id,
@@ -61,7 +61,7 @@ async def test_insert_user_round_trips(db_session: AsyncSession) -> None:
     result = await db_session.execute(select(User).where(User.id == user.id))
     row = result.scalar_one()
     assert row.id == user.id
-    assert row.username == "jerome"
+    assert row.email == "jerome@example.com"
     assert row.auth_provider == "local"
     assert row.created_at is not None
 
@@ -119,7 +119,7 @@ async def test_pick_cascade_on_member_delete(db_session: AsyncSession) -> None:
     from app.db.models.set_ import Set
     from app.db.models.stage import Stage
 
-    user = _user(username="alice")
+    user = _user(email="alice@example.com")
     event = _event()
     db_session.add_all([user, event])
     await db_session.flush()
@@ -174,7 +174,7 @@ async def test_pick_cascade_on_member_delete(db_session: AsyncSession) -> None:
 
 
 async def test_group_activity_member_id_set_null(db_session: AsyncSession) -> None:
-    user = _user(username="bob")
+    user = _user(email="bob@example.com")
     event = _event()
     db_session.add_all([user, event])
     await db_session.flush()
@@ -210,42 +210,42 @@ async def test_group_activity_member_id_set_null(db_session: AsyncSession) -> No
     assert activity.member_id is None
 
 
-async def test_uq_user_username_case_in_app_layer(db_session: AsyncSession) -> None:
-    u1 = _user(username="jerome")
+async def test_uq_user_email_case_in_app_layer(db_session: AsyncSession) -> None:
+    u1 = _user(email="jerome@example.com")
     db_session.add(u1)
     await db_session.flush()
 
-    # same username → unique constraint violation
-    u2 = _user(username="jerome")
+    # same email → unique constraint violation
+    u2 = _user(email="jerome@example.com")
     u2.id = uuid7()
     db_session.add(u2)
     with pytest.raises(IntegrityError):
         await db_session.flush()
     await db_session.rollback()
 
-    # uppercase variant is different at the DB level (app lowercases before write)
-    u3 = _user(username="Jerome")
+    # different email — no conflict
+    u3 = _user(email="other@example.com")
     db_session.add(u3)
-    await db_session.flush()  # no error — "Jerome" != "jerome" in the DB index
+    await db_session.flush()
 
 
 async def test_uq_user_apple_subject_partial_index(db_session: AsyncSession) -> None:
     # Two users with NULL apple_subject_id is allowed
-    u1 = _user(username="user1")
-    u2 = _user(username="user2")
+    u1 = _user(email="user1@example.com")
+    u2 = _user(email="user2@example.com")
     db_session.add_all([u1, u2])
     await db_session.flush()
 
     # Two users with the same apple_subject_id is NOT allowed
     apple_id = "apple-sub-123"
     u3 = _user(
-        username=None,
+        email=None,
         auth_provider="apple",
         apple_subject_id=apple_id,
         password_hash=None,
     )
     u4 = _user(
-        username=None,
+        email=None,
         auth_provider="apple",
         apple_subject_id=apple_id,
         password_hash=None,

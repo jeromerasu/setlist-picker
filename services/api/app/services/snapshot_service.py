@@ -86,7 +86,6 @@ async def get_snapshot(
             func.coalesce(
                 Member.display_name_override,
                 User.display_name,
-                User.username,
             ).label("member_display_name"),
             User.avatar_color,
         )

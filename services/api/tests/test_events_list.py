@@ -49,7 +49,7 @@ async def seed_events(db_session: AsyncSession) -> list[Event]:
 async def test_list_events_no_query_returns_all_sorted(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser1")
+    token, _ = await signup_and_get_token(client, "evtuser1@example.com")
     r = await client.get("/api/events", headers={"authorization": f"Bearer {token}"})
     assert r.status_code == 200
     events = r.json()["events"]
@@ -61,7 +61,7 @@ async def test_list_events_no_query_returns_all_sorted(
 async def test_list_events_query_matches_name(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser2")
+    token, _ = await signup_and_get_token(client, "evtuser2@example.com")
     r = await client.get("/api/events?q=EDC", headers={"authorization": f"Bearer {token}"})
     assert r.status_code == 200
     events = r.json()["events"]
@@ -72,7 +72,7 @@ async def test_list_events_query_matches_name(
 async def test_list_events_query_matches_location(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser3")
+    token, _ = await signup_and_get_token(client, "evtuser3@example.com")
     r = await client.get("/api/events?q=Las Vegas", headers={"authorization": f"Bearer {token}"})
     assert r.status_code == 200
     events = r.json()["events"]
@@ -83,7 +83,7 @@ async def test_list_events_query_matches_location(
 async def test_list_events_query_case_insensitive(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser4")
+    token, _ = await signup_and_get_token(client, "evtuser4@example.com")
     r1 = await client.get("/api/events?q=edc", headers={"authorization": f"Bearer {token}"})
     r2 = await client.get("/api/events?q=EDC", headers={"authorization": f"Bearer {token}"})
     assert r1.status_code == r2.status_code == 200
@@ -94,7 +94,7 @@ async def test_list_events_query_case_insensitive(
 async def test_list_events_empty_query_returns_all(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser5")
+    token, _ = await signup_and_get_token(client, "evtuser5@example.com")
     r1 = await client.get("/api/events?q=", headers={"authorization": f"Bearer {token}"})
     r2 = await client.get(
         "/api/events", params={"q": "   "}, headers={"authorization": f"Bearer {token}"}
@@ -107,7 +107,7 @@ async def test_list_events_empty_query_returns_all(
 async def test_list_events_no_match_returns_empty(
     client: AsyncClient, seed_events: list[Event]
 ) -> None:
-    token, _ = await signup_and_get_token(client, "evtuser6")
+    token, _ = await signup_and_get_token(client, "evtuser6@example.com")
     r = await client.get("/api/events?q=zzz", headers={"authorization": f"Bearer {token}"})
     assert r.status_code == 200
     assert r.json()["events"] == []
@@ -130,7 +130,7 @@ async def test_list_events_sql_wildcard_in_query_is_literal(
     db_session.add(event)
     await db_session.flush()
 
-    token, _ = await signup_and_get_token(client, "evtuser7")
+    token, _ = await signup_and_get_token(client, "evtuser7@example.com")
     r = await client.get(
         "/api/events", params={"q": "50%"}, headers={"authorization": f"Bearer {token}"}
     )

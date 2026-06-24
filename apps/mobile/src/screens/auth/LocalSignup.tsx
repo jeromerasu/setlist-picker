@@ -25,17 +25,16 @@ export function LocalSignup() {
   const { isLoading, error, signup } = useLocalAuth();
 
   const [display_name, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const isValidEmail = /^[^@]+@[^@]+\.[^@]+$/.test(email.trim());
   const canSubmit =
-    display_name.trim().length > 0 &&
-    username.trim().length > 0 &&
-    password.length >= 8;
+    display_name.trim().length > 0 && isValidEmail && password.length >= 8;
 
   const handleSignup = async () => {
     if (!canSubmit) return;
-    const pair = await signup(username.trim(), password, display_name.trim());
+    const pair = await signup(email.trim().toLowerCase(), password, display_name.trim());
     if (pair) await signIn(pair);
   };
 
@@ -61,13 +60,16 @@ export function LocalSignup() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor={colors.text.placeholder}
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
           autoCorrect={false}
-          testID="username-input"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          autoComplete="email"
+          testID="email-input"
         />
         <TextInput
           style={styles.input}

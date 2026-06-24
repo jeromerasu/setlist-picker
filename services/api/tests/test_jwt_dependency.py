@@ -5,9 +5,9 @@ from __future__ import annotations
 from httpx import AsyncClient
 
 
-async def _signup_and_get_access_token(client: AsyncClient, username: str) -> str:
+async def _signup_and_get_access_token(client: AsyncClient, email: str) -> str:
     r = await client.post(
-        "/api/auth/signup", json={"username": username, "password": "correct horse"}
+        "/api/auth/signup", json={"email": email, "password": "correct horse"}
     )
     assert r.status_code == 201
     return str(r.json()["tokens"]["access_token"])
@@ -29,7 +29,7 @@ async def test_non_bearer_scheme_returns_401(client: AsyncClient) -> None:
 
 
 async def test_valid_token_returns_200_with_user(client: AsyncClient) -> None:
-    access_token = await _signup_and_get_access_token(client, "deptest_user")
+    access_token = await _signup_and_get_access_token(client, "deptest@example.com")
     r = await client.get("/api/users/me", headers={"Authorization": f"Bearer {access_token}"})
     assert r.status_code == 200
-    assert r.json()["username"] == "deptest_user"
+    assert r.json()["email"] == "deptest@example.com"

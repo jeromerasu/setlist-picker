@@ -14,8 +14,6 @@ def _resolve_display_name(member: Member, user: User) -> str:
         return member.display_name_override
     if user.display_name:
         return user.display_name
-    if user.username:
-        return user.username
     _logger.warning("member.display_name_fallback", member_id=str(member.id))
     return "Member"
 

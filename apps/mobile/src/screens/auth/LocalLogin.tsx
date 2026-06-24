@@ -25,14 +25,15 @@ export function LocalLogin() {
   const { signIn } = useAuth();
   const { isLoading, error, login } = useLocalAuth();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const canSubmit = username.trim().length > 0 && password.length >= 6;
+  const isValidEmail = /^[^@]+@[^@]+\.[^@]+$/.test(email.trim());
+  const canSubmit = isValidEmail && password.length >= 6;
 
   const handleLogin = async () => {
     if (!canSubmit) return;
-    const pair = await login(username.trim(), password);
+    const pair = await login(email.trim().toLowerCase(), password);
     if (pair) await signIn(pair);
   };
 
@@ -50,13 +51,16 @@ export function LocalLogin() {
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor={colors.text.placeholder}
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
           autoCorrect={false}
-          testID="username-input"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          autoComplete="email"
+          testID="email-input"
         />
         <TextInput
           style={styles.input}

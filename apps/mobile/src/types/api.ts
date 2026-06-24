@@ -11,7 +11,6 @@ export interface TokenPair {
 export interface UserOut {
   id: string;
   auth_provider: "local" | "apple" | "google";
-  username: string | null;
   email: string | null;
   display_name: string | null;
   avatar_color: string;

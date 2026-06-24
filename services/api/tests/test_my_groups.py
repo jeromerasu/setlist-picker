@@ -15,7 +15,7 @@ async def multi_group_setup(
     test_event: Event,
 ) -> tuple[str, list[str]]:
     """Creates a user who belongs to 3 groups; returns (token, [group_id_newest_first])."""
-    token, _ = await signup_and_get_token(client, "multi_group_owner")
+    token, _ = await signup_and_get_token(client, "multi_group_owner@example.com")
     group_ids = []
     for i in range(3):
         r = await client.post(
@@ -37,7 +37,7 @@ async def test_my_groups_empty_for_new_user(
     client: AsyncClient,
     test_event: Event,
 ) -> None:
-    token, _ = await signup_and_get_token(client, "no_groups_user")
+    token, _ = await signup_and_get_token(client, "no_groups_user@example.com")
     r = await client.get("/api/users/me/groups", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
     assert r.json()["groups"] == []
@@ -69,7 +69,7 @@ async def test_my_groups_includes_group_i_joined_not_created(
     client: AsyncClient,
     test_event: Event,
 ) -> None:
-    owner_token, _ = await signup_and_get_token(client, "group_maker_b8")
+    owner_token, _ = await signup_and_get_token(client, "group_maker_b8@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id)},
@@ -78,7 +78,7 @@ async def test_my_groups_includes_group_i_joined_not_created(
     invite_code = r.json()["invite_code"]
     group_id = r.json()["group_id"]
 
-    joiner_token, _ = await signup_and_get_token(client, "joiner_user_b8")
+    joiner_token, _ = await signup_and_get_token(client, "joiner_user_b8@example.com")
     await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -97,7 +97,7 @@ async def test_my_groups_response_shape(
     client: AsyncClient,
     test_event: Event,
 ) -> None:
-    token, _ = await signup_and_get_token(client, "shape_tester_b8")
+    token, _ = await signup_and_get_token(client, "shape_tester_b8@example.com")
     await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Shape Test"},
@@ -126,14 +126,14 @@ async def test_my_groups_does_not_return_others_groups(
     client: AsyncClient,
     test_event: Event,
 ) -> None:
-    owner_token, _ = await signup_and_get_token(client, "exclusive_owner")
+    owner_token, _ = await signup_and_get_token(client, "exclusive_owner@example.com")
     await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Private Group"},
         headers={"Authorization": f"Bearer {owner_token}"},
     )
 
-    outsider_token, _ = await signup_and_get_token(client, "outsider_user")
+    outsider_token, _ = await signup_and_get_token(client, "outsider_user@example.com")
     r = await client.get(
         "/api/users/me/groups", headers={"Authorization": f"Bearer {outsider_token}"}
     )
@@ -146,8 +146,8 @@ async def test_my_groups_join_bumps_order(
     test_event: Event,
 ) -> None:
     """Joining an older group moves it to the top via last_active_at bump."""
-    token, _ = await signup_and_get_token(client, "bump_tester")
-    joiner_token, _ = await signup_and_get_token(client, "bump_joiner")
+    token, _ = await signup_and_get_token(client, "bump_tester@example.com")
+    joiner_token, _ = await signup_and_get_token(client, "bump_joiner@example.com")
 
     r_old = await client.post(
         "/api/groups",

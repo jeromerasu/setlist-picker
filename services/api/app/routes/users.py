@@ -42,7 +42,6 @@ def _user_out(user: User) -> UserOut:
     return UserOut(
         id=user.id,
         auth_provider=user.auth_provider,
-        username=user.username,
         email=user.email,
         display_name=user.display_name,
         avatar_color=user.avatar_color,

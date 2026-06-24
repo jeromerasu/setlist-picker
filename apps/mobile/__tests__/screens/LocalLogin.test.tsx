@@ -70,13 +70,13 @@ test("local_login_calls_login_and_signIn_on_success", async () => {
   mockLogin.mockResolvedValueOnce({ access_token: "a", refresh_token: "r", token_type: "bearer" });
 
   const { getByTestId } = render(<LocalLogin />);
-  fireEvent.changeText(getByTestId("username-input"), "jerome");
+  fireEvent.changeText(getByTestId("email-input"), "jerome@example.com");
   fireEvent.changeText(getByTestId("password-input"), "hunter22");
 
   await act(async () => { fireEvent.press(getByTestId("submit-btn")); });
 
   await waitFor(() => {
-    expect(mockLogin).toHaveBeenCalledWith("jerome", "hunter22");
+    expect(mockLogin).toHaveBeenCalledWith("jerome@example.com", "hunter22");
     expect(mockSignIn).toHaveBeenCalledWith({ access_token: "a", refresh_token: "r", token_type: "bearer" });
   });
 });

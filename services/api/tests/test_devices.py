@@ -23,7 +23,7 @@ _VALID_PAYLOAD: dict[str, str] = {
 
 
 async def _auth_headers(client: AsyncClient, suffix: str = "") -> dict[str, str]:
-    token, _ = await signup_and_get_token(client, f"device_user_{suffix}")
+    token, _ = await signup_and_get_token(client, f"device_user_{suffix}@example.com")
     return {"Authorization": f"Bearer {token}"}
 
 

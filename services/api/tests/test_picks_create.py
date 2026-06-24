@@ -27,7 +27,7 @@ async def pick_setup(
     test_event: Event,
 ) -> tuple[str, str, str, uuid.UUID, uuid.UUID]:
     """Returns (token, invite_code, group_id, member_id, set_id)."""
-    token, _ = await signup_and_get_token(client, "pick_user")
+    token, _ = await signup_and_get_token(client, "pick_user@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Pick Group"},
@@ -247,7 +247,7 @@ async def test_not_a_member_returns_403(
     pick_setup: tuple[str, str, str, uuid.UUID, uuid.UUID],
 ) -> None:
     _, invite_code, _, _, set_id = pick_setup
-    outsider_token, _ = await signup_and_get_token(client, "pick_outsider")
+    outsider_token, _ = await signup_and_get_token(client, "pick_outsider@example.com")
     r = await client.post(
         f"/api/groups/{invite_code}/picks",
         json={"set_id": str(set_id), "state": "active", "state_clock_ms": _now_ms()},

@@ -22,13 +22,11 @@ def _pick_avatar(user_id: uuid.UUID) -> str:
 
 
 async def create_local_user(db: AsyncSession, payload: UserCreate) -> User:
-    username = payload.username.lower()
-    email = payload.email.lower() if payload.email else None
+    email = payload.email.lower()
     user_id = uuid7()
     user = User(
         id=user_id,
         auth_provider="local",
-        username=username,
         email=email,
         password_hash=hash_password(payload.password),
         display_name=payload.display_name,
@@ -40,8 +38,6 @@ async def create_local_user(db: AsyncSession, payload: UserCreate) -> User:
             await db.flush()
     except IntegrityError as exc:
         detail = str(exc.orig) if exc.orig else str(exc)
-        if "uq_user_username" in detail or "user_username" in detail.lower():
-            raise ValueError("username_taken") from exc
         if "uq_user_email" in detail or "user_email" in detail.lower():
             raise ValueError("email_taken") from exc
         raise
@@ -49,11 +45,11 @@ async def create_local_user(db: AsyncSession, payload: UserCreate) -> User:
     return user
 
 
-async def authenticate(db: AsyncSession, username: str, password: str) -> User:
+async def authenticate(db: AsyncSession, email: str, password: str) -> User:
     result = await db.execute(
         select(User).where(
             User.auth_provider == "local",
-            User.username == username.lower(),
+            User.email == email.lower(),
         )
     )
     user = result.scalar_one_or_none()
@@ -61,7 +57,7 @@ async def authenticate(db: AsyncSession, username: str, password: str) -> User:
         dummy_verify()
         _logger.warning(
             "auth.login_failed",
-            username_attempted=username,
+            email_attempted=email,
             reason="no_such_user",
         )
         raise ValueError("invalid_credentials")
@@ -69,7 +65,7 @@ async def authenticate(db: AsyncSession, username: str, password: str) -> User:
     if not verify_password(password, user.password_hash):
         _logger.warning(
             "auth.login_failed",
-            username_attempted=username,
+            email_attempted=email,
             reason="bad_password",
         )
         raise ValueError("invalid_credentials")

@@ -16,7 +16,6 @@ class User(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid7)
     auth_provider: Mapped[str] = mapped_column(Text, nullable=False, default="local")
-    username: Mapped[str | None] = mapped_column(Text, nullable=True)
     email: Mapped[str | None] = mapped_column(Text, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     apple_subject_id: Mapped[str | None] = mapped_column(Text, nullable=True)

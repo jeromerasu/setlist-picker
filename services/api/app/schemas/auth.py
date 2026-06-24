@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class _Model(BaseModel):
@@ -12,15 +12,28 @@ class _Model(BaseModel):
 
 
 class UserCreate(_Model):
-    username: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
+    email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    email: EmailStr | None = None
     display_name: str | None = Field(default=None, min_length=1, max_length=80)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def lowercase_email(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 class UserLogin(_Model):
-    username: str = Field(min_length=3, max_length=32)
+    email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def lowercase_email(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 class TokenPair(_Model):
@@ -55,7 +68,6 @@ class GoogleSignInRequest(_Model):
 class UserOut(_Model):
     id: UUID
     auth_provider: str
-    username: str | None
     email: EmailStr | None
     display_name: str | None
     avatar_color: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")

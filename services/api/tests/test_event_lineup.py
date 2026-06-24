@@ -99,7 +99,7 @@ async def test_get_lineup_returns_event_summary_stages_sets(
     await _make_set(db_session, eid, stage_a.stage_id, "Set B", _ts(16), _ts(17), [art2])
     await _make_set(db_session, eid, stage_b.stage_id, "Set C", _ts(18), _ts(19), [art3])
 
-    token, _ = await signup_and_get_token(client, "lineup1")
+    token, _ = await signup_and_get_token(client, "lineup1@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -118,7 +118,7 @@ async def test_get_lineup_orders_stages_by_display_order(
     await _make_stage(db_session, lineup_event.event_id, "Stage A", 1)
     await _make_stage(db_session, lineup_event.event_id, "Stage B", 2)
 
-    token, _ = await signup_and_get_token(client, "lineup2")
+    token, _ = await signup_and_get_token(client, "lineup2@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -139,7 +139,7 @@ async def test_get_lineup_orders_sets_by_starts_at(
     await _make_set(db_session, eid, sid, "Early Set", _ts(12), _ts(13), [art])
     await _make_set(db_session, eid, sid, "Mid Set", _ts(17), _ts(18), [art])
 
-    token, _ = await signup_and_get_token(client, "lineup3")
+    token, _ = await signup_and_get_token(client, "lineup3@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -166,7 +166,7 @@ async def test_get_lineup_includes_artists_per_set(
         [art_a, art_b, art_c],
     )
 
-    token, _ = await signup_and_get_token(client, "lineup4")
+    token, _ = await signup_and_get_token(client, "lineup4@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -183,7 +183,7 @@ async def test_get_lineup_includes_artists_per_set(
 async def test_get_lineup_missing_event_returns_404(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
-    token, _ = await signup_and_get_token(client, "lineup5")
+    token, _ = await signup_and_get_token(client, "lineup5@example.com")
     r = await client.get(
         f"/api/events/{uuid.uuid4()}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -203,7 +203,7 @@ async def test_get_lineup_handles_midnight_straddle(
         db_session, lineup_event.event_id, stage.stage_id, "Midnight Set", starts, ends, [art]
     )
 
-    token, _ = await signup_and_get_token(client, "lineup6")
+    token, _ = await signup_and_get_token(client, "lineup6@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},
@@ -239,7 +239,7 @@ async def test_get_lineup_no_n_plus_1(
             artists,
         )
 
-    token, _ = await signup_and_get_token(client, "lineup7")
+    token, _ = await signup_and_get_token(client, "lineup7@example.com")
     r = await client.get(
         f"/api/events/{lineup_event.event_id}/lineup",
         headers={"authorization": f"Bearer {token}"},

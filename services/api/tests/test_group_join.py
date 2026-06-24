@@ -20,7 +20,7 @@ async def creator_and_group(
     test_event: Event,
 ) -> tuple[str, str, str, str]:
     """Returns (creator_token, user_id, group_invite_code, group_id)."""
-    token, user_id = await signup_and_get_token(client, "groupowner")
+    token, user_id = await signup_and_get_token(client, "groupowner@example.com")
     r = await client.post(
         "/api/groups",
         json={"event_id": str(test_event.event_id), "name": "Join Test Group"},
@@ -37,7 +37,7 @@ async def test_join_group_unauthenticated_returns_401(client: AsyncClient) -> No
 
 
 async def test_join_group_not_found_returns_404(client: AsyncClient) -> None:
-    token, _ = await signup_and_get_token(client, "joiner_notfound")
+    token, _ = await signup_and_get_token(client, "joiner_notfound@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": "ZZZZZZZZ"},
@@ -52,7 +52,7 @@ async def test_join_group_new_member_returns_201(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "new_member_201")
+    token, _ = await signup_and_get_token(client, "new_member_201@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -67,7 +67,7 @@ async def test_join_group_new_member_response_shape(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, group_id = creator_and_group
-    token, user_id = await signup_and_get_token(client, "shape_check_member")
+    token, user_id = await signup_and_get_token(client, "shape_check_member@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -87,7 +87,7 @@ async def test_join_group_idempotent_returns_200(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "idempotent_joiner")
+    token, _ = await signup_and_get_token(client, "idempotent_joiner@example.com")
     r1 = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -110,7 +110,7 @@ async def test_join_group_idempotent_one_member_row(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, group_id = creator_and_group
-    token, user_id = await signup_and_get_token(client, "idempotent_count")
+    token, user_id = await signup_and_get_token(client, "idempotent_count@example.com")
     await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -136,7 +136,7 @@ async def test_join_group_with_display_name_override(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "override_namer")
+    token, _ = await signup_and_get_token(client, "override_namer@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code, "display_name_override": "DJ Override"},
@@ -147,19 +147,19 @@ async def test_join_group_with_display_name_override(
     assert r.json()["member"]["display_name_override"] == "DJ Override"
 
 
-async def test_join_group_display_name_fallback_to_username(
+async def test_join_group_display_name_fallback_to_member_literal(
     client: AsyncClient,
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "fallback_user")
+    token, _ = await signup_and_get_token(client, "fallback_user@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 201
-    assert r.json()["member"]["display_name"] == "fallback_user"
+    assert r.json()["member"]["display_name"] == "Member"
 
 
 async def test_join_group_normalize_invite_code(
@@ -168,7 +168,7 @@ async def test_join_group_normalize_invite_code(
 ) -> None:
     """Crockford normalize: lowercase + I→1, O→0, L→1 still resolves the group."""
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "normalizer")
+    token, _ = await signup_and_get_token(client, "normalizer@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code.lower()},
@@ -185,7 +185,7 @@ async def test_join_group_logs_member_joined_activity(
     from app.db.models.group_activity import GroupActivity
 
     _, _, invite_code, group_id = creator_and_group
-    token, _ = await signup_and_get_token(client, "activity_joiner")
+    token, _ = await signup_and_get_token(client, "activity_joiner@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -225,7 +225,7 @@ async def test_join_group_back_to_back_first_join_one_member_row(
     (True DB-level concurrency requires separate connections; this covers the
     idempotent branch instead of the SAVEPOINT race-condition branch.)"""
     _, _, invite_code, group_id = creator_and_group
-    token, user_id = await signup_and_get_token(client, "backtoback_joiner")
+    token, user_id = await signup_and_get_token(client, "backtoback_joiner@example.com")
     headers = {"Authorization": f"Bearer {token}"}
 
     r1 = await client.post("/api/groups/join", json={"invite_code": invite_code}, headers=headers)
@@ -247,7 +247,7 @@ async def test_join_group_response_includes_group_last_active_at(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "active_checker")
+    token, _ = await signup_and_get_token(client, "active_checker@example.com")
     r = await client.post(
         "/api/groups/join",
         json={"invite_code": invite_code},
@@ -262,7 +262,7 @@ async def test_join_group_invite_code_case_insensitive(
     creator_and_group: tuple[str, str, str, str],
 ) -> None:
     _, _, invite_code, _ = creator_and_group
-    token, _ = await signup_and_get_token(client, "caseless_user")
+    token, _ = await signup_and_get_token(client, "caseless_user@example.com")
     mixed = "".join(c.lower() if i % 2 == 0 else c for i, c in enumerate(invite_code))
     r = await client.post(
         "/api/groups/join",
