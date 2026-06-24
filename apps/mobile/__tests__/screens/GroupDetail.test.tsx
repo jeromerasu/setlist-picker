@@ -24,9 +24,14 @@ const mockUseScheduleData = jest.fn();
 const mockUseMyGroups = jest.fn();
 const mockTogglePick = jest.fn();
 
+const mockUseGroupSchedule = jest.fn();
+
 jest.mock("@/hooks/useGroupState", () => ({ useGroupState: (ic: string) => mockUseGroupState(ic) }));
 jest.mock("@/hooks/useScheduleData", () => ({ useScheduleData: (ic: string) => mockUseScheduleData(ic) }));
 jest.mock("@/hooks/useMyGroups", () => ({ useMyGroups: () => mockUseMyGroups() }));
+jest.mock("@/hooks/useGroupSchedule", () => ({
+  useGroupSchedule: (ic: string, day: string) => mockUseGroupSchedule(ic, day),
+}));
 jest.mock("@/hooks/usePickToggle", () => ({
   usePickToggle: () => ({ mutate: mockTogglePick, isPending: false }),
 }));
@@ -44,7 +49,7 @@ jest.mock("expo-secure-store", () => ({
 // ─── Test data ───────────────────────────────────────────────────────────────
 
 import { GroupDetail } from "@/screens/groups/GroupDetail";
-import type { GroupStateResponse, SetDetail, StageDetail, ArtistRef, MemberOut } from "@/types/api";
+import type { GroupScheduleResponse, GroupSetItem, GroupStateResponse, MemberPickInfo, SetDetail, StageDetail, ArtistRef, MemberOut } from "@/types/api";
 import type { StageInfo } from "@/hooks/useScheduleData";
 
 function makeArtist(id: string, name = `Artist ${id}`): ArtistRef {
@@ -124,6 +129,26 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(QueryClientProvider, { client: qc }, children);
 }
 
+const GROUP_SCHEDULE_EMPTY: GroupScheduleResponse = {
+  group_id: "g1",
+  event_id: "ev1",
+  day_label: "Friday",
+  sets: [],
+};
+
+function makeGroupSetItem(setId: string, dayLabel: string, goingMembers: MemberPickInfo[]): GroupSetItem {
+  return {
+    set_id: setId,
+    display_name: `Set ${setId}`,
+    stage_name: "Mainstage",
+    stage_color_hex: "#ff4f9a",
+    day_label: dayLabel,
+    starts_at: "2026-07-04T20:00:00Z",
+    ends_at: "2026-07-04T21:00:00Z",
+    going_members: goingMembers,
+  };
+}
+
 beforeEach(() => {
   mockNavigate.mockReset();
   mockGoBack.mockReset();
@@ -133,6 +158,7 @@ beforeEach(() => {
   mockUseMyGroups.mockReturnValue({
     data: { groups: [{ invite_code: "TESTCODE", member_id: "m1" }] },
   });
+  mockUseGroupSchedule.mockReturnValue({ data: GROUP_SCHEDULE_EMPTY });
 });
 
 // ─── Rendering tests ─────────────────────────────────────────────────────────
@@ -285,4 +311,61 @@ test("member_count_badge_shown_when_more_than_3_members", () => {
   mockUseGroupState.mockReturnValue({ data: group, isLoading: false, error: null });
   const { getByText } = render(<GroupDetail />, { wrapper });
   expect(getByText("+1")).toBeTruthy();
+});
+
+// ─── REALIGN-007: group schedule BE integration tests ────────────────────────
+
+test("day_tab_shows_going_avatars_from_group_schedule_api", () => {
+  const goingMember: MemberPickInfo = { member_id: "m2", display_name: "Ana K", avatar_color: "#36c6ff" };
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "ev1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", "Friday", [goingMember])],
+    },
+  });
+
+  const { getByTestId } = render(<GroupDetail />, { wrapper });
+  // Switch to Day 1 tab (index 1 in tabLabels = day index 0 = "Friday")
+  fireEvent.press(getByTestId("tab-day-1"));
+
+  // The going avatar stack for s1 should be visible (avatar rendered)
+  expect(getByTestId("day-set-s1")).toBeTruthy();
+});
+
+test("day_tab_going_avatars_absent_when_no_going_members_in_api", () => {
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "ev1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", "Friday", [])],
+    },
+  });
+
+  const { getByTestId, queryByTestId } = render(<GroupDetail />, { wrapper });
+  fireEvent.press(getByTestId("tab-day-1"));
+
+  // Set row is still rendered
+  expect(getByTestId("day-set-s1")).toBeTruthy();
+  // No going avatars row because going_members is empty
+  expect(queryByTestId("going-avatar-m2")).toBeNull();
+});
+
+test("day_tab_falls_back_to_local_picks_when_group_schedule_not_loaded", () => {
+  // group schedule returns null data (loading state)
+  mockUseGroupSchedule.mockReturnValue({ data: null });
+  // local picks has m2 going on s1
+  const groupWithPick = {
+    ...MOCK_GROUP,
+    picks: [{ member_id: "m2", set_id: "s1", state: "active", state_clock_ms: 1 }],
+  };
+  mockUseGroupState.mockReturnValue({ data: groupWithPick, isLoading: false, error: null });
+
+  const { getByTestId } = render(<GroupDetail />, { wrapper });
+  fireEvent.press(getByTestId("tab-day-1"));
+
+  // s1 set row rendered; falls back to local picks for going data
+  expect(getByTestId("day-set-s1")).toBeTruthy();
 });

@@ -13,6 +13,7 @@ import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-n
 import { useQueryClient } from "@tanstack/react-query";
 import { GroupDetailHeader } from "./GroupDetailHeader";
 import { useGroupState } from "@/hooks/useGroupState";
+import { useGroupSchedule } from "@/hooks/useGroupSchedule";
 import { useScheduleData } from "@/hooks/useScheduleData";
 import { useMyGroups } from "@/hooks/useMyGroups";
 import { usePickToggle } from "@/hooks/usePickToggle";
@@ -68,6 +69,10 @@ function DayStageView({
   invite_code,
 }: DayStageViewProps) {
   const { mutate: togglePick } = usePickToggle();
+  const { data: groupSchedule } = useGroupSchedule(invite_code, dayLabel);
+  const groupScheduleBySetId = new Map(
+    (groupSchedule?.sets ?? []).map((gs) => [gs.set_id, gs]),
+  );
   const daySets = setsForDay(sets, dayLabel);
 
   // Group by stage in display_order
@@ -87,11 +92,16 @@ function DayStageView({
       : [],
   );
 
-  function goingMembers(setId: string): MemberOut[] {
+  function goingMembers(setId: string): Array<{ member_id: string; display_name: string; avatar_color: string }> {
+    const gsItem = groupScheduleBySetId.get(setId);
+    if (gsItem != null) return gsItem.going_members;
+    // Fall back to local picks while BE data loads
     const goingIds = new Set(
       picks.filter((p) => p.set_id === setId && p.state === "active").map((p) => p.member_id),
     );
-    return members.filter((m) => goingIds.has(m.member_id));
+    return members
+      .filter((m) => goingIds.has(m.member_id))
+      .map((m) => ({ member_id: m.member_id, display_name: m.display_name, avatar_color: m.avatar_color }));
   }
 
   if (stageGroups.length === 0) {

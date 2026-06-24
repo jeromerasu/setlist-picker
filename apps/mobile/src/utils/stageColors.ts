@@ -14,3 +14,8 @@ const STAGE_PALETTE = [
 export function stageColorByIndex(displayOrder: number): string {
   return STAGE_PALETTE[Math.abs(displayOrder) % STAGE_PALETTE.length];
 }
+
+/** Prefer color_hex from the API; fall back to deterministic palette rotation. */
+export function resolveStageColor(colorHex: string | null | undefined, displayOrder: number): string {
+  return colorHex != null && colorHex.length > 0 ? colorHex : stageColorByIndex(displayOrder);
+}

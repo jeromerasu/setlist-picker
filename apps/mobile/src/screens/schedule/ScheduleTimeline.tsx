@@ -6,9 +6,14 @@ import { Avatar } from "@/components/Avatar";
 import { colors, radius, spacing } from "@/theme/tokens";
 import { formatTimeLabel } from "@/utils/gridLayout";
 import type { StageInfo } from "@/hooks/useScheduleData";
-import type { MemberOut, PickSummary, SetDetail } from "@/types/api";
+import type { GroupSetItem, MemberOut, PickSummary, SetDetail } from "@/types/api";
 
 type FilterMode = "none" | "mine" | "group";
+
+interface AvatarPerson {
+  display_name: string;
+  avatar_color: string;
+}
 
 interface Props {
   sets: SetDetail[];
@@ -17,14 +22,17 @@ interface Props {
   myMemberId: string | undefined;
   stageBySetId: Map<string, StageInfo>;
   activeDay: string;
+  groupScheduleBySetId?: Map<string, GroupSetItem>;
   onNavigateToArtist: (set: SetDetail) => void;
   onRemovePick: (setId: string) => void;
   onOpenFilterSheet: () => void;
 }
 
-function goingMembersForSet(setId: string, picks: PickSummary[], members: MemberOut[]): MemberOut[] {
+function goingMembersForSet(setId: string, picks: PickSummary[], members: MemberOut[]): AvatarPerson[] {
   const memberIds = new Set(picks.filter((p) => p.set_id === setId).map((p) => p.member_id));
-  return members.filter((m) => memberIds.has(m.member_id));
+  return members
+    .filter((m) => memberIds.has(m.member_id))
+    .map((m) => ({ display_name: m.display_name_override ?? m.display_name, avatar_color: m.avatar_color }));
 }
 
 function goingCountForSet(setId: string, picks: PickSummary[]): number {
@@ -43,6 +51,7 @@ export function ScheduleTimeline({
   myMemberId,
   stageBySetId,
   activeDay,
+  groupScheduleBySetId,
   onNavigateToArtist,
   onRemovePick,
   onOpenFilterSheet,
@@ -66,13 +75,12 @@ export function ScheduleTimeline({
   const now = Date.now();
   const upNext = mineSets.find((s) => new Date(s.starts_at).getTime() > now);
 
-  // Group: all sets picked by anyone for this day (deduped)
-  const groupPickedIds = new Set(
-    picks
-      .filter((p) => daySets.some((s) => s.set_id === p.set_id))
-      .map((p) => p.set_id),
-  );
-  const groupSets = daySets.filter((s) => groupPickedIds.has(s.set_id));
+  // Group: prefer BE /schedule endpoint data; fall back to local picks join
+  const groupSets = groupScheduleBySetId != null && groupScheduleBySetId.size > 0
+    ? daySets.filter((s) => groupScheduleBySetId.has(s.set_id))
+    : daySets.filter((s) =>
+        picks.some((p) => p.set_id === s.set_id),
+      );
 
   const handleMinePress = () => {
     setFilterMode((m) => (m === "mine" ? "none" : "mine"));
@@ -150,7 +158,7 @@ export function ScheduleTimeline({
               {mineSets.map((set, i) => {
                 const stage = stageBySetId.get(set.set_id);
                 const goingCount = goingCountForSet(set.set_id, picks);
-                const goingMembers = goingMembersForSet(set.set_id, picks, members);
+                const goingMembers: AvatarPerson[] = goingMembersForSet(set.set_id, picks, members);
                 const isLast = i === mineSets.length - 1;
                 return (
                   <TimelineItem
@@ -184,16 +192,21 @@ export function ScheduleTimeline({
         {filterMode === "group" && groupSets.length > 0 && (
           <View style={styles.timelineList}>
             {groupSets.map((set, i) => {
+              const gsItem = groupScheduleBySetId?.get(set.set_id);
               const stage = stageBySetId.get(set.set_id);
-              const goingCount = goingCountForSet(set.set_id, picks);
-              const goingMembers = goingMembersForSet(set.set_id, picks, members);
+              const goingMembers: AvatarPerson[] = gsItem != null
+                ? gsItem.going_members
+                : goingMembersForSet(set.set_id, picks, members);
+              const goingCount = gsItem != null
+                ? gsItem.going_members.length
+                : goingCountForSet(set.set_id, picks);
               const isLast = i === groupSets.length - 1;
               return (
                 <TimelineItem
                   key={set.set_id}
                   set={set}
-                  stageName={stage?.name ?? ""}
-                  stageColor={stage?.color ?? colors.neon.violet}
+                  stageName={gsItem?.stage_name ?? stage?.name ?? ""}
+                  stageColor={gsItem?.stage_color_hex ?? stage?.color ?? colors.neon.violet}
                   goingCount={goingCount}
                   goingMembers={goingMembers}
                   isLast={isLast}
@@ -265,7 +278,7 @@ interface TimelineItemProps {
   stageName: string;
   stageColor: string;
   goingCount: number;
-  goingMembers: MemberOut[];
+  goingMembers: AvatarPerson[];
   isLast: boolean;
   showRemove: boolean;
   onPress: () => void;
@@ -290,14 +303,11 @@ function TimelineItem({
   const eLabel = formatTimeLabel(set.ends_at);
   const label = goingLabel(goingCount);
 
-  const avatarMembers = goingMembers.slice(0, 4).map((m) => {
-    const name = m.display_name_override ?? m.display_name;
-    return {
-      initials: name.trim().slice(0, 2).toUpperCase() || "??",
-      color: m.avatar_color,
-      textColor: colors.text.invertedDark,
-    };
-  });
+  const avatarMembers = goingMembers.slice(0, 4).map((m) => ({
+    initials: m.display_name.trim().slice(0, 2).toUpperCase() || "??",
+    color: m.avatar_color,
+    textColor: colors.text.invertedDark,
+  }));
 
   return (
     <View style={styles.timelineRow}>

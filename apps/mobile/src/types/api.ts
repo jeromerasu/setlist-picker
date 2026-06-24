@@ -222,6 +222,32 @@ export interface ArtistDetailResponse {
   fetched_at: string | null;
 }
 
+// ─── Group Schedule ───────────────────────────────────────────────────────────
+
+export interface MemberPickInfo {
+  member_id: string;
+  display_name: string;
+  avatar_color: string;
+}
+
+export interface GroupSetItem {
+  set_id: string;
+  display_name: string;
+  stage_name: string;
+  stage_color_hex: string;
+  day_label: string;
+  starts_at: string;
+  ends_at: string;
+  going_members: MemberPickInfo[];
+}
+
+export interface GroupScheduleResponse {
+  group_id: string;
+  event_id: string;
+  day_label: string;
+  sets: GroupSetItem[];
+}
+
 // ─── Picks ───────────────────────────────────────────────────────────────────
 
 export interface PickCreate {

@@ -303,11 +303,11 @@ REALIGN-004 rebuilt the Group Detail screen to match the prototype: Orbitron gra
 | `src/hooks/useGroupState.ts` | TanStack query → `GET /api/groups/:invite_code`; staleTime 15s |
 | `src/hooks/useEventLineup.ts` | TanStack query → `GET /api/events/:id/lineup`; staleTime Infinity; disabled when no eventId |
 | `src/screens/groups/GroupDetailHeader.tsx` | REALIGN-004: Orbitron gradient name + event info + member stack + Invite/Schedule CTAs + toast |
-| `src/screens/groups/GroupDetail.tsx` | REALIGN-004: day-filter tab strip; All Artists alphabetical list (HUES[i%6] thumb); day stage groups with set rows + pick toggle + going avatars; invite toast 2600ms |
-| `src/types/api.ts` | `StageDetail.color_hex: string \| null` — added per REALIGN-001 BE schema |
+| `src/screens/groups/GroupDetail.tsx` | REALIGN-004: day-filter tab strip; All Artists alphabetical list (HUES[i%6] thumb); day stage groups with set rows + pick toggle + going avatars; invite toast 2600ms. REALIGN-007: `DayStageView` calls `useGroupSchedule` internally; going avatars prefer BE `going_members`; falls back to local picks while loading. |
+| `src/types/api.ts` | `StageDetail.color_hex: string \| null` (REALIGN-001). REALIGN-007: added `MemberPickInfo`, `GroupSetItem`, `GroupScheduleResponse`. |
 | `src/hooks/useScheduleData.ts` | Uses `stage.color_hex ?? stageColorByIndex()` fallback for stage colors |
 | `__tests__/utils/dayBuckets.test.ts` | 3 tests: bucket grouping, empty, pickedSetIds |
-| `__tests__/screens/GroupDetail.test.tsx` | 18 tests: renders, loading, error, tabs, day stage groups, artist nav, pick toggle, filled indicator, schedule/snapshot/back CTAs, invite toast, empty state, member overflow |
+| `__tests__/screens/GroupDetail.test.tsx` | 21 tests (18 existing + 3 REALIGN-007): day tab going avatars from BE, absent when empty, falls back when not loaded |
 
 ### FE-006 — Schedule (REALIGN-002 + REALIGN-003 rebuild)
 
@@ -317,21 +317,23 @@ REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdow
 |---|---|
 | `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes`, `formatTimeLabel` — grid pixel math + time formatting |
 | `src/utils/dayList.ts` | `uniqueDays(sets)` (insertion-order), `setsForDay(sets, day)` |
-| `src/utils/stageColors.ts` | `stageColorByIndex(displayOrder)` — deterministic 6-hue stage color rotation (§ 1.3 DESIGN-TOKENS fallback until REALIGN-001) |
-| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }` |
+| `src/utils/stageColors.ts` | `stageColorByIndex(displayOrder)` — deterministic 6-hue stage color rotation. REALIGN-007: added `resolveStageColor(colorHex, displayOrder)` — prefers `stage.color_hex` from API, falls back to rotation. |
+| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }`. Uses `stage.color_hex ?? stageColorByIndex` per REALIGN-001. |
 | `src/hooks/useEventLineup.ts` | TanStack query → full `EventLineupResponse` (sets + stages); staleTime Infinity |
-| `src/hooks/usePickToggle.ts` | Mutation: POST `/picks` (going, with body) / DELETE `/picks/:set_id` (with body); optimistic remove via `onMutate`; rollback via `onError` |
+| `src/hooks/useGroupSchedule.ts` | REALIGN-007: TanStack query → `GET /api/groups/{code}/schedule?day_label=`; staleTime 30s; returns `GroupScheduleResponse` with per-set `going_members`. |
+| `src/hooks/usePickToggle.ts` | Mutation: POST `/picks` / DELETE `/picks/:set_id`; optimistic remove; REALIGN-007: invalidates `["group-schedule", invite_code]` on success to refetch going data. |
 | `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
 | `src/screens/schedule/DayMenu.tsx` | Animated day-picker dropdown overlay (backdrop + centered sheet); replaces old pill row |
 | `src/screens/schedule/AllStagesGrid.tsx` | REALIGN-003 rewrite: instruction + legend + search, sticky stage headers, absolute-positioned set cards, three-state cycle (none → going → maybe → none) |
-| `src/screens/schedule/ScheduleTimeline.tsx` | Vertical scrolling timeline: Mine / Group filter chips; UP NEXT card; GOING section with per-set cards |
+| `src/screens/schedule/ScheduleTimeline.tsx` | Vertical scrolling timeline: Mine / Group filter chips; UP NEXT card; GOING section with per-set cards. REALIGN-007: accepts `groupScheduleBySetId?: Map<string, GroupSetItem>` — when present, Group mode uses BE going_members + stage_color_hex; falls back to local picks join. |
 | `src/screens/schedule/FilterSheet.tsx` | Animated bottom sheet (sheetUp 250ms) for narrowing group view by member |
-| `src/screens/schedule/Schedule.tsx` | Root: top-bar day-dropdown + All Stages / Schedule tabs + DayMenu overlay + FilterSheet |
+| `src/screens/schedule/Schedule.tsx` | Root: top-bar day-dropdown + All Stages / Schedule tabs + DayMenu overlay + FilterSheet. REALIGN-007: calls `useGroupSchedule(invite_code, activeDay)`, passes map to ScheduleTimeline. |
 | `__tests__/utils/gridLayout.test.ts` | 6 tests: timeToMinutes, setTop, setHeight, clamp, groupByStage |
+| `__tests__/utils/stageColors.test.ts` | REALIGN-007: 5 tests — stageColorByIndex wrap, resolveStageColor prefers hex, falls back on null/undefined/empty |
 | `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
 | `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
 | `__tests__/screens/AllStagesGrid.test.tsx` | 11 tests: instruction row, legend, search, stage headers, cards, three-state tap cycle, empty sets, search input |
-| `__tests__/screens/Schedule.test.tsx` | 10 tests: day picker, dropdown open/close, All Stages default, grid tap cycles pick, loading, back, tab switch, mine empty state |
+| `__tests__/screens/Schedule.test.tsx` | 14 tests (10 existing + 4 REALIGN-007): group filter uses BE sets, going count from going_members.length, empty state, stage_color_hex pass-through |
 
 ### FE-007 — Artist detail (cyber-retro)
 

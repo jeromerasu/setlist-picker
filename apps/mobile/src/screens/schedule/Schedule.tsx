@@ -10,6 +10,7 @@ import { ScheduleTimeline } from "./ScheduleTimeline";
 import { FilterSheet } from "./FilterSheet";
 import { useScheduleData } from "@/hooks/useScheduleData";
 import { useGroupState } from "@/hooks/useGroupState";
+import { useGroupSchedule } from "@/hooks/useGroupSchedule";
 import { usePickToggle } from "@/hooks/usePickToggle";
 import { uniqueDays, setsForDay } from "@/utils/dayList";
 import { colors, spacing } from "@/theme/tokens";
@@ -38,6 +39,11 @@ export function Schedule() {
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
 
   const activeDay = selectedDay !== "" ? selectedDay : (days[0] ?? "");
+  const { data: groupSchedule } = useGroupSchedule(invite_code, activeDay);
+  const groupScheduleBySetId = new Map(
+    (groupSchedule?.sets ?? []).map((gs) => [gs.set_id, gs]),
+  );
+
   const dayIndex = days.indexOf(activeDay);
   const dayNumber = dayIndex >= 0 ? dayIndex + 1 : 1;
 
@@ -146,6 +152,7 @@ export function Schedule() {
             myMemberId={myMemberId}
             stageBySetId={stageBySetId}
             activeDay={activeDay}
+            groupScheduleBySetId={groupScheduleBySetId}
             onNavigateToArtist={handleSelectSet}
             onRemovePick={handleRemovePick}
             onOpenFilterSheet={() => setFilterSheetOpen(true)}

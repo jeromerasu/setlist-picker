@@ -44,6 +44,8 @@ export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickTog
     },
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: ["group", variables.invite_code] });
+      // Refetch group schedule for all days when picks change
+      void queryClient.invalidateQueries({ queryKey: ["group-schedule", variables.invite_code] });
     },
   });
 }
