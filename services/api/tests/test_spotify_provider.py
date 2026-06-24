@@ -30,14 +30,21 @@ _SEARCH_RESP = {
     }
 }
 
-_TOP_TRACKS_RESP = {
-    "tracks": [
-        {
-            "name": "Movin' On",
-            "preview_url": "https://p.scdn.co/preview/123",
-            "external_urls": {"spotify": "https://open.spotify.com/track/123"},
-        }
-    ]
+# search?type=track response (replaces deprecated /top-tracks endpoint)
+_TRACK_SEARCH_RESP = {
+    "tracks": {
+        "items": [
+            {
+                "id": "track-id-1",
+                "name": "Movin' On",
+                "preview_url": "https://p.scdn.co/preview/123",
+                "external_urls": {"spotify": "https://open.spotify.com/track/123"},
+                "duration_ms": 237_000,
+                "popularity": 72,
+                "artists": [{"id": "spotify-id-123", "name": "Eggy"}],
+            }
+        ]
+    }
 }
 
 
@@ -51,11 +58,11 @@ def spotify() -> SpotifyProvider:
 
 
 async def test_spotify_search_and_fetch_happy_path(spotify: SpotifyProvider) -> None:
-    """Full happy path: token fetch + search + top tracks (token cached, 3 requests)."""
+    """Full happy path: token → artist search → track search (3 requests, token cached)."""
     call_responses = [
-        _make_response(200, _TOKEN_RESP),  # POST /api/token
-        _make_response(200, _SEARCH_RESP),  # GET /search
-        _make_response(200, _TOP_TRACKS_RESP),  # GET /top-tracks (token reused from cache)
+        _make_response(200, _TOKEN_RESP),        # POST /api/token
+        _make_response(200, _SEARCH_RESP),       # GET /search?type=artist
+        _make_response(200, _TRACK_SEARCH_RESP), # GET /search?type=track
     ]
     call_iter = iter(call_responses)
 
@@ -72,6 +79,7 @@ async def test_spotify_search_and_fetch_happy_path(spotify: SpotifyProvider) -> 
     assert result.top_track is not None
     assert result.top_track.name == "Movin' On"
     assert result.top_track.preview_url == "https://p.scdn.co/preview/123"
+    assert result.top_track.duration_ms == 237_000
 
 
 async def test_spotify_client_credentials_cached(spotify: SpotifyProvider) -> None:
@@ -80,13 +88,14 @@ async def test_spotify_client_credentials_cached(spotify: SpotifyProvider) -> No
 
     async def _fake_request(request: httpx.Request) -> httpx.Response:
         nonlocal token_call_count
-        if "api/token" in str(request.url):
+        url = str(request.url)
+        if "api/token" in url:
             token_call_count += 1
             return _make_response(200, _TOKEN_RESP)
-        if "search" in str(request.url):
+        if "type=artist" in url:
             return _make_response(200, _SEARCH_RESP)
-        # top-tracks
-        return _make_response(200, _TOP_TRACKS_RESP)
+        # track search (type=track)
+        return _make_response(200, _TRACK_SEARCH_RESP)
 
     spotify._http = httpx.AsyncClient(transport=httpx.MockTransport(_fake_request))
 
@@ -102,12 +111,14 @@ async def test_spotify_token_refresh_on_expiry(spotify: SpotifyProvider) -> None
 
     async def _fake_request(request: httpx.Request) -> httpx.Response:
         nonlocal token_call_count
-        if "api/token" in str(request.url):
+        url = str(request.url)
+        if "api/token" in url:
             token_call_count += 1
             return _make_response(200, _TOKEN_RESP)
-        if "search" in str(request.url):
+        if "type=artist" in url:
             return _make_response(200, _SEARCH_RESP)
-        return _make_response(200, _TOP_TRACKS_RESP)
+        # track search (type=track)
+        return _make_response(200, _TRACK_SEARCH_RESP)
 
     spotify._http = httpx.AsyncClient(transport=httpx.MockTransport(_fake_request))
 

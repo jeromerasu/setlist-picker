@@ -75,11 +75,12 @@ class SpotifyProvider:
             matched = artists[0]
 
         artist_id: str = matched["id"]
+        matched_name: str = matched.get("name", name_normalized)
         genres: list[str] = matched.get("genres") or []
         images: list[dict[str, object]] = matched.get("images") or []
         image_url: str | None = images[0]["url"] if images else None  # type: ignore[assignment]
 
-        top_track = await self._get_top_track(artist_id)
+        top_track = await self._get_top_track(artist_id, artist_name=matched_name)
 
         return ProviderArtist(
             name=matched.get("name", name_normalized),
@@ -89,20 +90,49 @@ class SpotifyProvider:
             top_track=top_track,
         )
 
-    async def _get_top_track(self, artist_id: str) -> TopTrack | None:
-        tracks = await self.get_top_tracks(artist_id, limit=1)
+    async def _get_top_track(
+        self, artist_id: str, artist_name: str = ""
+    ) -> TopTrack | None:
+        tracks = await self.get_top_tracks(artist_id, limit=1, artist_name=artist_name)
         return tracks[0] if tracks else None
 
-    async def get_top_tracks(self, artist_id: str, limit: int = 5) -> list[TopTrack]:
-        """Return up to `limit` top tracks for the given Spotify artist ID."""
+    async def get_top_tracks(
+        self, artist_id: str, limit: int = 5, *, artist_name: str = ""
+    ) -> list[TopTrack]:
+        """Return up to `limit` popular tracks for the given Spotify artist ID.
+
+        Uses /v1/search (track type) because /v1/artists/{id}/top-tracks
+        requires user OAuth after Spotify's Nov 2024 API change.
+        """
         try:
+            name = artist_name
+            if not name:
+                # Resolve artist name when caller doesn't provide it (cache-hit path)
+                r_artist = await self._authed_get(f"{_API_BASE}/artists/{artist_id}")
+                name = r_artist.json().get("name", "")
+            if not name:
+                return []
+
             r = await self._authed_get(
-                f"{_API_BASE}/artists/{artist_id}/top-tracks",
-                params={"market": "US"},
+                f"{_API_BASE}/search",
+                params={
+                    "q": f'artist:"{name}"',
+                    "type": "track",
+                    "market": "US",
+                    "limit": "50",
+                },
             )
-            tracks = r.json().get("tracks") or []
+            items = r.json().get("tracks", {}).get("items") or []
+            # Keep only tracks where this artist is actually a credited artist
+            own = [
+                t for t in items
+                if any(a["id"] == artist_id for a in t.get("artists", []))
+            ]
+            # Sort by Spotify popularity score descending
+            own.sort(key=lambda t: t.get("popularity", 0), reverse=True)
+
             result: list[TopTrack] = []
-            for track in tracks[:limit]:
+            for track in own[:limit]:
                 ext = track.get("external_urls", {}).get("spotify")
                 result.append(TopTrack(
                     name=track["name"],
