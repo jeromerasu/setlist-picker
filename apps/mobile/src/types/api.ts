@@ -224,16 +224,15 @@ export interface ArtistDetailResponse {
 // ─── Picks ───────────────────────────────────────────────────────────────────
 
 export interface PickCreate {
-  group_code: string;
   set_id: string;
   state: "active";
   state_clock_ms: number;
 }
 
 export interface PickResult {
-  pick_id: string;
+  member_id: string;
   set_id: string;
   state: string;
   state_clock_ms: number;
-  picked_at: string;
+  accepted: boolean;
 }

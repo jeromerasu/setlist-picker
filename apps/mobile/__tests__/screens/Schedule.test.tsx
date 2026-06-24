@@ -116,10 +116,14 @@ test("all_stages_tab_is_default", () => {
   expect(getByTestId("grid-set-s1")).toBeTruthy();
 });
 
-test("tap_set_navigates_to_artist_detail", () => {
+test("tap_grid_set_cycles_pick_to_going", () => {
   const { getByTestId } = render(<Schedule />, { wrapper });
   fireEvent.press(getByTestId("grid-set-s1"));
-  expect(mockNavigate).toHaveBeenCalledWith("ArtistDetail", { artist_name: "Artist s1" });
+  // none → going: POST via togglePick({ is_picked: false })
+  expect(mockMutatePick).toHaveBeenCalledWith(
+    expect.objectContaining({ set_id: "s1", is_picked: false, invite_code: "TESTCODE" }),
+  );
+  expect(mockNavigate).not.toHaveBeenCalled();
 });
 
 test("shows_loading_when_data_loading", () => {

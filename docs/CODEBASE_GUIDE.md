@@ -307,9 +307,9 @@ Stub.
 | `__tests__/utils/dayBuckets.test.ts` | 3 tests: bucket grouping, empty, pickedSetIds |
 | `__tests__/screens/GroupDetail.test.tsx` | 9 tests: renders, day buckets, loading, error, toggle, nav artist, schedule, snapshot, picked heart |
 
-### FE-006 — Schedule (REALIGN-002 rebuild)
+### FE-006 — Schedule (REALIGN-002 + REALIGN-003 rebuild)
 
-REALIGN-002 rebuilt this screen to match the prototype (day dropdown + vertical timeline). Old pill-row day selector and `AllStagesGrid`-only view replaced.
+REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdown + vertical timeline. REALIGN-003 rebuilt AllStagesGrid to match the prototype: instruction row + legend + search + sticky stage headers + absolute-positioned set cards with three-state pick cycle.
 
 | File | Purpose |
 |---|---|
@@ -318,18 +318,18 @@ REALIGN-002 rebuilt this screen to match the prototype (day dropdown + vertical 
 | `src/utils/stageColors.ts` | `stageColorByIndex(displayOrder)` — deterministic 6-hue stage color rotation (§ 1.3 DESIGN-TOKENS fallback until REALIGN-001) |
 | `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }` |
 | `src/hooks/useEventLineup.ts` | TanStack query → full `EventLineupResponse` (sets + stages); staleTime Infinity |
-| `src/hooks/usePickToggle.ts` | Mutation `POST /DELETE picks/:set_id`; optimistic removal via `onMutate` (adds rollback via `onError`) |
+| `src/hooks/usePickToggle.ts` | Mutation: POST `/picks` (going, with body) / DELETE `/picks/:set_id` (with body); optimistic remove via `onMutate`; rollback via `onError` |
 | `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
 | `src/screens/schedule/DayMenu.tsx` | Animated day-picker dropdown overlay (backdrop + centered sheet); replaces old pill row |
-| `src/screens/schedule/Timeline.tsx` | Absolute-positioned hour labels + tick lines overlay for AllStagesGrid (pointerEvents=none) |
-| `src/screens/schedule/AllStagesGrid.tsx` | Dual-scroll (h+v) stage columns with absolute-positioned set blocks |
+| `src/screens/schedule/AllStagesGrid.tsx` | REALIGN-003 rewrite: instruction + legend + search, sticky stage headers, absolute-positioned set cards, three-state cycle (none → going → maybe → none) |
 | `src/screens/schedule/ScheduleTimeline.tsx` | Vertical scrolling timeline: Mine / Group filter chips; UP NEXT card; GOING section with per-set cards |
 | `src/screens/schedule/FilterSheet.tsx` | Animated bottom sheet (sheetUp 250ms) for narrowing group view by member |
 | `src/screens/schedule/Schedule.tsx` | Root: top-bar day-dropdown + All Stages / Schedule tabs + DayMenu overlay + FilterSheet |
 | `__tests__/utils/gridLayout.test.ts` | 6 tests: timeToMinutes, setTop, setHeight, clamp, groupByStage |
 | `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
 | `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
-| `__tests__/screens/Schedule.test.tsx` | 10 tests: day picker, dropdown open/close, All Stages default, set tap nav, loading, back, tab switch, mine empty state |
+| `__tests__/screens/AllStagesGrid.test.tsx` | 11 tests: instruction row, legend, search, stage headers, cards, three-state tap cycle, empty sets, search input |
+| `__tests__/screens/Schedule.test.tsx` | 10 tests: day picker, dropdown open/close, All Stages default, grid tap cycles pick, loading, back, tab switch, mine empty state |
 
 ### FE-007 — Artist detail (cyber-retro)
 

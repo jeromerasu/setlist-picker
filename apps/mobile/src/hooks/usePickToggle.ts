@@ -16,9 +16,15 @@ export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickTog
   const queryClient = useQueryClient();
   return useMutation<PickResult, ApiError, PickToggleInput, PickToggleContext>({
     mutationFn: ({ invite_code, set_id, is_picked }: PickToggleInput) =>
-      fetchWithAuth<PickResult>(`/api/groups/${invite_code}/picks/${set_id}`, {
-        method: is_picked ? "DELETE" : "POST",
-      }),
+      is_picked
+        ? fetchWithAuth<PickResult>(`/api/groups/${invite_code}/picks/${set_id}`, {
+            method: "DELETE",
+            body: JSON.stringify({ state_clock_ms: Date.now() }),
+          })
+        : fetchWithAuth<PickResult>(`/api/groups/${invite_code}/picks`, {
+            method: "POST",
+            body: JSON.stringify({ set_id, state: "active", state_clock_ms: Date.now() }),
+          }),
     onMutate: async ({ invite_code, set_id, is_picked }) => {
       const context: PickToggleContext = { prev: undefined };
       // Only optimistically update for removals — adds need member_id not available locally

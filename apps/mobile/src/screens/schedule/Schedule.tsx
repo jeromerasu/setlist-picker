@@ -11,7 +11,6 @@ import { FilterSheet } from "./FilterSheet";
 import { useScheduleData } from "@/hooks/useScheduleData";
 import { useGroupState } from "@/hooks/useGroupState";
 import { usePickToggle } from "@/hooks/usePickToggle";
-import { pickedSetIds } from "@/utils/dayBuckets";
 import { uniqueDays, setsForDay } from "@/utils/dayList";
 import { colors, spacing } from "@/theme/tokens";
 import type { HomeStackParamList } from "@/navigation/types";
@@ -27,7 +26,7 @@ export function Schedule() {
   const navigation = useNavigation<Nav>();
   const { invite_code } = route.params;
 
-  const { sets, stageBySetId, myMemberId, isLoading } = useScheduleData(invite_code);
+  const { sets, stages, stageBySetId, myMemberId, isLoading } = useScheduleData(invite_code);
   const { data: group } = useGroupState(invite_code);
   const { mutate: togglePick } = usePickToggle();
 
@@ -43,7 +42,6 @@ export function Schedule() {
   const dayNumber = dayIndex >= 0 ? dayIndex + 1 : 1;
 
   const daySets = setsForDay(sets, activeDay);
-  const myPicked = pickedSetIds(group?.picks ?? []);
   const members = group?.members ?? [];
   const picks = group?.picks ?? [];
 
@@ -128,22 +126,17 @@ export function Schedule() {
         </TouchableOpacity>
       </View>
 
-      {/* Hint text row — prototype l.302 / l.345 */}
-      <View style={styles.hintRow}>
-        <Text style={styles.hintText}>
-          {allStagesActive
-            ? "👆 Tap once for going, tap again for maybe"
-            : "👥 Tap avatars on a set to see who's going"}
-        </Text>
-      </View>
-
       {/* Content area */}
       <View style={styles.content}>
         {allStagesActive ? (
           <AllStagesGrid
             sets={daySets}
-            pickedIds={myPicked}
-            onSelectSet={handleSelectSet}
+            stages={stages}
+            stageBySetId={stageBySetId}
+            picks={picks}
+            members={members}
+            myMemberId={myMemberId}
+            invite_code={invite_code}
           />
         ) : (
           <ScheduleTimeline
@@ -198,7 +191,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.bg.canvas,
   },
-  // Top bar — prototype l.286
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -207,7 +199,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing[3],
     paddingBottom: 4,
   },
-  // Day dropdown button — "Day N ⌄" (prototype l.288)
   dayBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -227,7 +218,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.bg.surfaceStrong,
   },
-  // Sub tabs — prototype l.293–296
   tabRow: {
     flexDirection: "row",
     marginTop: 14,
@@ -253,16 +243,6 @@ const styles = StyleSheet.create({
   },
   tabTextInactive: {
     color: colors.text.tertiary,
-  },
-  hintRow: {
-    paddingHorizontal: spacing[9],
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  hintText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: colors.neon.lavenderDim,
   },
   content: {
     flex: 1,
