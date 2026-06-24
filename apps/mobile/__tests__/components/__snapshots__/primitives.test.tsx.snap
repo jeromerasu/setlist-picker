@@ -282,7 +282,7 @@ exports[`AvatarStack_overflow_badge_snapshot 1`] = `
     <Text
       style={
         {
-          "color": "#a99fce",
+          "color": "#c8b9ff",
           "fontSize": 10,
           "fontWeight": "600",
         }
