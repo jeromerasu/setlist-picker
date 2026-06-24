@@ -124,8 +124,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing[9],
   },
   title: {
+    fontFamily: "Manrope-Bold",
     color: colors.text.primary,
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: "700",
   },
   form: {
@@ -133,13 +134,15 @@ const styles = StyleSheet.create({
     gap: spacing[4],
   },
   label: {
+    fontFamily: "Manrope-Bold",
     color: colors.text.secondary,
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 0.96,
   },
   input: {
+    fontFamily: "Manrope-Regular",
     height: 54,
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -159,14 +162,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   eventSelected: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.primary,
     fontSize: 15,
   },
   eventPlaceholder: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.placeholder,
     fontSize: 15,
   },
   error: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.error,
     fontSize: 13,
   },

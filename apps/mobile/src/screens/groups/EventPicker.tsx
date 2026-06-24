@@ -109,8 +109,9 @@ const styles = StyleSheet.create({
     gap: spacing[5],
   },
   title: {
+    fontFamily: "Manrope-Bold",
     color: colors.text.primary,
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: "700",
   },
   list: {
@@ -138,6 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tileText: {
+    fontFamily: "SpaceMono-Bold",
     color: colors.text.primary,
     fontSize: 14,
     fontWeight: "700",
@@ -147,11 +149,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   eventName: {
+    fontFamily: "Manrope-Bold",
     color: colors.text.primary,
     fontSize: 15,
     fontWeight: "700",
   },
   eventMeta: {
+    fontFamily: "Manrope-Medium",
     color: colors.text.secondary,
     fontSize: 13,
   },

@@ -100,12 +100,14 @@ const styles = StyleSheet.create({
     gap: spacing[4],
   },
   title: {
+    fontFamily: "Manrope-Bold",
     flex: 1,
     color: colors.text.primary,
     fontSize: 18,
     fontWeight: "700",
   },
   shareLabel: {
+    fontFamily: "Manrope-SemiBold",
     color: colors.neon.cyan,
     fontSize: 14,
     fontWeight: "600",
@@ -118,11 +120,13 @@ const styles = StyleSheet.create({
     gap: spacing[4],
   },
   cardTitle: {
+    fontFamily: "Manrope-ExtraBold",
     color: colors.text.primary,
     fontSize: 20,
     fontWeight: "700",
   },
   cardAt: {
+    fontFamily: "SpaceMono-Regular",
     color: colors.text.tertiary,
     fontSize: 13,
   },
@@ -136,15 +140,18 @@ const styles = StyleSheet.create({
   },
   setInfo: { flex: 1, gap: 2 },
   setName: {
+    fontFamily: "Manrope-SemiBold",
     color: colors.text.primary,
     fontSize: 14,
     fontWeight: "600",
   },
   setMeta: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.secondary,
     fontSize: 12,
   },
   empty: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.muted,
     fontSize: 14,
     textAlign: "center",
@@ -157,6 +164,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.canvas,
   },
   errorText: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.error,
     fontSize: 15,
   },

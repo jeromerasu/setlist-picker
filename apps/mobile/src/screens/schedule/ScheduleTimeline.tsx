@@ -381,6 +381,7 @@ const styles = StyleSheet.create({
     borderColor: colors.neon.lilac,
   },
   chipText: {
+    fontFamily: "Manrope-Bold",
     color: colors.text.secondary,
     fontSize: 14,
     fontWeight: "700",
@@ -389,6 +390,7 @@ const styles = StyleSheet.create({
     color: colors.text.invertedDark,
   },
   caret: {
+    fontFamily: "Manrope-Regular",
     fontSize: 11,
   },
   // Scroll area
@@ -423,6 +425,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   emptyHead: {
+    fontFamily: "PlayfairDisplay-Bold",
     fontSize: 22,
     fontWeight: "700",
     color: colors.text.eventName,
@@ -430,6 +433,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   emptyBody: {
+    fontFamily: "Manrope-Medium",
     fontSize: 14,
     fontWeight: "500",
     color: colors.text.tertiary,
@@ -456,16 +460,18 @@ const styles = StyleSheet.create({
     padding: 15,
     gap: 4,
   },
-  // "UP NEXT" label — text.daySectionAccent, letter-spacing ~0.10em
+  // "UP NEXT" label — Orbitron-Bold, letter-spacing 0.10em
   upNextLabel: {
+    fontFamily: "Orbitron-Bold",
     fontSize: 11,
     fontWeight: "700",
     color: colors.text.daySectionAccent,
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
     textTransform: "uppercase",
   },
-  // Artist name — text.section.serifLg: Playfair 30px 700 (closest: fontFamily Playfair Bold)
+  // Artist name — text.section.serifLg: Playfair 30px 700
   upNextArtist: {
+    fontFamily: "PlayfairDisplay-Bold",
     fontSize: 30,
     fontWeight: "700",
     color: colors.text.primary,
@@ -477,6 +483,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   upNextMetaText: {
+    fontFamily: "Manrope-Medium",
     fontSize: 13,
     fontWeight: "500",
     color: colors.text.iconAccent,
@@ -497,16 +504,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   goingCheckGlyph: {
+    fontFamily: "Manrope-ExtraBold",
     fontSize: 10,
     color: colors.text.invertedDark,
     fontWeight: "800",
   },
   goingSectionLabel: {
+    fontFamily: "Orbitron-Bold",
     flex: 1,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: 12,
+    fontWeight: "700",
     color: colors.text.mineSection,
-    letterSpacing: 0.8,
+    letterSpacing: 0.96,
     textTransform: "uppercase",
   },
   countBubble: {
@@ -518,6 +527,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   countBubbleText: {
+    fontFamily: "Manrope-Bold",
     fontSize: 12,
     fontWeight: "700",
     color: colors.text.secondary,
@@ -540,11 +550,13 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   timeStart: {
-    fontSize: 15,
+    fontFamily: "SpaceMono-Bold",
+    fontSize: 12,
     fontWeight: "700",
     color: colors.text.primary,
   },
   timeEnd: {
+    fontFamily: "SpaceMono-Regular",
     fontSize: 12,
     fontWeight: "500",
     color: colors.text.tertiary,
@@ -586,11 +598,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   removeBtnText: {
+    fontFamily: "Manrope-Medium",
     fontSize: 13,
     color: colors.text.secondary,
   },
   // Artist name — text.section.serifSm: Playfair 18px 700
   cardArtist: {
+    fontFamily: "PlayfairDisplay-Bold",
     fontSize: 18,
     fontWeight: "700",
     color: colors.text.primary,
@@ -604,6 +618,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   cardStageName: {
+    fontFamily: "Manrope-Medium",
     fontSize: 13,
     fontWeight: "500",
     color: colors.neon.lavenderDim,
@@ -622,6 +637,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surfaceMed,
   },
   cardGoingLabel: {
+    fontFamily: "Manrope-Medium",
     fontSize: 12,
     fontWeight: "500",
     color: colors.text.secondary,

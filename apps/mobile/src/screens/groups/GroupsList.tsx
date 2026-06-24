@@ -129,13 +129,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   wordmark: {
+    fontFamily: "Orbitron-Black",
     color: colors.neon.purple,
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: 1,
+    fontSize: 30,
+    fontWeight: "900",
+    letterSpacing: 0.9,
     marginBottom: 4,
   },
   subtitle: {
+    fontFamily: "Manrope-Medium",
     color: colors.text.secondary,
     fontSize: 14,
     marginBottom: spacing[7],

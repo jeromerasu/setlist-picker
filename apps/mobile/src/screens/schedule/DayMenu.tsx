@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surfaceStrong,
   },
   numText: {
+    fontFamily: "Manrope-Bold",
     fontSize: 13,
     fontWeight: "700",
     color: colors.text.secondary,
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     color: colors.text.invertedDark,
   },
   dayLabel: {
+    fontFamily: "Manrope-SemiBold",
     flex: 1,
     fontSize: 15,
     fontWeight: "600",
@@ -143,6 +145,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   check: {
+    fontFamily: "Manrope-Bold",
     color: colors.neon.purple,
     fontSize: 14,
   },

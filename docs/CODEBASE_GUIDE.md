@@ -351,9 +351,24 @@ REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdow
 |---|---|
 | `src/hooks/useSnapshot.ts` | TanStack query → `GET /api/groups/:code/snapshot?at=`; staleTime 30s |
 | `src/utils/captureScreenshot.ts` | `captureAndShare(ref, filename)` — react-native-view-shot + RN Share |
-| `src/screens/snapshot/RightNowSnapshot.tsx` | Flattens stages→sets; AvatarStack shows pickers; share button captures card |
+| `src/screens/snapshot/RightNowSnapshot.tsx` | Flattens stages→sets; AvatarStack shows pickers; share button captures card. REALIGN-006: added Manrope-* fontFamily to all text styles. |
 | `src/__mocks__/react-native-view-shot.ts` | Jest stub (package not installed; stubbed in moduleNameMapper) |
 | `__tests__/screens/RightNowSnapshot.test.tsx` | 6 tests: header, set rows, loading, error, back, empty state |
+
+### FE-010 — Typography audit (REALIGN-006)
+
+REALIGN-006 added explicit `fontFamily` values and fixed `fontSize`/`letterSpacing` token deviations across all non-artist screens. Artist screens (`src/screens/artist/`) are intentionally untouched (VT323 cyber-retro divergence per DESIGN-TOKENS § 5).
+
+| File | Violations fixed |
+|---|---|
+| `src/screens/groups/GroupsList.tsx` | `wordmark`: Orbitron-Black 30px, letterSpacing 0.9 (was missing fontFamily, wrong size 28, wrong spacing 1); `subtitle`: Manrope-Medium |
+| `src/screens/groups/GroupCard.tsx` | `groupName`: Manrope-ExtraBold; `archivedText`: Orbitron-Bold; `metaRow`/`metaLabel`: Manrope-Regular/Medium |
+| `src/screens/groups/CreateGroup.tsx` | `title`: Manrope-Bold 19px (was no family, wrong 24px); `label`: Manrope-Bold letterSpacing 0.96 (was 0.8, weight 600→700); `input`/`eventSelected`/`eventPlaceholder`/`error`: Manrope-Regular |
+| `src/screens/groups/JoinGroup.tsx` | `title`: Manrope-ExtraBold 26px letterSpacing -0.26 (was no family, wrong 24px, no spacing); `codeInput`: SpaceMono-Bold; `subtitle`/`errorText`/`tip`: Manrope-* |
+| `src/screens/groups/EventPicker.tsx` | `title`: Manrope-Bold 19px (was no family, wrong 24px); `tileText`: SpaceMono-Bold; `eventName`: Manrope-Bold; `eventMeta`: Manrope-Medium |
+| `src/screens/schedule/DayMenu.tsx` | `numText`: Manrope-Bold; `dayLabel`: Manrope-SemiBold; `check`: Manrope-Bold |
+| `src/screens/schedule/ScheduleTimeline.tsx` | `upNextArtist`: PlayfairDisplay-Bold (Playfair required, was system); `emptyHead`: PlayfairDisplay-Bold; `cardArtist`: PlayfairDisplay-Bold; `upNextLabel`: Orbitron-Bold letterSpacing 1.1; `goingSectionLabel`: Orbitron-Bold 12px letterSpacing 0.96; `timeStart`/`timeEnd`: SpaceMono-Bold/Regular 12px; `chipText`/`countBubbleText`/`cardStageName`/`cardGoingLabel`/`upNextMetaText`: Manrope-* |
+| `src/screens/snapshot/RightNowSnapshot.tsx` | `title`/`cardTitle`/`setName`/`shareLabel`: Manrope-*; `cardAt`: SpaceMono-Regular; `setMeta`/`empty`/`errorText`: Manrope-Regular |
 
 ### FE-009 — Account profile
 

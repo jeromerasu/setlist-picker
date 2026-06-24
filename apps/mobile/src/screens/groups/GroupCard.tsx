@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   groupName: {
+    fontFamily: "Manrope-ExtraBold",
     flex: 1,
     color: colors.text.primary,
     fontSize: 18,
@@ -90,6 +91,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   archivedText: {
+    fontFamily: "Orbitron-Bold",
     color: colors.text.secondary,
     fontSize: 9,
     fontWeight: "700",
@@ -101,10 +103,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaRow: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.secondary,
     fontSize: 13,
   },
   metaLabel: {
+    fontFamily: "Manrope-Medium",
     color: colors.text.secondary,
     fontSize: 13,
   },

@@ -132,15 +132,19 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
   title: {
+    fontFamily: "Manrope-ExtraBold",
     color: colors.text.primary,
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "800",
+    letterSpacing: -0.26,
   },
   subtitle: {
+    fontFamily: "Manrope-Medium",
     color: colors.text.secondary,
     fontSize: 15,
   },
   codeInput: {
+    fontFamily: "SpaceMono-Bold",
     width: "100%",
     height: 54,
     borderRadius: radius.lg,
@@ -158,11 +162,13 @@ const styles = StyleSheet.create({
     borderColor: colors.text.error,
   },
   errorText: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.error,
     fontSize: 13,
     textAlign: "center",
   },
   tip: {
+    fontFamily: "Manrope-Regular",
     color: colors.text.muted,
     fontSize: 12,
     marginTop: spacing[3],
