@@ -94,8 +94,10 @@ async def test_spotify_client_credentials_cached(spotify: SpotifyProvider) -> No
             return _make_response(200, _TOKEN_RESP)
         if "type=artist" in url:
             return _make_response(200, _SEARCH_RESP)
-        # track search (type=track)
-        return _make_response(200, _TRACK_SEARCH_RESP)
+        if "type=track" in url:
+            return _make_response(200, _TRACK_SEARCH_RESP)
+        # fallback (should not be reached)
+        return _make_response(200, {})
 
     spotify._http = httpx.AsyncClient(transport=httpx.MockTransport(_fake_request))
 
@@ -117,8 +119,9 @@ async def test_spotify_token_refresh_on_expiry(spotify: SpotifyProvider) -> None
             return _make_response(200, _TOKEN_RESP)
         if "type=artist" in url:
             return _make_response(200, _SEARCH_RESP)
-        # track search (type=track)
-        return _make_response(200, _TRACK_SEARCH_RESP)
+        if "type=track" in url:
+            return _make_response(200, _TRACK_SEARCH_RESP)
+        return _make_response(200, {})
 
     spotify._http = httpx.AsyncClient(transport=httpx.MockTransport(_fake_request))
 

@@ -116,7 +116,7 @@ class SpotifyProvider:
             r = await self._authed_get(
                 f"{_API_BASE}/search",
                 params={
-                    "q": f'artist:"{name}"',
+                    "q": name,
                     "type": "track",
                     "market": "US",
                     "limit": "50",
