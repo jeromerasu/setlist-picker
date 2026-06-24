@@ -39,3 +39,13 @@ export function groupByStage(sets: SetDetail[]): Map<string, SetDetail[]> {
 
 export const HOUR_HEIGHT_PX = HOUR_HEIGHT;
 export const DAY_START_HOUR_CONST = DAY_START_HOUR;
+
+// Format an ISO datetime string as "8pm", "8:30pm", etc. (uses UTC hours, per DB convention).
+export function formatTimeLabel(isoStr: string): string {
+  const d = new Date(isoStr);
+  const h = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  const suffix = h >= 12 ? "pm" : "am";
+  const h12 = h % 12 || 12;
+  return m === 0 ? `${h12}${suffix}` : `${h12}:${m.toString().padStart(2, "0")}${suffix}`;
+}

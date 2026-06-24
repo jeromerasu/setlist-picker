@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { ScreenContainer } from "@/components/ScreenContainer";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { BackChip } from "@/components/BackChip";
 import { DayMenu } from "./DayMenu";
 import { AllStagesGrid } from "./AllStagesGrid";
+import { ScheduleTimeline } from "./ScheduleTimeline";
+import { FilterSheet } from "./FilterSheet";
 import { useScheduleData } from "@/hooks/useScheduleData";
 import { useGroupState } from "@/hooks/useGroupState";
+import { usePickToggle } from "@/hooks/usePickToggle";
 import { pickedSetIds } from "@/utils/dayBuckets";
 import { uniqueDays, setsForDay } from "@/utils/dayList";
 import { colors, spacing } from "@/theme/tokens";
@@ -17,25 +20,56 @@ import type { SetDetail } from "@/types/api";
 type Props = NativeStackScreenProps<HomeStackParamList, "Schedule">;
 type Nav = NativeStackNavigationProp<HomeStackParamList, "Schedule">;
 
+type TabId = "all-stages" | "schedule";
+
 export function Schedule() {
   const route = useRoute<Props["route"]>();
   const navigation = useNavigation<Nav>();
   const { invite_code } = route.params;
 
-  const { sets, eventName, isLoading } = useScheduleData(invite_code);
+  const { sets, stageBySetId, myMemberId, isLoading } = useScheduleData(invite_code);
   const { data: group } = useGroupState(invite_code);
+  const { mutate: togglePick } = usePickToggle();
 
   const days = uniqueDays(sets);
-  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [selectedDay, setSelectedDay] = useState("");
+  const [dayMenuOpen, setDayMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>("all-stages");
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
 
   const activeDay = selectedDay !== "" ? selectedDay : (days[0] ?? "");
+  const dayIndex = days.indexOf(activeDay);
+  const dayNumber = dayIndex >= 0 ? dayIndex + 1 : 1;
+
   const daySets = setsForDay(sets, activeDay);
   const myPicked = pickedSetIds(group?.picks ?? []);
+  const members = group?.members ?? [];
+  const picks = group?.picks ?? [];
 
   const handleSelectSet = (set: SetDetail) => {
     const artistName = set.artists[0]?.name ?? set.display_name;
     navigation.navigate("ArtistDetail", { artist_name: artistName });
   };
+
+  const handleRemovePick = (setId: string) => {
+    console.info("[schedule] remove pick", { setId, invite_code });
+    togglePick({ invite_code, set_id: setId, is_picked: true });
+  };
+
+  const handleToggleMember = (memberId: string) => {
+    setSelectedMemberIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) {
+        next.delete(memberId);
+      } else {
+        next.add(memberId);
+      }
+      return next;
+    });
+  };
+
+  const handleClearAllMembers = () => setSelectedMemberIds(new Set());
 
   if (isLoading) {
     return (
@@ -45,24 +79,110 @@ export function Schedule() {
     );
   }
 
+  const allStagesActive = activeTab === "all-stages";
+  const scheduleActive = activeTab === "schedule";
+
+  // Filter group picks by selectedMemberIds (empty = all members shown)
+  const filteredPicks =
+    selectedMemberIds.size > 0
+      ? picks.filter((p) => selectedMemberIds.has(p.member_id))
+      : picks;
+
   return (
     <ScreenContainer style={styles.screen}>
+      {/* Top bar — prototype l.286–290 */}
       <View style={styles.header}>
         <BackChip onPress={() => navigation.goBack()} />
-        <Text style={styles.eventName} numberOfLines={1}>
-          {eventName}
+        {/* Day dropdown button: "Day N ⌄" — prototype l.288 */}
+        <TouchableOpacity
+          style={styles.dayBtn}
+          onPress={() => setDayMenuOpen(true)}
+          testID="day-picker-btn"
+        >
+          <Text style={styles.dayBtnText}>Day {dayNumber}</Text>
+          <Text style={styles.dayBtnCaret}> ⌄</Text>
+        </TouchableOpacity>
+        {/* Share icon placeholder — prototype l.289 */}
+        <View style={styles.iconBtn} />
+      </View>
+
+      {/* Sub tabs: All Stages | Schedule — prototype l.293–296 */}
+      <View style={styles.tabRow}>
+        <TouchableOpacity
+          style={[styles.tab, allStagesActive && styles.tabActive]}
+          onPress={() => setActiveTab("all-stages")}
+          testID="all-stages-tab"
+        >
+          <Text style={[styles.tabText, allStagesActive ? styles.tabTextActive : styles.tabTextInactive]}>
+            All Stages
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, scheduleActive && styles.tabActive]}
+          onPress={() => setActiveTab("schedule")}
+          testID="schedule-tab"
+        >
+          <Text style={[styles.tabText, scheduleActive ? styles.tabTextActive : styles.tabTextInactive]}>
+            Schedule
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Hint text row — prototype l.302 / l.345 */}
+      <View style={styles.hintRow}>
+        <Text style={styles.hintText}>
+          {allStagesActive
+            ? "👆 Tap once for going, tap again for maybe"
+            : "👥 Tap avatars on a set to see who's going"}
         </Text>
       </View>
 
-      <DayMenu days={days} selected={activeDay} onSelect={setSelectedDay} />
-
-      <View style={styles.grid}>
-        <AllStagesGrid
-          sets={daySets}
-          pickedIds={myPicked}
-          onSelectSet={handleSelectSet}
-        />
+      {/* Content area */}
+      <View style={styles.content}>
+        {allStagesActive ? (
+          <AllStagesGrid
+            sets={daySets}
+            pickedIds={myPicked}
+            onSelectSet={handleSelectSet}
+          />
+        ) : (
+          <ScheduleTimeline
+            sets={sets}
+            picks={filteredPicks}
+            members={members}
+            myMemberId={myMemberId}
+            stageBySetId={stageBySetId}
+            activeDay={activeDay}
+            onNavigateToArtist={handleSelectSet}
+            onRemovePick={handleRemovePick}
+            onOpenFilterSheet={() => setFilterSheetOpen(true)}
+          />
+        )}
       </View>
+
+      {/* Day picker overlay — prototype l.427–438 */}
+      {dayMenuOpen && (
+        <DayMenu
+          days={days}
+          selected={activeDay}
+          onSelect={(day) => {
+            setSelectedDay(day);
+            setDayMenuOpen(false);
+          }}
+          onClose={() => setDayMenuOpen(false)}
+        />
+      )}
+
+      {/* Filter group sheet — prototype l.440–457 */}
+      {filterSheetOpen && (
+        <FilterSheet
+          members={members}
+          selectedIds={selectedMemberIds}
+          onToggle={handleToggleMember}
+          onClearAll={handleClearAllMembers}
+          onDone={() => setFilterSheetOpen(false)}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -71,29 +191,81 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.bg.canvas,
-    paddingTop: spacing[9],
-    gap: spacing[5],
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing[5],
-    paddingHorizontal: spacing.screenPad,
-  },
-  eventName: {
-    color: colors.text.primary,
-    fontSize: 20,
-    fontWeight: "700",
-    flex: 1,
-  },
-  grid: {
-    flex: 1,
-    overflow: "hidden",
   },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.bg.canvas,
+  },
+  // Top bar — prototype l.286
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing[7],
+    paddingTop: spacing[3],
+    paddingBottom: 4,
+  },
+  // Day dropdown button — "Day N ⌄" (prototype l.288)
+  dayBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dayBtnText: {
+    color: colors.text.primary,
+    fontSize: 19,
+    fontWeight: "700",
+  },
+  dayBtnCaret: {
+    color: colors.neon.purple,
+    fontSize: 13,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.bg.surfaceStrong,
+  },
+  // Sub tabs — prototype l.293–296
+  tabRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    paddingHorizontal: spacing[9],
+  },
+  tab: {
+    flex: 1,
+    paddingBottom: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  tabActive: {
+    borderBottomColor: colors.text.primary,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  tabTextActive: {
+    color: colors.text.primary,
+  },
+  tabTextInactive: {
+    color: colors.text.tertiary,
+  },
+  hintRow: {
+    paddingHorizontal: spacing[9],
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  hintText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.neon.lavenderDim,
+  },
+  content: {
+    flex: 1,
+    overflow: "hidden",
   },
 });

@@ -309,20 +309,26 @@ Stub.
 
 ### FE-006 — Schedule
 
+REALIGN-002 rebuilt this screen to match the prototype (day dropdown + vertical timeline). Old pill-row day selector and `AllStagesGrid`-only view replaced.
+
 | File | Purpose |
 |---|---|
-| `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes` — pixel math for grid layout |
+| `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes`, `formatTimeLabel` — pixel math + time formatting |
+| `src/utils/stageColors.ts` | `stageColorByIndex(displayOrder)` — 6-hue deterministic palette rotation (§ 1.3 fallback until REALIGN-001 ships) |
 | `src/utils/dayList.ts` | `uniqueDays(sets)` (insertion-order), `setsForDay(sets, day)` |
-| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup → `{ sets, eventName, isLoading }` |
+| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }` |
+| `src/hooks/useEventLineup.ts` | Fetches full `EventLineupResponse` (includes `stages[]`) with `staleTime: Infinity` |
+| `src/hooks/usePickToggle.ts` | `useMutation` for pick toggle; optimistic remove (`onMutate`) + `onError` rollback |
 | `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
-| `src/screens/schedule/DayMenu.tsx` | Horizontal scrollable day tab pills |
-| `src/screens/schedule/Timeline.tsx` | Absolute-positioned hour labels + tick lines overlay (pointerEvents=none) |
+| `src/screens/schedule/DayMenu.tsx` | Animated dropdown overlay (fadeIn 150ms) — replaces old pill scroll |
+| `src/screens/schedule/ScheduleTimeline.tsx` | Vertical timeline — Mine/Group filter chips, UP NEXT card, GOING section, per-set cards |
+| `src/screens/schedule/FilterSheet.tsx` | Animated bottom sheet (sheetUp 250ms) for narrowing group view by member |
 | `src/screens/schedule/AllStagesGrid.tsx` | Dual-scroll (h+v) stage columns with absolute-positioned set blocks |
-| `src/screens/schedule/Schedule.tsx` | Root: DayMenu + AllStagesGrid; tap set → ArtistDetail |
+| `src/screens/schedule/Schedule.tsx` | Root coordinator: day dropdown, All Stages / Schedule tabs, overlays |
 | `__tests__/utils/gridLayout.test.ts` | 6 tests: timeToMinutes, setTop, setHeight, clamp, groupByStage |
 | `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
 | `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
-| `__tests__/screens/Schedule.test.tsx` | 6 tests: event name, day tabs, tab switch, set tap nav, loading, back |
+| `__tests__/screens/Schedule.test.tsx` | 10 tests: day picker button, dropdown open/close, tab switch, timeline filter chips, empty state, loading, back |
 
 ### FE-007 — Artist detail (cyber-retro)
 

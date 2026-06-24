@@ -72,6 +72,10 @@ export const colors = {
     invertedDark: "#1a0c2e",
     error: "#ff6a8a",
     success: "#28e0ff",
+    daySectionAccent: "#ff8ad6", // DESIGN-TOKENS § 1.4 — "UP NEXT" label (prototype l.366)
+    mineSection: "#a78bfa",      // DESIGN-TOKENS § 1.4 — "GOING" section label (prototype l.370)
+    eventName: "#cfc7e6",        // DESIGN-TOKENS § 1.4 — empty-state headline (prototype l.357)
+    iconAccent: "#c8b9ff",       // DESIGN-TOKENS § 1.4 — icon accent (prototype l.368)
   },
   border: {
     weak: "rgba(255,255,255,0.06)",
@@ -81,6 +85,11 @@ export const colors = {
     strong: "rgba(255,255,255,0.14)",
     input: "rgba(255,255,255,0.18)",
     disabled: "rgba(255,255,255,0.22)",
+    pickedAccent: "rgba(255,45,155,0.5)", // DESIGN-TOKENS § 1.5 — picked-set card border
+  },
+  overlay: {
+    dim: "rgba(0,0,0,0.4)",  // DESIGN-TOKENS § 1.9 — day-menu backdrop (prototype l.428)
+    deep: "rgba(0,0,0,0.5)", // DESIGN-TOKENS § 1.9 — filter-sheet backdrop (prototype l.442)
   },
 } as const;
 

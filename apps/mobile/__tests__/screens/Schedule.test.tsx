@@ -21,12 +21,16 @@ jest.mock("@react-navigation/native", () => {
 
 const mockUseScheduleData = jest.fn();
 const mockUseGroupState = jest.fn();
+const mockMutatePick = jest.fn();
 
 jest.mock("@/hooks/useScheduleData", () => ({
   useScheduleData: (ic: string) => mockUseScheduleData(ic),
 }));
 jest.mock("@/hooks/useGroupState", () => ({
   useGroupState: (ic: string) => mockUseGroupState(ic),
+}));
+jest.mock("@/hooks/usePickToggle", () => ({
+  usePickToggle: () => ({ mutate: mockMutatePick }),
 }));
 
 jest.mock("expo-secure-store", () => ({
@@ -60,29 +64,56 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(QueryClientProvider, { client: qc }, children);
 }
 
+const SCHEDULE_DATA_DEFAULT = {
+  sets: ALL_SETS,
+  stages: [],
+  stageBySetId: new Map(),
+  eventName: "TML 2026",
+  myMemberId: undefined,
+  isLoading: false,
+};
+
+const GROUP_STATE_DEFAULT = {
+  data: { picks: [], members: [] },
+};
+
 beforeEach(() => {
   mockNavigate.mockReset();
   mockGoBack.mockReset();
-  mockUseScheduleData.mockReturnValue({ sets: ALL_SETS, eventName: "TML 2026", isLoading: false });
-  mockUseGroupState.mockReturnValue({ data: { picks: [] } });
+  mockMutatePick.mockReset();
+  mockUseScheduleData.mockReturnValue(SCHEDULE_DATA_DEFAULT);
+  mockUseGroupState.mockReturnValue(GROUP_STATE_DEFAULT);
 });
 
-test("renders_event_name", () => {
-  const { getByText } = render(<Schedule />, { wrapper });
-  expect(getByText("TML 2026")).toBeTruthy();
-});
-
-test("renders_day_tabs", () => {
+test("renders_day_picker_button", () => {
   const { getByTestId } = render(<Schedule />, { wrapper });
-  expect(getByTestId("day-tab-Friday")).toBeTruthy();
-  expect(getByTestId("day-tab-Saturday")).toBeTruthy();
+  expect(getByTestId("day-picker-btn")).toBeTruthy();
 });
 
-test("tap_day_tab_switches_day", () => {
-  const { getByTestId, getByText } = render(<Schedule />, { wrapper });
-  fireEvent.press(getByTestId("day-tab-Saturday"));
-  // After switching, Saturday tab exists (just verifying press doesn't crash)
-  expect(getByText("Saturday")).toBeTruthy();
+test("day_picker_shows_day_number", () => {
+  const { getByText } = render(<Schedule />, { wrapper });
+  // Two days: Friday (index 0 → Day 1) and Saturday (index 1 → Day 2)
+  expect(getByText("Day 1")).toBeTruthy();
+});
+
+test("tapping_day_picker_opens_dropdown", () => {
+  const { getByTestId } = render(<Schedule />, { wrapper });
+  fireEvent.press(getByTestId("day-picker-btn"));
+  expect(getByTestId("day-menu-backdrop")).toBeTruthy();
+  expect(getByTestId("day-option-Friday")).toBeTruthy();
+  expect(getByTestId("day-option-Saturday")).toBeTruthy();
+});
+
+test("selecting_day_from_dropdown_closes_menu", () => {
+  const { getByTestId, queryByTestId } = render(<Schedule />, { wrapper });
+  fireEvent.press(getByTestId("day-picker-btn"));
+  fireEvent.press(getByTestId("day-option-Saturday"));
+  expect(queryByTestId("day-menu-backdrop")).toBeNull();
+});
+
+test("all_stages_tab_is_default", () => {
+  const { getByTestId } = render(<Schedule />, { wrapper });
+  expect(getByTestId("grid-set-s1")).toBeTruthy();
 });
 
 test("tap_set_navigates_to_artist_detail", () => {
@@ -92,7 +123,7 @@ test("tap_set_navigates_to_artist_detail", () => {
 });
 
 test("shows_loading_when_data_loading", () => {
-  mockUseScheduleData.mockReturnValue({ sets: [], eventName: "", isLoading: true });
+  mockUseScheduleData.mockReturnValue({ ...SCHEDULE_DATA_DEFAULT, isLoading: true });
   const { UNSAFE_getByType } = render(<Schedule />, { wrapper });
   expect(UNSAFE_getByType(require("react-native").ActivityIndicator)).toBeTruthy();
 });
@@ -101,4 +132,19 @@ test("back_chip_pops_screen", () => {
   const { getByLabelText } = render(<Schedule />, { wrapper });
   fireEvent.press(getByLabelText("Go back"));
   expect(mockGoBack).toHaveBeenCalled();
+});
+
+test("switching_to_schedule_tab_shows_filter_chips", () => {
+  const { getByTestId, queryByTestId } = render(<Schedule />, { wrapper });
+  fireEvent.press(getByTestId("schedule-tab"));
+  expect(queryByTestId("grid-set-s1")).toBeNull();
+  expect(getByTestId("mine-filter")).toBeTruthy();
+  expect(getByTestId("group-filter")).toBeTruthy();
+});
+
+test("mine_filter_with_no_picks_shows_empty_state", () => {
+  const { getByTestId, getByText } = render(<Schedule />, { wrapper });
+  fireEvent.press(getByTestId("schedule-tab"));
+  fireEvent.press(getByTestId("mine-filter"));
+  expect(getByText("Pick your first set")).toBeTruthy();
 });

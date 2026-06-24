@@ -1,11 +1,6 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { fetchWithAuth } from "@/api/client";
-import type { SetDetail } from "@/types/api";
-
-interface EventLineupResponse {
-  event_id: string;
-  sets: SetDetail[];
-}
+import type { EventLineupResponse } from "@/types/api";
 
 export function useEventLineup(eventId: string): UseQueryResult<EventLineupResponse> {
   return useQuery<EventLineupResponse>({
