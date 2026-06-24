@@ -77,7 +77,8 @@ test("save_btn_calls_updateProfile_with_correct_payload", () => {
   fireEvent.changeText(getByTestId("display-name-input"), "Jerome");
   fireEvent.press(getByTestId("save-btn"));
   expect(mockSaveProfile).toHaveBeenCalledWith(
-    expect.objectContaining({ display_name: "Jerome", avatar_color: expect.any(String) })
+    expect.objectContaining({ display_name: "Jerome", avatar_color: expect.any(String) }),
+    expect.anything()
   );
 });
 
@@ -89,7 +90,8 @@ test("tap_swatch_updates_avatar_color", () => {
   fireEvent.changeText(getByTestId("display-name-input"), "Jerome");
   fireEvent.press(getByTestId("save-btn"));
   expect(mockSaveProfile).toHaveBeenCalledWith(
-    expect.objectContaining({ avatar_color: "#ff2d9b" })
+    expect.objectContaining({ avatar_color: "#ff2d9b" }),
+    expect.anything()
   );
 });
 

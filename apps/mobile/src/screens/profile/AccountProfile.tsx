@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -38,7 +39,18 @@ export function AccountProfile() {
 
   const handleSave = () => {
     if (!canSave) return;
-    updateProfile({ display_name: displayName.trim(), avatar_color: avatarColor });
+    updateProfile(
+      { display_name: displayName.trim(), avatar_color: avatarColor },
+      {
+        onSuccess: () => {
+          void queryClient.invalidateQueries({ queryKey: ["me"] });
+          Alert.alert("Profile updated");
+        },
+        onError: (err) => {
+          Alert.alert("Error", err.message ?? "Could not save profile");
+        },
+      },
+    );
   };
 
   const handleConfirmLeave = () => {
