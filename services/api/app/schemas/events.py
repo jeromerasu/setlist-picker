@@ -43,6 +43,7 @@ class StageDetail(_Model):
     stage_id: UUID
     name: str
     display_order: int
+    color_hex: str
     sets: list[SetDetail]
 
 

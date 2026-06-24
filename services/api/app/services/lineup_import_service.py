@@ -21,6 +21,24 @@ _logger = structlog.get_logger()
 
 _DISPLAY_ORDER_INCREMENT = 10
 
+_STAGE_COLORS: tuple[str, ...] = (
+    "#ff4f9a",  # 0  stage.sherwood
+    "#36c6ff",  # 1  stage.tripolee
+    "#a06bff",  # 2  stage.ranch
+    "#2dd4bf",  # 3  stage.cosmic
+    "#ffd23f",  # 4  HUES[4] amber
+    "#ff6a3d",  # 5  HUES[4] orange
+    "#ff2d9b",  # 6  neon.pink
+    "#28e0ff",  # 7  neon.cyan
+    "#a78bfa",  # 8  neon.purple
+    "#7b5cff",  # 9  neon.purpleDeep
+    "#0e7c66",  # 10 HUES[3] forest
+    "#5b1bd6",  # 11 neon.violetSat
+    "#ff8ad6",  # 12 text.daySectionAccent
+    "#1453d6",  # 13 neon.skyDeep
+    "#cdb4fe",  # 14 neon.lilac
+)
+
 
 async def import_lineup(
     db: AsyncSession,
@@ -46,12 +64,16 @@ async def import_lineup(
     try:
         event = await _upsert_event(db, payload)
 
-        # Cache: external_id → stage_id within this import
+        # Cache: external_id → stage, and first-seen position (0-based) per stage.
         stage_cache: dict[str, Stage] = {}
+        stage_order: dict[str, int] = {}
 
         for perf in payload.performances:
+            if perf.stage.id not in stage_order:
+                stage_order[perf.stage.id] = len(stage_order)
             stage = await _upsert_stage(
-                db, event, perf.stage.id, perf.stage.name, stage_cache, counts
+                db, event, perf.stage.id, perf.stage.name, stage_cache, counts,
+                position=stage_order[perf.stage.id],
             )
 
             starts_at = datetime.fromisoformat(perf.startTime)
@@ -164,6 +186,7 @@ async def _upsert_stage(
     name: str,
     cache: dict[str, Stage],
     counts: dict[str, int],
+    position: int,
 ) -> Stage:
     if external_id in cache:
         return cache[external_id]
@@ -183,11 +206,13 @@ async def _upsert_stage(
         select(func.max(Stage.display_order)).where(Stage.event_id == event.event_id)
     )
     current_max: int = max_result.scalar_one() or 0
+    display_order = current_max + _DISPLAY_ORDER_INCREMENT
     stage = Stage(
         event_id=event.event_id,
         name=name,
-        display_order=current_max + _DISPLAY_ORDER_INCREMENT,
+        display_order=display_order,
         external_id=external_id,
+        color_hex=_STAGE_COLORS[position % len(_STAGE_COLORS)],
     )
     db.add(stage)
     await db.flush()

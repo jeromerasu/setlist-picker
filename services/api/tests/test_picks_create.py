@@ -43,6 +43,7 @@ async def pick_setup(
         name="Main",
         display_order=1,
         external_id="main",
+        color_hex="#ff4f9a",
     )
     db_session.add(stage)
     await db_session.flush()
@@ -216,7 +217,8 @@ async def test_set_in_different_event_returns_404(
     await db_session.flush()
 
     other_stage = Stage(
-        event_id=other_event.event_id, name="Other Stage", display_order=1, external_id="os"
+        event_id=other_event.event_id, name="Other Stage", display_order=1, external_id="os",
+        color_hex="#ff4f9a",
     )
     db_session.add(other_stage)
     await db_session.flush()

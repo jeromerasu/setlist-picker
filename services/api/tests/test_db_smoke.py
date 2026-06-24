@@ -140,6 +140,7 @@ async def test_pick_cascade_on_member_delete(db_session: AsyncSession) -> None:
         event_id=event.event_id,
         name="MAINSTAGE",
         external_id="ms1",
+        color_hex="#ff4f9a",
     )
     db_session.add_all([member, stage])
     await db_session.flush()

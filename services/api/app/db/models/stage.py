@@ -24,3 +24,4 @@ class Stage(Base):
     name: Mapped[str] = mapped_column(Text, nullable=False)
     display_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     external_id: Mapped[str] = mapped_column(Text, nullable=False)
+    color_hex: Mapped[str] = mapped_column(Text, nullable=False)

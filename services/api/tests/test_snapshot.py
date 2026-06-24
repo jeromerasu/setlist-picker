@@ -55,6 +55,7 @@ async def snap_setup(
         name="Main Stage",
         display_order=1,
         external_id="main-stage",
+        color_hex="#ff4f9a",
     )
     db_session.add(stage)
     await db_session.flush()
@@ -185,6 +186,7 @@ async def test_snapshot_ordering_stage_display_then_starts_at(
         name="Second Stage",
         display_order=2,
         external_id="stage-2",
+        color_hex="#36c6ff",
     )
     db_session.add(stage2)
     await db_session.flush()

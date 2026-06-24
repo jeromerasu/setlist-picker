@@ -43,14 +43,27 @@ Implementer reads this file and writes:
 
 ### 1.3 Stage palette (used in schedule grid)
 
-| Token | Hex | Stage in prototype |
-|---|---|---|
-| `stage.sherwood` | `#ff4f9a` | Sherwood Court (line 492). |
-| `stage.tripolee` | `#36c6ff` | Tripolee. |
-| `stage.ranch` | `#a06bff` | Ranch Arena. |
-| `stage.cosmic` | `#2dd4bf` | Cosmic Meadow. |
+Full 15-entry palette (REALIGN-001). Assigned by the importer at insert time via `display_order % 15`; defined as `_STAGE_COLORS` in `lineup_import_service.py`. Index order is canonical — do not reorder.
 
-These are seed values — the lineup importer ([BE-018](./BE-018-lineup-importer.md)) assigns a stage a color at import time, rotating through a 6-entry palette (the prototype's `HUES` array, see § 1.7). The 4 above appear in the prototype only because it hardcodes Lost Lands stages.
+| Index | Token / source | Hex |
+|-------|---------------|-----|
+| 0 | `stage.sherwood` | `#ff4f9a` |
+| 1 | `stage.tripolee` | `#36c6ff` |
+| 2 | `stage.ranch` | `#a06bff` |
+| 3 | `stage.cosmic` | `#2dd4bf` |
+| 4 | HUES[4] amber start | `#ffd23f` |
+| 5 | HUES[4] orange end | `#ff6a3d` |
+| 6 | `neon.pink` | `#ff2d9b` |
+| 7 | `neon.cyan` | `#28e0ff` |
+| 8 | `neon.purple` | `#a78bfa` |
+| 9 | `neon.purpleDeep` | `#7b5cff` |
+| 10 | HUES[3] forest end | `#0e7c66` |
+| 11 | `neon.violetSat` | `#5b1bd6` |
+| 12 | `text.daySectionAccent` | `#ff8ad6` |
+| 13 | `neon.skyDeep` | `#1453d6` |
+| 14 | `neon.lilac` | `#cdb4fe` |
+
+The 4 original seed values (indices 0–3) appear hardcoded in the prototype for Lost Lands stages. Indices 4–14 are drawn from § 1.1 / § 1.2 to ensure visual distinctness across all 15 Tomorrowland stages.
 
 ### 1.4 Text colors
 

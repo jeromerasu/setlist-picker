@@ -139,6 +139,7 @@ async def get_event_lineup(db: AsyncSession, event_id: _uuid_mod.UUID) -> EventL
             stage_id=st.stage_id,
             name=st.name,
             display_order=st.display_order,
+            color_hex=st.color_hex,
             sets=sets_by_stage.get(st.stage_id, []),
         )
         for st in stages
