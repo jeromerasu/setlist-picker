@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
@@ -52,6 +53,7 @@ export function JoinGroup() {
   };
 
   return (
+    <ScreenContainer>
     <KeyboardAvoidingView
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -95,6 +97,7 @@ export function JoinGroup() {
         testID="submit-btn"
       />
     </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
 

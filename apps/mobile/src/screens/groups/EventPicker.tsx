@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
@@ -61,7 +62,7 @@ export function EventPicker() {
   };
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <BackChip onPress={() => navigation.goBack()} />
         <Text style={styles.title}>Choose event</Text>
@@ -90,7 +91,7 @@ export function EventPicker() {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
-    </View>
+    </ScreenContainer>
   );
 }
 

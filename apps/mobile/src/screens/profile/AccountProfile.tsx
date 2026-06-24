@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar } from "@/components/Avatar";
 import { NeonGradientButton } from "@/components/NeonGradientButton";
@@ -53,7 +54,7 @@ export function AccountProfile() {
   const initials = displayName.trim().slice(0, 2).toUpperCase() || "ME";
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.sectionTitle}>Your profile</Text>
 
@@ -112,7 +113,7 @@ export function AccountProfile() {
           onCancel={() => setLeaveTarget(null)}
         />
       )}
-    </View>
+    </ScreenContainer>
   );
 }
 

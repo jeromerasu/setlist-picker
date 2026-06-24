@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
@@ -22,17 +23,17 @@ export function ArtistDetail() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <ActivityIndicator color={cyberColors.neonCyan} />
-      </View>
+      </ScreenContainer>
     );
   }
 
   if (error != null || data == null) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <Text style={styles.errorText}>Artist not found</Text>
-      </View>
+      </ScreenContainer>
     );
   }
 
@@ -46,7 +47,7 @@ export function ArtistDetail() {
   };
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <BackChip onPress={() => navigation.goBack()} />
       </View>
@@ -103,7 +104,7 @@ export function ArtistDetail() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 

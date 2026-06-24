@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQueryClient } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ export function CreateGroup() {
   const apiError = error as ApiError | null;
 
   return (
+    <ScreenContainer>
     <KeyboardAvoidingView
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -103,6 +105,7 @@ export function CreateGroup() {
         testID="submit-btn"
       />
     </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
 

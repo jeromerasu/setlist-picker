@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRef } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -27,24 +28,24 @@ export function RightNowSnapshot() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <ActivityIndicator color={colors.neon.violet} />
-      </View>
+      </ScreenContainer>
     );
   }
 
   if (error != null || data == null) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <Text style={styles.errorText}>Snapshot unavailable</Text>
-      </View>
+      </ScreenContainer>
     );
   }
 
   const allSets: SnapshotSet[] = data.stages.flatMap((s) => s.sets);
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <BackChip onPress={() => navigation.goBack()} />
         <Text style={styles.title} numberOfLines={1} testID="snapshot-group-name">
@@ -81,7 +82,7 @@ export function RightNowSnapshot() {
           ))}
         </ScrollView>
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 

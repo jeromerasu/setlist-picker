@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
@@ -38,14 +39,14 @@ export function Schedule() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <ActivityIndicator color={colors.neon.violet} />
-      </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <View style={styles.header}>
         <BackChip onPress={() => navigation.goBack()} />
         <Text style={styles.eventName} numberOfLines={1}>
@@ -62,7 +63,7 @@ export function Schedule() {
           onSelectSet={handleSelectSet}
         />
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 

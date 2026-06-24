@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,22 +36,22 @@ export function GroupsList() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingScreen}>
+      <ScreenContainer style={styles.loadingScreen}>
         <ActivityIndicator color={colors.neon.purple} />
-      </View>
+      </ScreenContainer>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <EmptyState
           icon={<Text style={styles.icon}>⚠️</Text>}
           title="Couldn't load groups"
           body="Check your connection and try again."
           cta={{ label: "Retry", onPress: () => void refetch() }}
         />
-      </View>
+      </ScreenContainer>
     );
   }
 
@@ -71,7 +72,7 @@ export function GroupsList() {
 
   if (groups.length === 0) {
     return (
-      <View style={styles.screen}>
+      <ScreenContainer style={styles.screen}>
         <Text style={styles.wordmark}>GROUPS</Text>
         <Text style={styles.subtitle}>Pick sets together. See who's where.</Text>
         <EmptyState
@@ -80,12 +81,12 @@ export function GroupsList() {
           body="Create a group to start planning, or join one with an invite code."
         />
         {CTAs}
-      </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <Text style={styles.wordmark}>GROUPS</Text>
       <Text style={styles.subtitle}>Pick sets together. See who's where.</Text>
       <ScrollView
@@ -110,7 +111,7 @@ export function GroupsList() {
         ))}
       </ScrollView>
       {CTAs}
-    </View>
+    </ScreenContainer>
   );
 }
 

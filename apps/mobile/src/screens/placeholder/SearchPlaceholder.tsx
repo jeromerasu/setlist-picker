@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 
 export function SearchPlaceholder() {
   return (
-    <View style={styles.container}>
+    <ScreenContainer style={styles.container}>
       <Text style={styles.body}>Search coming soon</Text>
-    </View>
+    </ScreenContainer>
   );
 }
 

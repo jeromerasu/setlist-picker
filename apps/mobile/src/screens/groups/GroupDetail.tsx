@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,17 +40,17 @@ export function GroupDetail() {
 
   if (groupLoading) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <ActivityIndicator color={colors.neon.violet} />
-      </View>
+      </ScreenContainer>
     );
   }
 
   if (groupError != null || group == null) {
     return (
-      <View style={styles.center}>
+      <ScreenContainer style={styles.center}>
         <Text style={styles.errorText}>Failed to load group</Text>
-      </View>
+      </ScreenContainer>
     );
   }
 
@@ -79,7 +80,7 @@ export function GroupDetail() {
   };
 
   return (
-    <View style={styles.screen}>
+    <ScreenContainer style={styles.screen}>
       <GroupDetailHeader
         groupName={group.name}
         inviteCode={group.invite_code}
@@ -112,7 +113,7 @@ export function GroupDetail() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
