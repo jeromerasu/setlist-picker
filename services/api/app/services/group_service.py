@@ -13,13 +13,18 @@ from app.db.models.event import Event
 from app.db.models.group import Group
 from app.db.models.member import Member
 from app.db.models.pick import Pick
+from app.db.models.set_ import Set
+from app.db.models.stage import Stage
 from app.db.models.user import User
 from app.db.uuid7 import uuid7
 from app.schemas.groups import (
     EventSummary,
     GroupCreateResponse,
     GroupJoinResponse,
+    GroupScheduleResponse,
+    GroupSetItem,
     GroupStateResponse,
+    MemberPickInfo,
     MyGroupListItem,
     MyGroupListResponse,
     PickSummary,
@@ -311,4 +316,75 @@ async def get_group_state(
         picks=picks_out,
         archived_at=group.archived_at,
         last_active_at=group.last_active_at,
+    )
+
+
+async def get_group_schedule(
+    db: AsyncSession,
+    caller: User,
+    group: Group,
+    day_label: str,
+) -> GroupScheduleResponse:
+    # Verify caller is a member of this group
+    mem_result = await db.execute(
+        select(Member).where(Member.user_id == caller.id, Member.group_id == group.id)
+    )
+    if mem_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=403, detail={"error_code": "not_a_member"})
+
+    # Single round-trip: active picks with set/stage/member/user context
+    rows_result = await db.execute(
+        select(Pick, Set, Stage, Member, User)
+        .join(Set, Set.set_id == Pick.set_id)
+        .join(Stage, Stage.stage_id == Set.stage_id)
+        .join(Member, Member.id == Pick.member_id)
+        .join(User, User.id == Member.user_id)
+        .where(
+            Member.group_id == group.id,
+            Set.day_label == day_label,
+            Pick.state == "active",
+        )
+        .order_by(Set.starts_at.asc(), Member.joined_at.asc())
+    )
+    rows = rows_result.all()
+
+    # Aggregate: group by set_id, preserving start-time order
+    sets_seen: dict[uuid.UUID, GroupSetItem] = {}
+    for pick, set_obj, stage, member, user in rows:
+        if set_obj.set_id not in sets_seen:
+            sets_seen[set_obj.set_id] = GroupSetItem(
+                set_id=set_obj.set_id,
+                display_name=set_obj.display_name,
+                stage_name=stage.name,
+                stage_color_hex=stage.color_hex,
+                day_label=set_obj.day_label,
+                starts_at=set_obj.starts_at,
+                ends_at=set_obj.ends_at,
+                going_members=[],
+            )
+        display_name = member.display_name_override or user.display_name or "Member"
+        sets_seen[set_obj.set_id].going_members.append(
+            MemberPickInfo(
+                member_id=member.id,
+                display_name=display_name,
+                avatar_color=user.avatar_color,
+            )
+        )
+
+    sets_out = list(sets_seen.values())
+    total_picks = sum(len(s.going_members) for s in sets_out)
+
+    _logger.info(
+        "group.schedule_served",
+        group_id=str(group.id),
+        day_label=day_label,
+        set_count=len(sets_out),
+        total_picks=total_picks,
+    )
+
+    return GroupScheduleResponse(
+        group_id=group.id,
+        event_id=group.event_id,
+        day_label=day_label,
+        sets=sets_out,
     )

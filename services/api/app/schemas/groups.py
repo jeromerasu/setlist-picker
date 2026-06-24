@@ -97,3 +97,27 @@ class GroupStateResponse(_Model):
     picks: list[PickSummary]
     archived_at: datetime | None
     last_active_at: datetime
+
+
+class MemberPickInfo(_Model):
+    member_id: UUID
+    display_name: str
+    avatar_color: str
+
+
+class GroupSetItem(_Model):
+    set_id: UUID
+    display_name: str
+    stage_name: str
+    stage_color_hex: str
+    day_label: str
+    starts_at: datetime
+    ends_at: datetime
+    going_members: list[MemberPickInfo]
+
+
+class GroupScheduleResponse(_Model):
+    group_id: UUID
+    event_id: UUID
+    day_label: str
+    sets: list[GroupSetItem]

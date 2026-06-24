@@ -18,10 +18,11 @@ from app.schemas.groups import (
     GroupCreateResponse,
     GroupJoinRequest,
     GroupJoinResponse,
+    GroupScheduleResponse,
     GroupStateResponse,
 )
 from app.schemas.snapshot import GroupSnapshotResponse
-from app.services.group_service import create_group, get_group_state, join_group
+from app.services.group_service import create_group, get_group_schedule, get_group_state, join_group
 from app.services.snapshot_service import get_snapshot
 from app.utils.http_dates import format_last_modified, parse_if_modified_since
 
@@ -88,6 +89,17 @@ async def _resolve_group_by_code(invite_code_raw: str, db: AsyncSession) -> Grou
     if group is None:
         raise HTTPException(status_code=404, detail={"error_code": "group_not_found"})
     return group
+
+
+@router.get("/groups/{invite_code}/schedule", response_model=GroupScheduleResponse)
+async def get_group_schedule_endpoint(
+    invite_code: str,
+    day_label: Annotated[str, Query(...)],
+    caller: Annotated[User, Depends(current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> GroupScheduleResponse:
+    group = await _resolve_group_by_code(invite_code, db)
+    return await get_group_schedule(db, caller, group, day_label)
 
 
 @router.get("/groups/{invite_code}/snapshot", response_model=GroupSnapshotResponse)
