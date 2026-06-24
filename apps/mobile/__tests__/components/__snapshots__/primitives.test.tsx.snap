@@ -87,344 +87,348 @@ exports[`AvatarStack_empty_renders_nothing 1`] = `
 `;
 
 exports[`AvatarStack_overflow_badge_snapshot 1`] = `
-<View
-  style={
-    {
-      "alignItems": "center",
-      "flexDirection": "row",
-    }
-  }
->
-  <View>
-    <View
-      style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#ff2d9b",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
-        style={
-          [
-            {
-              "fontWeight": "700",
-            },
-            {
-              "color": "#ffffff",
-              "fontSize": 10,
-            },
-          ]
-        }
-      >
-        A1
-      </Text>
-    </View>
-  </View>
+<View>
   <View
     style={
       {
-        "marginLeft": -7,
+        "alignItems": "center",
+        "flexDirection": "row",
       }
     }
   >
-    <View
-      style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#a64bff",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
+    <View>
+      <View
         style={
           [
             {
-              "fontWeight": "700",
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
             },
             {
-              "color": "#ffffff",
-              "fontSize": 10,
+              "backgroundColor": "#ff2d9b",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
             },
           ]
         }
       >
-        B2
-      </Text>
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          A1
+        </Text>
+      </View>
     </View>
-  </View>
-  <View
-    style={
-      {
-        "marginLeft": -7,
-      }
-    }
-  >
     <View
       style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#28e0ff",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
-        style={
-          [
-            {
-              "fontWeight": "700",
-            },
-            {
-              "color": "#ffffff",
-              "fontSize": 10,
-            },
-          ]
-        }
-      >
-        C3
-      </Text>
-    </View>
-  </View>
-  <View
-    style={
-      {
-        "marginLeft": -7,
-      }
-    }
-  >
-    <View
-      style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#7b5cff",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
-        style={
-          [
-            {
-              "fontWeight": "700",
-            },
-            {
-              "color": "#ffffff",
-              "fontSize": 10,
-            },
-          ]
-        }
-      >
-        D4
-      </Text>
-    </View>
-  </View>
-  <View
-    style={
-      [
         {
-          "alignItems": "center",
-          "backgroundColor": "rgba(255,255,255,0.07)",
-          "justifyContent": "center",
-          "paddingHorizontal": 4,
-        },
-        {
-          "borderRadius": 12,
-          "height": 24,
           "marginLeft": -7,
-          "minWidth": 24,
-        },
-      ]
-    }
-  >
-    <Text
-      style={
-        {
-          "color": "#c8b9ff",
-          "fontSize": 10,
-          "fontWeight": "600",
         }
       }
     >
-      +
-      2
-    </Text>
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
+            },
+            {
+              "backgroundColor": "#a64bff",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          B2
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginLeft": -7,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
+            },
+            {
+              "backgroundColor": "#28e0ff",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          C3
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginLeft": -7,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
+            },
+            {
+              "backgroundColor": "#7b5cff",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          D4
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "backgroundColor": "rgba(255,255,255,0.07)",
+            "justifyContent": "center",
+            "paddingHorizontal": 4,
+          },
+          {
+            "borderRadius": 12,
+            "height": 24,
+            "marginLeft": -7,
+            "minWidth": 24,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#c8b9ff",
+            "fontSize": 10,
+            "fontWeight": "600",
+          }
+        }
+      >
+        +
+        2
+      </Text>
+    </View>
   </View>
 </View>
 `;
 
 exports[`AvatarStack_three_members_snapshot 1`] = `
-<View
-  style={
-    {
-      "alignItems": "center",
-      "flexDirection": "row",
-    }
-  }
->
-  <View>
-    <View
-      style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#ff2d9b",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
-        style={
-          [
-            {
-              "fontWeight": "700",
-            },
-            {
-              "color": "#ffffff",
-              "fontSize": 10,
-            },
-          ]
-        }
-      >
-        A1
-      </Text>
-    </View>
-  </View>
+<View>
   <View
     style={
       {
-        "marginLeft": -7,
+        "alignItems": "center",
+        "flexDirection": "row",
       }
     }
   >
-    <View
-      style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#a64bff",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-    >
-      <Text
+    <View>
+      <View
         style={
           [
             {
-              "fontWeight": "700",
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
             },
             {
-              "color": "#ffffff",
-              "fontSize": 10,
+              "backgroundColor": "#ff2d9b",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
             },
           ]
         }
       >
-        B2
-      </Text>
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          A1
+        </Text>
+      </View>
     </View>
-  </View>
-  <View
-    style={
-      {
-        "marginLeft": -7,
-      }
-    }
-  >
     <View
       style={
-        [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-            "overflow": "hidden",
-          },
-          {
-            "backgroundColor": "#28e0ff",
-            "borderColor": "#150e34",
-            "borderRadius": 12,
-            "borderWidth": 2,
-            "height": 24,
-            "width": 24,
-          },
-        ]
+        {
+          "marginLeft": -7,
+        }
       }
     >
-      <Text
+      <View
         style={
           [
             {
-              "fontWeight": "700",
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
             },
             {
-              "color": "#ffffff",
-              "fontSize": 10,
+              "backgroundColor": "#a64bff",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
             },
           ]
         }
       >
-        C3
-      </Text>
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          B2
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginLeft": -7,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "overflow": "hidden",
+            },
+            {
+              "backgroundColor": "#28e0ff",
+              "borderColor": "#150e34",
+              "borderRadius": 12,
+              "borderWidth": 2,
+              "height": 24,
+              "width": 24,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontWeight": "700",
+              },
+              {
+                "color": "#ffffff",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          C3
+        </Text>
+      </View>
     </View>
   </View>
 </View>

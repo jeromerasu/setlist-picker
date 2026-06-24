@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { StageDot } from "@/components/StageDot";
 import { AvatarStack } from "@/components/AvatarStack";
 import { Avatar } from "@/components/Avatar";
+import { GoingMembersSheet } from "@/components/GoingMembersSheet";
 import { colors, radius, spacing } from "@/theme/tokens";
 import { formatTimeLabel } from "@/utils/gridLayout";
 import type { StageInfo } from "@/hooks/useScheduleData";
@@ -57,6 +58,7 @@ export function ScheduleTimeline({
   onOpenFilterSheet,
 }: Props) {
   const [filterMode, setFilterMode] = useState<FilterMode>("none");
+  const [openSheet, setOpenSheet] = useState<OpenSheetState | null>(null);
 
   // All sets for this day, sorted by start time
   const daySets = sets
@@ -96,6 +98,15 @@ export function ScheduleTimeline({
 
   return (
     <View style={styles.root}>
+      {/* Going members sheet overlay — absoluteFill covers the full timeline area */}
+      {openSheet != null && (
+        <GoingMembersSheet
+          artistName={openSheet.artistName}
+          members={openSheet.members}
+          onClose={() => setOpenSheet(null)}
+        />
+      )}
+
       {/* Filter chips row — prototype l.346–349 */}
       <View style={styles.chipsRow}>
         <TouchableOpacity
@@ -172,6 +183,7 @@ export function ScheduleTimeline({
                     showRemove
                     onPress={() => onNavigateToArtist(set)}
                     onRemove={() => onRemovePick(set.set_id)}
+                    onOpenMemberSheet={setOpenSheet}
                   />
                 );
               })}
@@ -213,6 +225,7 @@ export function ScheduleTimeline({
                   showRemove={false}
                   onPress={() => onNavigateToArtist(set)}
                   onRemove={() => undefined}
+                  onOpenMemberSheet={setOpenSheet}
                 />
               );
             })}
@@ -273,6 +286,11 @@ function UpNextCard({ set, stageBySetId }: UpNextCardProps) {
 // ─── Timeline item ────────────────────────────────────────────────────────────
 // Matches prototype l.372–386: time col + dot/line col + card
 
+interface OpenSheetState {
+  artistName: string;
+  members: AvatarPerson[];
+}
+
 interface TimelineItemProps {
   set: SetDetail;
   stageName: string;
@@ -283,6 +301,7 @@ interface TimelineItemProps {
   showRemove: boolean;
   onPress: () => void;
   onRemove: () => void;
+  onOpenMemberSheet: (state: OpenSheetState) => void;
 }
 
 const LINE_HEIGHT = 96; // Approximate card + gap height for the connector line
@@ -297,6 +316,7 @@ function TimelineItem({
   showRemove,
   onPress,
   onRemove,
+  onOpenMemberSheet,
 }: TimelineItemProps) {
   const artistName = set.artists[0]?.name ?? set.display_name;
   const sLabel = formatTimeLabel(set.starts_at);
@@ -343,7 +363,7 @@ function TimelineItem({
           <StageDot color={stageColor} size={8} />
           <Text style={styles.cardStageName}>{stageName}</Text>
         </View>
-        {/* Going row */}
+        {/* Going row — avatar stack tappable to open member detail sheet */}
         <View style={styles.cardGoingRow}>
           {goingMembers.length > 0 ? (
             <AvatarStack
@@ -351,6 +371,7 @@ function TimelineItem({
               size={26}
               ringColor="#1c143a"
               testID={`going-avatars-${set.set_id}`}
+              onPress={() => onOpenMemberSheet({ artistName, members: goingMembers })}
             />
           ) : (
             <View style={styles.goingPlaceholderDot} />

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Avatar } from "./Avatar";
 import { colors } from "@/theme/tokens";
 
@@ -15,6 +15,7 @@ export interface AvatarStackProps {
   ringColor?: string;
   overlap?: number;
   testID?: string;
+  onPress?: () => void;
 }
 
 export function AvatarStack({
@@ -24,14 +25,15 @@ export function AvatarStack({
   ringColor = colors.bg.mid,
   overlap = -7,
   testID,
+  onPress,
 }: AvatarStackProps) {
   if (members.length === 0) return <View style={{ width: 0 }} />;
 
   const visible = members.slice(0, maxVisible);
   const extra = members.length - maxVisible;
 
-  return (
-    <View style={styles.row} testID={testID}>
+  const avatarRow = (
+    <View style={styles.row}>
       {visible.map((m, i) => (
         <View key={i} style={i > 0 ? { marginLeft: overlap } : undefined}>
           <Avatar
@@ -60,6 +62,16 @@ export function AvatarStack({
       )}
     </View>
   );
+
+  if (onPress != null) {
+    // testID on the pressable so fireEvent.press works correctly in tests
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.75} testID={testID}>
+        {avatarRow}
+      </TouchableOpacity>
+    );
+  }
+  return <View testID={testID}>{avatarRow}</View>;
 }
 
 const styles = StyleSheet.create({

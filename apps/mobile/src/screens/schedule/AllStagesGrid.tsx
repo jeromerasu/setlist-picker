@@ -10,6 +10,7 @@ import {
 import { usePickToggle } from "@/hooks/usePickToggle";
 import { useGroupSchedule } from "@/hooks/useGroupSchedule";
 import { AvatarStack } from "@/components/AvatarStack";
+import { GoingMembersSheet } from "@/components/GoingMembersSheet";
 import { colors, radius, spacing } from "@/theme/tokens";
 import type { MemberOut, PickSummary, SetDetail, StageDetail } from "@/types/api";
 import type { StageInfo } from "@/hooks/useScheduleData";
@@ -64,6 +65,7 @@ export function AllStagesGrid({
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [maybeSetIds, setMaybeSetIds] = useState(new Set<string>());
+  const [openSheetSetId, setOpenSheetSetId] = useState<string | null>(null);
   const { mutate: togglePick } = usePickToggle();
 
   const dayLabel = sets[0]?.day_label ?? "";
@@ -128,8 +130,22 @@ export function AllStagesGrid({
   const q = searchQuery.trim().toLowerCase();
   const myMember = members.find((m) => m.member_id === myMemberId);
 
+  const sheetSet = openSheetSetId != null ? sets.find((s) => s.set_id === openSheetSetId) : undefined;
+  const sheetMembers = openSheetSetId != null
+    ? (groupScheduleBySetId.get(openSheetSetId)?.going_members ?? [])
+    : [];
+
   return (
     <View style={styles.root}>
+      {/* Going members sheet overlay */}
+      {openSheetSetId != null && (
+        <GoingMembersSheet
+          artistName={sheetSet?.artists[0]?.name ?? sheetSet?.display_name ?? ""}
+          members={sheetMembers}
+          onClose={() => setOpenSheetSetId(null)}
+        />
+      )}
+
       {/* Instruction + legend + search — prototype lines 301-311 */}
       <View style={styles.headerSection}>
         <View style={styles.instructionRow}>
@@ -261,6 +277,7 @@ export function AllStagesGrid({
                             ringColor="#140e34"
                             overlap={-6}
                             testID={`going-stack-${set.set_id}`}
+                            onPress={() => setOpenSheetSetId(set.set_id)}
                           />
                         </View>
                       )}

@@ -295,3 +295,55 @@ test("tap_cycle_still_works_with_group_schedule_data", () => {
     expect.objectContaining({ set_id: "s1", is_picked: false }),
   );
 });
+
+// ─── GoingMembersSheet integration: avatar stack → sheet ─────────────────────
+
+test("tapping_going_stack_opens_going_members_sheet", () => {
+  const member: MemberPickInfo = { member_id: "m2", display_name: "Sanne", avatar_color: "#a78bfa" };
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", [member])],
+    },
+  });
+  const { getByTestId, getByText } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  fireEvent.press(getByTestId("going-stack-s1"));
+  expect(getByTestId("going-sheet")).toBeTruthy();
+  expect(getByText("Sanne")).toBeTruthy();
+});
+
+test("going_sheet_closes_on_done_button", () => {
+  const member: MemberPickInfo = { member_id: "m2", display_name: "Sanne", avatar_color: "#a78bfa" };
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", [member])],
+    },
+  });
+  const { getByTestId, queryByTestId } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  fireEvent.press(getByTestId("going-stack-s1"));
+  expect(getByTestId("going-sheet")).toBeTruthy();
+  fireEvent.press(getByTestId("going-sheet-close"));
+  expect(queryByTestId("going-sheet")).toBeNull();
+});
+
+test("going_sheet_shows_correct_artist_name", () => {
+  const member: MemberPickInfo = { member_id: "m2", display_name: "Sanne", avatar_color: "#a78bfa" };
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", [member])],
+    },
+  });
+  const { getByTestId, getByText } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  fireEvent.press(getByTestId("going-stack-s1"));
+  // Sheet title shows artist name — use testID to disambiguate from card
+  const sheetTitle = getByTestId("going-sheet-title");
+  expect(sheetTitle.props.children).toBe("Deadmau5");
+});
