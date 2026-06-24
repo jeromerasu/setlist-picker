@@ -51,11 +51,13 @@ async def get_artist_spotify_endpoint(
     artist_name: str,
     caller: Annotated[User, Depends(current_user)],
     db: AsyncSession = Depends(get_db),
+    refresh: bool = False,
 ) -> SpotifyArtistDetail:
     """Return artist photo, genres, and up to 5 top tracks from Spotify.
 
     Returns 503 if Spotify is unavailable and no cached data exists.
     Returns cached data even if Spotify credentials are not yet configured.
+    Pass ?refresh=true to bypass cache and re-run the full Spotify lookup.
     """
     raw_name = urllib.parse.unquote(artist_name)
     try:
@@ -64,6 +66,7 @@ async def get_artist_spotify_endpoint(
             raw_name,
             _spotify,
             cache_ttl_seconds=_settings.artist_cache_ttl_seconds,
+            force_refresh=refresh,
         )
     except ArtistUnavailableError:
         raise HTTPException(

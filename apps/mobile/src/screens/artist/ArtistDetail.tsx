@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,6 +22,10 @@ import type { TopTrack } from "@/types/api";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "ArtistDetail">;
 type Nav = NativeStackNavigationProp<HomeStackParamList, "ArtistDetail">;
+
+function toTitleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function fmtDuration(ms: number | null): string {
   if (ms == null) return "";
@@ -114,14 +119,27 @@ export function ArtistDetail() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Genre chips */}
+        {/* Genre hierarchy: primary pill (gradient) + sub-genre chips */}
         {genres.length > 0 && (
-          <View style={styles.genreRow}>
-            {genres.map((g) => (
-              <View key={g} style={styles.genrePill}>
-                <Text style={styles.genrePillText}>{g}</Text>
+          <View style={styles.genreSection}>
+            <LinearGradient
+              colors={["#ff2d9b", "#a64bff", "#28e0ff"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.primaryGenrePill}
+              testID="primary-genre-chip"
+            >
+              <Text style={styles.primaryGenreText}>{toTitleCase(genres[0])}</Text>
+            </LinearGradient>
+            {genres.length > 1 && (
+              <View style={styles.subGenreRow}>
+                {genres.slice(1).map((g, i) => (
+                  <View key={g} style={styles.subGenrePill} testID={`subgenre-chip-${i}`}>
+                    <Text style={styles.subGenreText}>{toTitleCase(g)}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            )}
           </View>
         )}
 
@@ -262,20 +280,34 @@ const styles = StyleSheet.create({
     gap: spacing[8],
   },
   // Genres
-  genreRow: {
+  genreSection: { gap: spacing[3] },
+  primaryGenrePill: {
+    alignSelf: "flex-start",
+    borderRadius: radius.full,
+    paddingHorizontal: spacing[6],
+    paddingVertical: spacing[5],
+  },
+  primaryGenreText: {
+    fontFamily: "Manrope-Bold",
+    fontSize: 16,
+    color: colors.text.invertedDark,
+  },
+  subGenreRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[3],
   },
-  genrePill: {
+  subGenrePill: {
     backgroundColor: colors.bg.surfaceMed,
     borderRadius: radius.full,
-    paddingHorizontal: 11,
-    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[4],
   },
-  genrePillText: {
+  subGenreText: {
     fontFamily: "Manrope-SemiBold",
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text.iconAccent,
   },
   // Sections

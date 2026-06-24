@@ -134,14 +134,37 @@ test("renders_artist_name", () => {
 
 test("renders_genres_from_spotify_when_available", () => {
   const { getByText } = render(<ArtistDetail />, { wrapper });
-  expect(getByText("trance")).toBeTruthy();
-  expect(getByText("progressive")).toBeTruthy();
+  // Genres are title-cased for display
+  expect(getByText("Trance")).toBeTruthy();
+  expect(getByText("Progressive")).toBeTruthy();
 });
 
 test("renders_genres_from_detail_when_spotify_not_loaded", () => {
   mockUseArtistSpotify.mockReturnValue(SPOTIFY_ERROR);
   const { getByText } = render(<ArtistDetail />, { wrapper });
-  expect(getByText("trance")).toBeTruthy();
+  expect(getByText("Trance")).toBeTruthy();
+});
+
+test("primary_genre_chip_rendered_as_gradient_pill", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("primary-genre-chip")).toBeTruthy();
+});
+
+test("sub_genre_chips_rendered_for_remaining_genres", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  // genres[1] = "progressive" → subgenre-chip-0
+  expect(getByTestId("subgenre-chip-0")).toBeTruthy();
+});
+
+test("no_genre_section_when_genres_empty", () => {
+  mockUseArtistDetail.mockReturnValue({
+    data: { ...MOCK_ARTIST, genres: [] },
+    isLoading: false,
+    error: null,
+  });
+  mockUseArtistSpotify.mockReturnValue({ data: { ...MOCK_SPOTIFY, genres: [] }, isLoading: false });
+  const { queryByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(queryByTestId("primary-genre-chip")).toBeNull();
 });
 
 test("renders_top_five_tracks_from_spotify", () => {

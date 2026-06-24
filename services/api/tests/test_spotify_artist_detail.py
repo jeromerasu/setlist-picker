@@ -242,6 +242,78 @@ async def test_top_tracks_have_required_fields(
     assert t["duration_ms"] == 345_000
 
 
+async def test_force_refresh_bypasses_fresh_cache(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    auth_headers: dict[str, str],
+) -> None:
+    """?refresh=true skips the hot cache and re-runs Spotify search."""
+    tracks = [
+        {
+            "name": "Cached Track",
+            "preview_url": None,
+            "spotify_url": "https://open.spotify.com/t/cached",
+            "duration_ms": 180_000,
+        }
+    ]
+    await _seed_cache(db_session, "fisher", top_tracks=tracks, spotify_artist_id="spot-fisher")
+
+    from app.services.artist_providers.protocol import ProviderArtist
+
+    fresh_artist = ProviderArtist(
+        name="Fisher",
+        spotify_artist_id="spot-fisher",
+        image_url="https://img.example.com/fisher-new.jpg",
+        genres=["techno", "house", "dj"],
+        top_track=None,
+    )
+
+    with (
+        patch(
+            "app.services.spotify_service.SpotifyProvider.search_and_fetch",
+            new_callable=AsyncMock,
+            return_value=fresh_artist,
+        ) as mock_search,
+        patch(
+            "app.services.spotify_service.SpotifyProvider.get_top_tracks",
+            new_callable=AsyncMock,
+            return_value=_FIVE_TRACKS,
+        ),
+    ):
+        r = await client.get("/api/artists/fisher/spotify?refresh=true", headers=auth_headers)
+
+    assert r.status_code == 200
+    mock_search.assert_called_once()
+    data = r.json()
+    assert len(data["top_tracks"]) == 5
+
+
+async def test_force_refresh_false_serves_hot_cache(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    auth_headers: dict[str, str],
+) -> None:
+    """Without ?refresh=true, a hot cache with top_tracks is served without calling Spotify."""
+    tracks = [
+        {
+            "name": "Cached Track",
+            "preview_url": None,
+            "spotify_url": "https://open.spotify.com/t/cached",
+            "duration_ms": 180_000,
+        }
+    ]
+    await _seed_cache(db_session, "fisher", top_tracks=tracks, spotify_artist_id="spot-fisher")
+
+    with patch(
+        "app.services.spotify_service.SpotifyProvider.search_and_fetch",
+        new_callable=AsyncMock,
+    ) as mock_search:
+        r = await client.get("/api/artists/fisher/spotify", headers=auth_headers)
+
+    assert r.status_code == 200
+    mock_search.assert_not_called()
+
+
 async def test_genres_and_image_present_in_response(
     client: AsyncClient,
     db_session: AsyncSession,

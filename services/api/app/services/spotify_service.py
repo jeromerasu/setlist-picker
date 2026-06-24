@@ -21,19 +21,30 @@ async def get_spotify_detail(
     raw_name: str,
     spotify: SpotifyProvider,
     cache_ttl_seconds: int = 604800,
+    force_refresh: bool = False,
 ) -> SpotifyArtistDetail:
-    """Return Spotify image + genres + up-to-5 top tracks. Cache-first; 503 on total failure."""
+    """Return Spotify image + genres + up-to-5 top tracks. Cache-first; 503 on total failure.
+
+    Pass force_refresh=True to bypass the cache and re-run the full artist search,
+    refreshing image, genres, and tracks from Spotify.
+    """
     name_normalized = normalize(raw_name)
 
     row = await _load_row(db, name_normalized)
 
-    # Fresh cache with top_tracks already populated → serve immediately
-    if row is not None and _is_fresh(row, cache_ttl_seconds) and row.top_tracks:
+    # Fresh cache with top_tracks → serve immediately (skip on force_refresh)
+    if (
+        not force_refresh
+        and row is not None
+        and _is_fresh(row, cache_ttl_seconds)
+        and row.top_tracks
+    ):
         _logger.debug("spotify_detail.cache_hit", name_normalized=name_normalized)
         return _row_to_response(raw_name, row)
 
-    # If spotify_artist_id is known (from previous full fetch), use it directly
-    spotify_artist_id: str | None = row.spotify_artist_id if row else None
+    # force_refresh re-runs the full artist search to pick up updated genres/image
+    cached_id = row.spotify_artist_id if row else None
+    spotify_artist_id: str | None = None if force_refresh else cached_id
 
     if spotify_artist_id is None:
         # Need to search Spotify for the artist
