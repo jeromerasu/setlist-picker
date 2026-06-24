@@ -27,7 +27,7 @@ export function useScheduleData(inviteCode: string): UseScheduleDataResult {
   const stages = lineup?.stages ?? [];
   const stageBySetId = new Map<string, StageInfo>();
   stages.forEach((stage) => {
-    const color = stageColorByIndex(stage.display_order);
+    const color = stage.color_hex ?? stageColorByIndex(stage.display_order);
     stage.sets.forEach((set) => {
       stageBySetId.set(set.set_id, { name: stage.name, color });
     });

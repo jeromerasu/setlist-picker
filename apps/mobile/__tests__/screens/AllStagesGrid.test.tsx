@@ -43,7 +43,7 @@ function makeSet(
 }
 
 function makeStage(id: string, name: string, order: number, sets: SetDetail[]): StageDetail {
-  return { stage_id: id, name, display_order: order, sets };
+  return { stage_id: id, name, display_order: order, color_hex: null, sets };
 }
 
 function makeMember(id: string, name: string): MemberOut {

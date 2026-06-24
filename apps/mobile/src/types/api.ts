@@ -123,6 +123,7 @@ export interface StageDetail {
   stage_id: string;
   name: string;
   display_order: number;
+  color_hex: string | null;
   sets: SetDetail[];
 }
 

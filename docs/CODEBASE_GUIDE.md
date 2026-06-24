@@ -292,7 +292,9 @@ Stub.
 | `__tests__/utils/inviteCode.test.ts` | 5 tests: uppercase, I→1, L→1, O→0, clip |
 | `__tests__/screens/JoinGroup.test.tsx` | 8 tests: renders, enabled, disabled, normalization, back, mutate, success nav, 404 error |
 
-### FE-005 — Group detail
+### FE-005 — Group detail (REALIGN-004 rebuild)
+
+REALIGN-004 rebuilt the Group Detail screen to match the prototype: Orbitron gradient group name, event info block, member avatar stack, Invite + Schedule CTAs, artist day-filter tabs, All Artists list (HUES backgrounds), and per-day stage-grouped set rows with pick toggle and going avatars.
 
 | File | Purpose |
 |---|---|
@@ -300,12 +302,12 @@ Stub.
 | `src/utils/inviteShare.ts` | `shareInvite(name, code)` — RN Share.share wrapper |
 | `src/hooks/useGroupState.ts` | TanStack query → `GET /api/groups/:invite_code`; staleTime 15s |
 | `src/hooks/useEventLineup.ts` | TanStack query → `GET /api/events/:id/lineup`; staleTime Infinity; disabled when no eventId |
-| `src/hooks/usePickToggle.ts` | Mutation → `POST /DELETE /api/groups/:invite_code/picks/:set_id`; invalidates group query on success |
-| `src/screens/groups/GroupDetailHeader.tsx` | Name + code + share + schedule/snapshot pills |
-| `src/screens/groups/ArtistRowAll.tsx` | Artist row with Avatar (djb2 color) + heart pick toggle + member count |
-| `src/screens/groups/GroupDetail.tsx` | Root screen; day-bucketed artist list; loading / error states |
+| `src/screens/groups/GroupDetailHeader.tsx` | REALIGN-004: Orbitron gradient name + event info + member stack + Invite/Schedule CTAs + toast |
+| `src/screens/groups/GroupDetail.tsx` | REALIGN-004: day-filter tab strip; All Artists alphabetical list (HUES[i%6] thumb); day stage groups with set rows + pick toggle + going avatars; invite toast 2600ms |
+| `src/types/api.ts` | `StageDetail.color_hex: string \| null` — added per REALIGN-001 BE schema |
+| `src/hooks/useScheduleData.ts` | Uses `stage.color_hex ?? stageColorByIndex()` fallback for stage colors |
 | `__tests__/utils/dayBuckets.test.ts` | 3 tests: bucket grouping, empty, pickedSetIds |
-| `__tests__/screens/GroupDetail.test.tsx` | 9 tests: renders, day buckets, loading, error, toggle, nav artist, schedule, snapshot, picked heart |
+| `__tests__/screens/GroupDetail.test.tsx` | 18 tests: renders, loading, error, tabs, day stage groups, artist nav, pick toggle, filled indicator, schedule/snapshot/back CTAs, invite toast, empty state, member overflow |
 
 ### FE-006 — Schedule (REALIGN-002 + REALIGN-003 rebuild)
 
