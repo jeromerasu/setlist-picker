@@ -193,7 +193,7 @@ interface EmptyStateProps {
 **Manual QA:**
 
 1. Add `TokensGallery` to the bottom nav in dev only.
-2. Visually verify every primitive against `.local-data/design/FestApp.dc.html` side-by-side.
+2. Visually verify every primitive against `docs/design/FestApp.dc.html` side-by-side.
 3. Verify all 5 fonts load — switch the platform between iOS Simulator + Android emulator.
 4. Toggle the device into reduced-motion: animations honor the system preference (FE-101 ships a `useReducedMotion` hook).
 5. **Dark mode only.** Light theme is OQ-04 BACKLOG-001 — document any future divergence here.

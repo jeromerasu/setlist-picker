@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Bebas+Neue&family=Big+Shoulders+Display:wght@500;700;800;900&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  .stack > *{margin-left:-9px;box-shadow:0 0 0 2px var(--ring,#0d0a24)}
+  .stack > *:first-child{margin-left:0}
+</style>
+</helmet>
+<div style="min-width:100%;width:max-content;min-height:100vh;box-sizing:border-box;padding:56px;background:#e7e5df;display:flex;flex-direction:column;gap:30px;font-family:Manrope,sans-serif">
+
+  <div style="max-width:760px;display:flex;flex-direction:column;gap:10px">
+    <div style="font:800 12px Manrope;letter-spacing:.22em;color:#9b8cff">SETLIST PICKER · EDC LAS VEGAS 2026</div>
+    <div style="font:800 40px Manrope;letter-spacing:-.02em;color:#1a1818">Four aesthetic directions, same four screens</div>
+    <div style="font:400 15px Manrope;line-height:1.6;color:#5a5550">Each row is one complete direction — Groups list, Schedule, Artist detail, and Right Now. Compare how each handles the avatar-stack social proof and the "I'm going" picked-set state. Nothing is mixed across directions.</div>
+  </div>
+
+  <!-- ================= DIRECTION A : COSMIC-NEON ================= -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-top:2px solid #1a1818;padding-top:14px">
+      <div style="font:900 13px Manrope;letter-spacing:.2em;color:#b14bff">DIRECTION A</div>
+      <div style="font:800 26px Manrope;letter-spacing:-.01em;color:#1a1818">Insomniac / EDC — Cosmic-Neon</div>
+      <div style="font:400 13px Manrope;color:#6a6560">Nebula glass · magenta→violet→cyan neon · Orbitron caps · glow on picked</div>
+    </div>
+    <div style="display:flex;gap:30px;align-items:flex-start">
+
+      <!-- A1 Groups -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">1 · Groups</div>
+        <div style="--ring:#0d0a24;width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(120% 75% at 50% -8%,#3a1768 0%,#140e34 52%,#08060f 100%);box-shadow:0 16px 44px rgba(20,8,48,.34);color:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:700 13px Orbitron;letter-spacing:.04em">11:42<span style="display:flex;gap:5px;align-items:center;opacity:.85;font-size:11px">5G ▮▮▮ 86%</span></div>
+          <div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center">
+            <div style="font:900 28px Orbitron;letter-spacing:.04em;background:linear-gradient(135deg,#ff2d9b,#a64bff,#28e0ff);-webkit-background-clip:text;background-clip:text;color:transparent">GROUPS</div>
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ff2d9b,#28e0ff);display:flex;align-items:center;justify-content:center;font:800 14px Manrope">SR</div>
+          </div>
+
+          <div style="margin:16px 16px 0;border-radius:20px;padding:16px;background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)">
+            <div style="display:flex;gap:13px">
+              <div style="width:62px;height:62px;border-radius:14px;flex:none;background:radial-gradient(circle at 30% 20%,#ff3d9b,#5b1bd6 70%);display:flex;align-items:center;justify-content:center;font:700 9px Orbitron;text-align:center;line-height:1.2;letter-spacing:.04em;box-shadow:0 0 18px rgba(255,45,155,.4)">EDC<br>2026</div>
+              <div style="flex:1;min-width:0">
+                <div style="font:700 16px Manrope;letter-spacing:-.01em">The Ravers</div>
+                <div style="font:600 12px Manrope;color:#c8b9ff;margin-top:2px">EDC Las Vegas 2026</div>
+                <div style="font:500 11px Manrope;color:#8a82b8;margin-top:3px">May 15–17 · 6 members</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+              <div class="stack" style="display:flex">
+                <div style="width:28px;height:28px;border-radius:50%;background:#ff5d8f;display:flex;align-items:center;justify-content:center;font:800 10px Manrope">SR</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#36d1dc;display:flex;align-items:center;justify-content:center;font:800 10px Manrope">MJ</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#ffd23f;display:flex;align-items:center;justify-content:center;font:800 10px Manrope;color:#222">JL</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#a06bff;display:flex;align-items:center;justify-content:center;font:800 10px Manrope">PK</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#2dd4bf;display:flex;align-items:center;justify-content:center;font:800 10px Manrope;color:#062">+2</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.25);border-radius:9px;padding:6px 10px">
+                <span style="font:700 12px Orbitron;letter-spacing:.12em">K7M2X9PQ</span>
+                <span style="font-size:12px;opacity:.7">⧉</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin:13px 16px 0;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:13px">
+            <div style="width:48px;height:48px;border-radius:12px;flex:none;background:radial-gradient(circle at 40% 30%,#28e0ff,#1453d6 75%);display:flex;align-items:center;justify-content:center;font:700 8px Orbitron;text-align:center;line-height:1.1">BASS<br>HDS</div>
+            <div style="flex:1">
+              <div style="font:700 15px Manrope">Bass Heads</div>
+              <div style="font:500 11px Manrope;color:#8a82b8;margin-top:2px">Lost Lands 2026 · 3 members</div>
+            </div>
+            <div class="stack" style="display:flex">
+              <div style="width:24px;height:24px;border-radius:50%;background:#ff8a4a;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">DV</div>
+              <div style="width:24px;height:24px;border-radius:50%;background:#5b8cff;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">AN</div>
+              <div style="width:24px;height:24px;border-radius:50%;background:#ff6bd6;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">TK</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:16px;right:16px;bottom:96px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:50px;border-radius:14px;background:linear-gradient(135deg,#ff2d9b,#a64bff,#28e0ff);display:flex;align-items:center;justify-content:center;font:700 14px Orbitron;letter-spacing:.06em;box-shadow:0 8px 24px rgba(166,75,255,.45)">+ CREATE A GROUP</div>
+            <div style="height:46px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font:600 13px Manrope;color:#e6def7">Join with a code</div>
+          </div>
+
+          <div style="position:absolute;left:14px;right:14px;bottom:16px;height:64px;border-radius:22px;background:rgba(18,12,40,.6);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:space-around;padding:0 6px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#28e0ff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:700 9px Manrope;filter:drop-shadow(0 0 6px #28e0ff)">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:600 9px Manrope">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:600 9px Manrope">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:600 9px Manrope">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A2 Schedule -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">2 · Schedule</div>
+        <div style="--ring:#120c2a;width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(120% 75% at 50% -8%,#3a1768 0%,#140e34 52%,#08060f 100%);color:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:700 13px Orbitron">11:42<span style="font-size:11px;opacity:.85">5G ▮▮▮ 86%</span></div>
+          <div style="padding:10px 20px 0">
+            <div style="font:900 22px Orbitron;letter-spacing:.03em">SCHEDULE</div>
+            <div style="font:600 12px Manrope;color:#c8b9ff;margin-top:2px">EDC Las Vegas 2026 · The Ravers</div>
+          </div>
+          <div style="display:flex;gap:8px;padding:14px 20px 0">
+            <div style="flex:1;height:40px;border-radius:12px;background:linear-gradient(135deg,#ff2d9b,#a64bff);display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 13px Orbitron;box-shadow:0 6px 18px rgba(166,75,255,.4)">FRI<span style="font:500 8px Manrope;opacity:.85">May 15</span></div>
+            <div style="flex:1;height:40px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 13px Orbitron;color:#b6acd8">SAT<span style="font:500 8px Manrope;opacity:.7">May 16</span></div>
+            <div style="flex:1;height:40px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 13px Orbitron;color:#b6acd8">SUN<span style="font:500 8px Manrope;opacity:.7">May 17</span></div>
+          </div>
+
+          <div style="padding:16px 16px 0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:9px;height:9px;border-radius:50%;background:#ff2d9b;box-shadow:0 0 8px #ff2d9b"></span><span style="font:700 12px Orbitron;letter-spacing:.08em;color:#ffb3da">KINETIC FIELD</span></div>
+
+            <div style="border-radius:16px;padding:13px 14px;margin-bottom:9px;background:linear-gradient(135deg,rgba(255,45,155,.22),rgba(40,224,255,.12));border:1px solid rgba(255,45,155,.5);box-shadow:0 0 20px rgba(255,45,155,.22);position:relative">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:500 11px Space Mono,monospace;color:#ffd6ec">23:30 – 01:00</div><div style="font:700 18px Manrope;margin-top:2px;letter-spacing:-.01em">Aphelion</div></div>
+                <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ff2d9b,#28e0ff);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
+                <div class="stack" style="display:flex">
+                  <div style="width:24px;height:24px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">SR</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#36d1dc;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">MJ</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#a06bff;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">PK</div>
+                </div>
+                <span style="font:600 11px Manrope;color:#ffd6ec">You + 2 going</span>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;padding:13px 14px;margin-bottom:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:500 11px Space Mono,monospace;color:#b6acd8">22:00 – 23:30</div><div style="font:700 18px Manrope;margin-top:2px;color:#eee">Krystal Void</div></div>
+                <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3)"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
+                <div class="stack" style="display:flex"><div style="width:24px;height:24px;border-radius:50%;background:#ffd23f;color:#222;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">JL</div></div>
+                <span style="font:600 11px Manrope;color:#8a82b8">Jess going</span>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin:14px 0 9px"><span style="width:9px;height:9px;border-radius:50%;background:#28e0ff;box-shadow:0 0 8px #28e0ff"></span><span style="font:700 12px Orbitron;letter-spacing:.08em;color:#9fe9ff">COSMIC MEADOW</span></div>
+            <div style="border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:500 11px Space Mono,monospace;color:#b6acd8">23:00 – 00:30</div><div style="font:700 18px Manrope;margin-top:2px;color:#eee">BASSNØVA</div></div>
+                <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3)"></div>
+              </div>
+              <div style="font:600 11px Manrope;color:#6a6592;margin-top:11px">No one going yet — be first</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:14px;right:14px;bottom:16px;height:64px;border-radius:22px;background:rgba(18,12,40,.6);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:space-around;padding:0 6px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:600 9px Manrope">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#28e0ff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:700 9px Manrope;filter:drop-shadow(0 0 6px #28e0ff)">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:600 9px Manrope">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:600 9px Manrope">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A3 Artist -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">3 · Artist detail</div>
+        <div style="--ring:#0f0a24;width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#08060f;color:#fff">
+          <div style="position:relative;height:266px;background:radial-gradient(circle at 60% 25%,#ff2d9b,#7b1fd6 55%,#1a0b40 100%)">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,6,15,0) 40%,rgba(8,6,15,.95))"></div>
+            <div style="position:absolute;top:14px;left:18px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:18px">⌄</div>
+            <div style="position:absolute;left:20px;bottom:16px;right:20px">
+              <div style="font:900 38px Orbitron;letter-spacing:.02em;line-height:.95;text-shadow:0 0 24px rgba(255,45,155,.6)">APHELION</div>
+              <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+                <span style="font:600 11px Manrope;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)">Melodic Bass</span>
+                <span style="font:600 11px Manrope;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)">Dubstep</span>
+                <span style="font:600 11px Manrope;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)">Future</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:6px 18px 0">
+            <div style="display:flex;align-items:center;gap:9px;background:rgba(255,45,155,.12);border:1px solid rgba(255,45,155,.35);border-radius:13px;padding:10px 13px">
+              <div class="stack" style="display:flex;--ring:#15091f">
+                <div style="width:26px;height:26px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#36d1dc;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#a06bff;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">PK</div>
+              </div>
+              <span style="font:600 12px Manrope;color:#ffd6ec">You, Mike & Priya are going</span>
+            </div>
+
+            <div style="font:700 12px Orbitron;letter-spacing:.1em;color:#9b8cff;margin:16px 2px 9px">TOP TRACKS</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#ff2d9b,#28e0ff);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope">Event Horizon</div><div style="font:500 10px Manrope;color:#8a82b8">3:48 · 30s preview</div></div><span style="font:500 11px Space Mono,monospace;color:#6a6592">0:30</span></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#cbb9ff"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#eee">Gravity Well</div><div style="font:500 10px Manrope;color:#8a82b8">4:12</div></div></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#cbb9ff"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#eee">Supernova</div><div style="font:500 10px Manrope;color:#8a82b8">3:21</div></div></div>
+            </div>
+
+            <div style="font:700 12px Orbitron;letter-spacing:.1em;color:#9b8cff;margin:16px 2px 9px">SIMILAR</div>
+            <div style="display:flex;gap:11px">
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:14px;background:radial-gradient(circle at 35% 30%,#28e0ff,#1453d6)"></div><div style="font:600 10px Manrope;margin-top:5px">Solaris</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:14px;background:radial-gradient(circle at 35% 30%,#ff8a4a,#c8245d)"></div><div style="font:600 10px Manrope;margin-top:5px">Nyx</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:14px;background:radial-gradient(circle at 35% 30%,#a06bff,#4b1fa8)"></div><div style="font:600 10px Manrope;margin-top:5px">VELDT</div></div>
+            </div>
+
+            <div style="margin-top:16px;height:46px;border-radius:13px;background:#1db954;display:flex;align-items:center;justify-content:center;gap:9px;font:700 13px Manrope"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="12"/></svg><span style="color:#fff">Open in Spotify</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A4 Right Now -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">4 · Right Now</div>
+        <div style="--ring:#120c2a;width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(130% 80% at 50% 0%,#4a1a7a 0%,#1a0f3e 50%,#08060f 100%);color:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:700 13px Orbitron">11:42<span style="font-size:11px;opacity:.85">5G ▮▮▮ 86%</span></div>
+          <div style="text-align:center;padding:16px 20px 0">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,45,155,.18);border:1px solid rgba(255,45,155,.4);border-radius:99px;padding:5px 13px"><span style="width:8px;height:8px;border-radius:50%;background:#ff2d9b;box-shadow:0 0 8px #ff2d9b"></span><span style="font:700 11px Orbitron;letter-spacing:.12em">RIGHT NOW</span></div>
+            <div style="font:900 64px Orbitron;letter-spacing:.02em;margin-top:10px;background:linear-gradient(135deg,#ff2d9b,#28e0ff);-webkit-background-clip:text;background-clip:text;color:transparent">11:42</div>
+            <div style="font:600 12px Manrope;color:#c8b9ff;letter-spacing:.04em">FRIDAY · EDC LAS VEGAS</div>
+          </div>
+
+          <div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:11px">
+            <div style="border-radius:16px;padding:13px 15px;background:linear-gradient(135deg,rgba(255,45,155,.2),rgba(40,224,255,.1));border:1px solid rgba(255,45,155,.45);box-shadow:0 0 20px rgba(255,45,155,.2)">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 10px Orbitron;letter-spacing:.1em;color:#ffb3da">KINETIC FIELD</span><span style="font:500 10px Space Mono,monospace;color:#ffd6ec">ends 01:00</span></div>
+              <div style="font:700 19px Manrope;margin-top:3px">Aphelion</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+                <div class="stack" style="display:flex;--ring:#2a1150">
+                  <div style="width:24px;height:24px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">SR</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#36d1dc;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">MJ</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#a06bff;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">PK</div>
+                </div>
+                <span style="font:600 11px Manrope;color:#ffd6ec">You, Mike, Priya here now</span>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;padding:13px 15px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 10px Orbitron;letter-spacing:.1em;color:#9fe9ff">COSMIC MEADOW</span><span style="font:500 10px Space Mono,monospace;color:#b6acd8">ends 00:30</span></div>
+              <div style="font:700 19px Manrope;margin-top:3px;color:#eee">BASSNØVA</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+                <div class="stack" style="display:flex;--ring:#1a1138"><div style="width:24px;height:24px;border-radius:50%;background:#ffd23f;color:#222;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">JL</div></div>
+                <span style="font:600 11px Manrope;color:#b6acd8">Jess is here</span>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;padding:13px 15px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 10px Orbitron;letter-spacing:.1em;color:#8a82b8">BASSPOD</span><span style="font:500 10px Space Mono,monospace;color:#6a6592">ends 00:00</span></div>
+              <div style="font:700 19px Manrope;margin-top:3px;color:#9a92c0">Phantom Grid</div>
+              <div style="font:600 11px Manrope;color:#6a6592;margin-top:9px">No one from your group</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:16px;right:16px;bottom:18px;height:46px;border-radius:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;gap:9px;font:600 13px Manrope"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Share snapshot</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= DIRECTION B : CLEAN-BOLD ================= -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-top:2px solid #1a1818;padding-top:14px">
+      <div style="font:900 13px Manrope;letter-spacing:.2em;color:#ff6a3d">DIRECTION B</div>
+      <div style="font:800 26px Manrope;letter-spacing:-.01em;color:#1a1818">Tomorrowland — Clean-Bold</div>
+      <div style="font:400 13px Manrope;color:#6a6560">Charcoal + cream · coral accent · Big Shoulders caps · stamped artwork · picked just shades brighter</div>
+    </div>
+    <div style="display:flex;gap:30px;align-items:flex-start">
+
+      <!-- B1 Groups -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">1 · Groups</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#211d18;color:#f5ece0;box-shadow:0 16px 44px rgba(20,14,8,.3)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Manrope">11:42<span style="font-size:11px;color:#b8aa97">5G ▮▮▮ 86%</span></div>
+          <div style="padding:12px 20px 0;display:flex;justify-content:space-between;align-items:flex-end">
+            <div style="font:800 40px 'Big Shoulders Display';letter-spacing:.01em;line-height:.9">GROUPS</div>
+            <div style="width:38px;height:38px;border-radius:50%;background:#ff6a3d;display:flex;align-items:center;justify-content:center;font:800 14px Manrope;color:#211d18">SR</div>
+          </div>
+
+          <div style="margin:18px 18px 0;border-radius:12px;overflow:hidden;background:#2b2620;border:1px solid #3a342c">
+            <div style="height:108px;background:linear-gradient(135deg,#ff6a3d 0%,#ff9b4a 55%,#ffc24a 100%);position:relative;display:flex;align-items:center;justify-content:center">
+              <div style="font:800 30px 'Big Shoulders Display';color:#211d18;letter-spacing:.02em;text-align:center;line-height:.85">EDC<br><span style="font-size:15px;letter-spacing:.2em">LAS VEGAS 2026</span></div>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:800 22px 'Big Shoulders Display';letter-spacing:.01em">THE RAVERS</div><div style="font:500 11px Manrope;color:#b8aa97;margin-top:1px">May 15–17 · 6 members</div></div>
+                <div style="display:flex;align-items:center;gap:6px;background:#211d18;border-radius:8px;padding:6px 9px"><span style="font:700 12px Space Mono,monospace;letter-spacing:.1em;color:#ff8a5a">K7M2X9PQ</span></div>
+              </div>
+              <div style="display:flex;margin-top:13px;gap:0" class="stack" >
+                <div style="--ring:#2b2620;width:28px;height:28px;border-radius:50%;background:#ff5d8f;font:800 10px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#36c1cc;font:800 10px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#f5b400;font:800 10px Manrope;color:#211d18;display:flex;align-items:center;justify-content:center">JL</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#9b6bff;font:800 10px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">PK</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#3a342c;font:800 10px Manrope;color:#b8aa97;display:flex;align-items:center;justify-content:center">+2</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin:13px 18px 0;border-radius:12px;background:#2b2620;border:1px solid #3a342c;padding:13px 15px;display:flex;align-items:center;gap:13px">
+            <div style="width:46px;height:46px;border-radius:10px;flex:none;background:linear-gradient(135deg,#5b8cff,#9b6bff);display:flex;align-items:center;justify-content:center;font:800 16px 'Big Shoulders Display';color:#fff">LL</div>
+            <div style="flex:1"><div style="font:800 18px 'Big Shoulders Display'">BASS HEADS</div><div style="font:500 11px Manrope;color:#b8aa97">Lost Lands 2026 · 3 members</div></div>
+          </div>
+
+          <div style="position:absolute;left:18px;right:18px;bottom:98px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:52px;border-radius:12px;background:#ff6a3d;display:flex;align-items:center;justify-content:center;font:800 18px 'Big Shoulders Display';letter-spacing:.04em;color:#211d18">+ CREATE A GROUP</div>
+            <div style="height:48px;border-radius:12px;background:transparent;border:1.5px solid #4a4339;display:flex;align-items:center;justify-content:center;font:600 13px Manrope;color:#f5ece0">Join with a code</div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:74px;background:#19150f;border-top:1px solid #2e2820;display:flex;align-items:center;justify-content:space-around;padding:0 8px 10px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#ff6a3d"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:700 9px Manrope">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:600 9px Manrope">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:600 9px Manrope">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:600 9px Manrope">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B2 Schedule -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">2 · Schedule</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#211d18;color:#f5ece0">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Manrope">11:42<span style="font-size:11px;color:#b8aa97">5G ▮▮▮ 86%</span></div>
+          <div style="padding:10px 20px 0"><div style="font:800 32px 'Big Shoulders Display';line-height:.9">SCHEDULE</div><div style="font:500 12px Manrope;color:#b8aa97;margin-top:3px">EDC Las Vegas 2026 · The Ravers</div></div>
+          <div style="display:flex;gap:8px;padding:14px 20px 0">
+            <div style="flex:1;height:42px;border-radius:10px;background:#ff6a3d;color:#211d18;display:flex;flex-direction:column;align-items:center;justify-content:center;font:800 16px 'Big Shoulders Display'">FRI<span style="font:600 8px Manrope">MAY 15</span></div>
+            <div style="flex:1;height:42px;border-radius:10px;background:#2b2620;border:1px solid #3a342c;color:#b8aa97;display:flex;flex-direction:column;align-items:center;justify-content:center;font:800 16px 'Big Shoulders Display'">SAT<span style="font:600 8px Manrope">MAY 16</span></div>
+            <div style="flex:1;height:42px;border-radius:10px;background:#2b2620;border:1px solid #3a342c;color:#b8aa97;display:flex;flex-direction:column;align-items:center;justify-content:center;font:800 16px 'Big Shoulders Display'">SUN<span style="font:600 8px Manrope">MAY 17</span></div>
+          </div>
+
+          <div style="padding:18px 18px 0">
+            <div style="font:800 16px 'Big Shoulders Display';letter-spacing:.06em;color:#ff8a5a;margin-bottom:9px">KINETIC FIELD</div>
+
+            <div style="border-radius:12px;padding:14px;margin-bottom:9px;background:#3a2a1e;border:1px solid #ff6a3d;border-left:4px solid #ff6a3d">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:600 11px Space Mono,monospace;color:#ffb38a">23:30 – 01:00</div><div style="font:800 22px 'Big Shoulders Display';margin-top:2px">APHELION</div></div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#ff6a3d;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#211d18" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
+                <div class="stack" style="display:flex;--ring:#3a2a1e">
+                  <div style="width:24px;height:24px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">SR</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#36c1cc;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">MJ</div>
+                  <div style="width:24px;height:24px;border-radius:50%;background:#9b6bff;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">PK</div>
+                </div>
+                <span style="font:600 11px Manrope;color:#ffb38a">You + 2 going</span>
+              </div>
+            </div>
+
+            <div style="border-radius:12px;padding:14px;margin-bottom:9px;background:#2b2620;border:1px solid #3a342c">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <div><div style="font:600 11px Space Mono,monospace;color:#b8aa97">22:00 – 23:30</div><div style="font:800 22px 'Big Shoulders Display';margin-top:2px;color:#e8dcc8">KRYSTAL VOID</div></div>
+                <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid #5a5044"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px"><div class="stack" style="display:flex;--ring:#2b2620"><div style="width:24px;height:24px;border-radius:50%;background:#f5b400;color:#211d18;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:600 11px Manrope;color:#8a8072">Jess going</span></div>
+            </div>
+
+            <div style="font:800 16px 'Big Shoulders Display';letter-spacing:.06em;color:#ff8a5a;margin:14px 0 9px">COSMIC MEADOW</div>
+            <div style="border-radius:12px;padding:14px;background:#2b2620;border:1px solid #3a342c">
+              <div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font:600 11px Space Mono,monospace;color:#b8aa97">23:00 – 00:30</div><div style="font:800 22px 'Big Shoulders Display';margin-top:2px;color:#e8dcc8">BASSNØVA</div></div><div style="width:26px;height:26px;border-radius:50%;border:1.5px solid #5a5044"></div></div>
+              <div style="font:600 11px Manrope;color:#8a8072;margin-top:11px">No one going yet — be first</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:74px;background:#19150f;border-top:1px solid #2e2820;display:flex;align-items:center;justify-content:space-around;padding:0 8px 10px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:600 9px Manrope">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#ff6a3d"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:700 9px Manrope">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:600 9px Manrope">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a7064"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:600 9px Manrope">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B3 Artist -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">3 · Artist detail</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#211d18;color:#f5ece0">
+          <div style="position:relative;height:250px;background:linear-gradient(135deg,#ff6a3d 0%,#ff9b4a 50%,#ffc24a 100%)">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(33,29,24,0) 45%,#211d18)"></div>
+            <div style="position:absolute;top:14px;left:18px;width:34px;height:34px;border-radius:50%;background:rgba(33,29,24,.4);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff">⌄</div>
+            <div style="position:absolute;left:20px;bottom:14px;right:20px">
+              <div style="font:800 52px 'Big Shoulders Display';line-height:.85;color:#211d18">APHELION</div>
+            </div>
+          </div>
+          <div style="padding:8px 18px 0">
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span style="font:600 11px Manrope;padding:5px 12px;border-radius:8px;background:#2b2620;border:1px solid #3a342c">Melodic Bass</span>
+              <span style="font:600 11px Manrope;padding:5px 12px;border-radius:8px;background:#2b2620;border:1px solid #3a342c">Dubstep</span>
+              <span style="font:600 11px Manrope;padding:5px 12px;border-radius:8px;background:#2b2620;border:1px solid #3a342c">Future</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:9px;margin-top:14px">
+              <div class="stack" style="display:flex;--ring:#211d18">
+                <div style="width:26px;height:26px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#36c1cc;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#9b6bff;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">PK</div>
+              </div>
+              <span style="font:600 12px Manrope;color:#ffb38a">You, Mike & Priya are going</span>
+            </div>
+
+            <div style="font:800 15px 'Big Shoulders Display';letter-spacing:.08em;color:#b8aa97;margin:16px 2px 9px">TOP TRACKS</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:8px;background:#ff6a3d;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#211d18"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope">Event Horizon</div><div style="font:500 10px Manrope;color:#8a8072">3:48 · 30s preview</div></div></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:8px;background:#2b2620;border:1px solid #3a342c;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#b8aa97"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#e8dcc8">Gravity Well</div><div style="font:500 10px Manrope;color:#8a8072">4:12</div></div></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:8px;background:#2b2620;border:1px solid #3a342c;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#b8aa97"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#e8dcc8">Supernova</div><div style="font:500 10px Manrope;color:#8a8072">3:21</div></div></div>
+            </div>
+
+            <div style="font:800 15px 'Big Shoulders Display';letter-spacing:.08em;color:#b8aa97;margin:16px 2px 9px">SIMILAR ARTISTS</div>
+            <div style="display:flex;gap:11px">
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#28c0e0,#1453d6)"></div><div style="font:600 10px Manrope;margin-top:5px">Solaris</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#ff8a4a,#c8245d)"></div><div style="font:600 10px Manrope;margin-top:5px">Nyx</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#9b6bff,#4b1fa8)"></div><div style="font:600 10px Manrope;margin-top:5px">VELDT</div></div>
+            </div>
+
+            <div style="margin-top:16px;height:46px;border-radius:12px;background:#1db954;display:flex;align-items:center;justify-content:center;gap:9px;font:700 13px Manrope;color:#fff"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="12"/></svg>Open in Spotify</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B4 Right Now -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">4 · Right Now</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#211d18;color:#f5ece0">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Manrope">11:42<span style="font-size:11px;color:#b8aa97">5G ▮▮▮ 86%</span></div>
+          <div style="text-align:center;padding:16px 20px 0">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:#3a2a1e;border:1px solid #ff6a3d;border-radius:8px;padding:5px 13px"><span style="width:8px;height:8px;border-radius:50%;background:#ff6a3d"></span><span style="font:700 11px Manrope;letter-spacing:.1em;color:#ff8a5a">RIGHT NOW</span></div>
+            <div style="font:800 80px 'Big Shoulders Display';line-height:.85;margin-top:10px;color:#ff6a3d">11:42</div>
+            <div style="font:600 12px Manrope;color:#b8aa97;letter-spacing:.04em">FRIDAY · EDC LAS VEGAS</div>
+          </div>
+
+          <div style="padding:18px 18px 0;display:flex;flex-direction:column;gap:11px">
+            <div style="border-radius:12px;padding:14px;background:#3a2a1e;border:1px solid #ff6a3d;border-left:4px solid #ff6a3d">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 14px 'Big Shoulders Display';letter-spacing:.05em;color:#ff8a5a">KINETIC FIELD</span><span style="font:500 10px Space Mono,monospace;color:#ffb38a">ends 01:00</span></div>
+              <div style="font:800 22px 'Big Shoulders Display';margin-top:2px">APHELION</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><div class="stack" style="display:flex;--ring:#3a2a1e"><div style="width:24px;height:24px;border-radius:50%;background:#ff5d8f;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">SR</div><div style="width:24px;height:24px;border-radius:50%;background:#36c1cc;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">MJ</div><div style="width:24px;height:24px;border-radius:50%;background:#9b6bff;font:800 9px Manrope;color:#fff;display:flex;align-items:center;justify-content:center">PK</div></div><span style="font:600 11px Manrope;color:#ffb38a">You, Mike, Priya here</span></div>
+            </div>
+            <div style="border-radius:12px;padding:14px;background:#2b2620;border:1px solid #3a342c">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 14px 'Big Shoulders Display';letter-spacing:.05em;color:#e8dcc8">COSMIC MEADOW</span><span style="font:500 10px Space Mono,monospace;color:#b8aa97">ends 00:30</span></div>
+              <div style="font:800 22px 'Big Shoulders Display';margin-top:2px;color:#e8dcc8">BASSNØVA</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><div class="stack" style="display:flex;--ring:#2b2620"><div style="width:24px;height:24px;border-radius:50%;background:#f5b400;color:#211d18;font:800 9px Manrope;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:600 11px Manrope;color:#8a8072">Jess is here</span></div>
+            </div>
+            <div style="border-radius:12px;padding:14px;background:#2b2620;border:1px solid #3a342c;opacity:.7">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 14px 'Big Shoulders Display';letter-spacing:.05em;color:#8a8072">BASSPOD</span><span style="font:500 10px Space Mono,monospace;color:#6a6052">ends 00:00</span></div>
+              <div style="font:800 22px 'Big Shoulders Display';margin-top:2px;color:#8a8072">PHANTOM GRID</div>
+              <div style="font:600 11px Manrope;color:#6a6052;margin-top:9px">No one from your group</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:18px;right:18px;bottom:18px;height:48px;border-radius:12px;background:#ff6a3d;display:flex;align-items:center;justify-content:center;gap:9px;font:800 16px 'Big Shoulders Display';letter-spacing:.04em;color:#211d18"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#211d18" stroke-width="2.2"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>SHARE SNAPSHOT</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= DIRECTION C : EDITORIAL MINIMAL ================= -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-top:2px solid #1a1818;padding-top:14px">
+      <div style="font:900 13px Manrope;letter-spacing:.2em;color:#3a8dff">DIRECTION C</div>
+      <div style="font:800 26px Manrope;letter-spacing:-.01em;color:#1a1818">Editorial — Music-App Minimal</div>
+      <div style="font:400 13px Manrope;color:#6a6560">Black + whitespace · soft electric blue · Inter only · flat hairline cards · picked = ring-fill, no glow</div>
+    </div>
+    <div style="display:flex;gap:30px;align-items:flex-start">
+
+      <!-- C1 Groups -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">1 · Groups</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#000;color:#fff;font-family:Inter,sans-serif;box-shadow:0 16px 44px rgba(0,0,0,.3)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Inter">11:42<span style="font-size:11px;color:#666">5G ▮▮▮ 86%</span></div>
+          <div style="padding:18px 22px 0;display:flex;justify-content:space-between;align-items:center">
+            <div style="font:700 28px Inter;letter-spacing:-.03em">Groups</div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font:600 13px Inter;color:#ccc">SR</div>
+          </div>
+
+          <div style="margin:20px 20px 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12)">
+            <div style="height:150px;background:linear-gradient(160deg,#1b2a4a,#0a0e18);position:relative;display:flex;align-items:flex-end;padding:16px">
+              <div style="position:absolute;top:14px;right:14px;font:500 11px Inter;color:#9fc1ff;background:rgba(58,141,255,.16);padding:4px 10px;border-radius:99px">3 days</div>
+              <div><div style="font:700 19px Inter;letter-spacing:-.02em">EDC Las Vegas 2026</div><div style="font:400 12px Inter;color:#9a9a9a;margin-top:2px">May 15–17 · Las Vegas Motor Speedway</div></div>
+            </div>
+            <div style="padding:15px 16px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="font:600 15px Inter">The Ravers</div>
+                <div style="font:500 12px Inter;letter-spacing:.08em;color:#3a8dff">K7M2X9PQ</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:13px">
+                <div class="stack" style="display:flex;--ring:#000">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#ff5d8f;font:600 10px Inter;display:flex;align-items:center;justify-content:center">SR</div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#36c1cc;font:600 10px Inter;display:flex;align-items:center;justify-content:center">MJ</div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#f5b400;color:#111;font:600 10px Inter;display:flex;align-items:center;justify-content:center">JL</div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#9b6bff;font:600 10px Inter;display:flex;align-items:center;justify-content:center">PK</div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid rgba(255,255,255,.14);font:600 10px Inter;color:#999;display:flex;align-items:center;justify-content:center">+2</div>
+                </div>
+                <span style="font:400 12px Inter;color:#888">6 members</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin:14px 20px 0;border-radius:12px;border:1px solid rgba(255,255,255,.12);padding:14px 16px;display:flex;align-items:center;gap:13px">
+            <div style="width:46px;height:46px;border-radius:9px;flex:none;background:linear-gradient(160deg,#2a1b3a,#0a0612)"></div>
+            <div style="flex:1"><div style="font:600 15px Inter">Bass Heads</div><div style="font:400 12px Inter;color:#888;margin-top:1px">Lost Lands 2026 · 3 members</div></div>
+            <div style="font:400 18px Inter;color:#555">›</div>
+          </div>
+
+          <div style="position:absolute;left:20px;right:20px;bottom:98px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:50px;border-radius:12px;background:#3a8dff;display:flex;align-items:center;justify-content:center;font:600 14px Inter;color:#fff">Create a group</div>
+            <div style="height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font:500 13px Inter;color:#ddd">Join with a code</div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;padding:0 8px 8px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#3a8dff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:600 9px Inter">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:500 9px Inter">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:500 9px Inter">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:500 9px Inter">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C2 Schedule -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">2 · Schedule</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#000;color:#fff;font-family:Inter,sans-serif">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Inter">11:42<span style="font-size:11px;color:#666">5G ▮▮▮ 86%</span></div>
+          <div style="padding:16px 22px 0"><div style="font:700 26px Inter;letter-spacing:-.03em">Schedule</div><div style="font:400 12px Inter;color:#888;margin-top:2px">EDC Las Vegas 2026</div></div>
+          <div style="display:flex;gap:10px;padding:16px 22px 0">
+            <div style="padding:9px 18px;border-radius:99px;background:#3a8dff;font:600 13px Inter;color:#fff">Fri</div>
+            <div style="padding:9px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.14);font:500 13px Inter;color:#aaa">Sat</div>
+            <div style="padding:9px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.14);font:500 13px Inter;color:#aaa">Sun</div>
+          </div>
+
+          <div style="padding:20px 22px 0">
+            <div style="font:600 12px Inter;letter-spacing:.04em;text-transform:uppercase;color:#777;margin-bottom:12px">Kinetic Field</div>
+
+            <div style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:15px;display:flex;align-items:center;gap:14px">
+              <div style="flex:1"><div style="font:400 12px Inter;color:#888">23:30 – 01:00</div><div style="font:600 17px Inter;margin-top:3px;letter-spacing:-.01em">Aphelion</div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:9px">
+                  <div class="stack" style="display:flex;--ring:#000">
+                    <div style="width:22px;height:22px;border-radius:50%;background:#ff5d8f;font:600 8px Inter;display:flex;align-items:center;justify-content:center">SR</div>
+                    <div style="width:22px;height:22px;border-radius:50%;background:#36c1cc;font:600 8px Inter;display:flex;align-items:center;justify-content:center">MJ</div>
+                    <div style="width:22px;height:22px;border-radius:50%;background:#9b6bff;font:600 8px Inter;display:flex;align-items:center;justify-content:center">PK</div>
+                  </div>
+                  <span style="font:400 11px Inter;color:#9fc1ff">You +2 going</span>
+                </div>
+              </div>
+              <div style="width:28px;height:28px;border-radius:50%;border:2px solid #3a8dff;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:13px;height:13px;border-radius:50%;background:#3a8dff"></div></div>
+            </div>
+
+            <div style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:15px;display:flex;align-items:center;gap:14px">
+              <div style="flex:1"><div style="font:400 12px Inter;color:#888">22:00 – 23:30</div><div style="font:600 17px Inter;margin-top:3px;color:#e6e6e6">Krystal Void</div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:9px"><div class="stack" style="display:flex;--ring:#000"><div style="width:22px;height:22px;border-radius:50%;background:#f5b400;color:#111;font:600 8px Inter;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:400 11px Inter;color:#888">Jess going</span></div>
+              </div>
+              <div style="width:28px;height:28px;border-radius:50%;border:2px solid #3a3a3a;flex:none"></div>
+            </div>
+
+            <div style="font:600 12px Inter;letter-spacing:.04em;text-transform:uppercase;color:#777;margin:6px 0 12px">Cosmic Meadow</div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="flex:1"><div style="font:400 12px Inter;color:#888">23:00 – 00:30</div><div style="font:600 17px Inter;margin-top:3px;color:#e6e6e6">BASSNØVA</div><div style="font:400 11px Inter;color:#666;margin-top:9px">No one going yet</div></div>
+              <div style="width:28px;height:28px;border-radius:50%;border:2px solid #3a3a3a;flex:none"></div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;padding:0 8px 8px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:500 9px Inter">Groups</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#3a8dff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:600 9px Inter">Schedule</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:500 9px Inter">Right Now</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#666"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:500 9px Inter">You</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C3 Artist -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">3 · Artist detail</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#000;color:#fff;font-family:Inter,sans-serif">
+          <div style="position:relative;height:300px;background:linear-gradient(165deg,#2a3a5a 0%,#141824 60%,#0a0c12 100%)">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 50%,#000)"></div>
+            <div style="position:absolute;top:14px;left:18px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:18px">⌄</div>
+            <div style="position:absolute;left:22px;bottom:18px;right:22px">
+              <div style="font:700 34px Inter;letter-spacing:-.03em;line-height:1">Aphelion</div>
+              <div style="font:400 13px Inter;color:#9a9a9a;margin-top:6px">Melodic Bass · Dubstep · Future Bass</div>
+            </div>
+          </div>
+
+          <div style="padding:16px 22px 0">
+            <div style="display:flex;align-items:center;gap:9px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.1)">
+              <div class="stack" style="display:flex;--ring:#000">
+                <div style="width:26px;height:26px;border-radius:50%;background:#ff5d8f;font:600 9px Inter;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#36c1cc;font:600 9px Inter;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#9b6bff;font:600 9px Inter;display:flex;align-items:center;justify-content:center">PK</div>
+              </div>
+              <span style="font:400 12px Inter;color:#aaa">You, Mike &amp; Priya are going</span>
+            </div>
+
+            <div style="font:600 12px Inter;letter-spacing:.04em;text-transform:uppercase;color:#777;margin:18px 0 12px">Popular</div>
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:6px;background:linear-gradient(135deg,#3a8dff,#1b3a6a);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:500 13px Inter">Event Horizon</div><div style="font:400 11px Inter;color:#888">12.4M plays</div></div><span style="font:400 11px Inter;color:#666">3:48</span></div>
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:6px;background:#1a1a1a;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#888"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:500 13px Inter;color:#e0e0e0">Gravity Well</div><div style="font:400 11px Inter;color:#888">8.1M plays</div></div><span style="font:400 11px Inter;color:#666">4:12</span></div>
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:6px;background:#1a1a1a;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#888"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:500 13px Inter;color:#e0e0e0">Supernova</div><div style="font:400 11px Inter;color:#888">5.9M plays</div></div><span style="font:400 11px Inter;color:#666">3:21</span></div>
+            </div>
+
+            <div style="font:600 12px Inter;letter-spacing:.04em;text-transform:uppercase;color:#777;margin:18px 0 12px">Fans also like</div>
+            <div style="display:flex;gap:13px">
+              <div style="text-align:center"><div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#28c0e0,#1453d6)"></div><div style="font:500 10px Inter;margin-top:6px">Solaris</div></div>
+              <div style="text-align:center"><div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#ff8a4a,#c8245d)"></div><div style="font:500 10px Inter;margin-top:6px">Nyx</div></div>
+              <div style="text-align:center"><div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#9b6bff,#4b1fa8)"></div><div style="font:500 10px Inter;margin-top:6px">VELDT</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C4 Right Now -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">4 · Right Now</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#000;color:#fff;font-family:Inter,sans-serif">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px 4px;font:600 13px Inter">11:42<span style="font-size:11px;color:#666">5G ▮▮▮ 86%</span></div>
+          <div style="padding:22px 22px 0">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#3a8dff"></span><span style="font:600 12px Inter;letter-spacing:.06em;text-transform:uppercase;color:#9fc1ff">Right Now</span></div>
+            <div style="font:700 48px Inter;letter-spacing:-.04em;margin-top:8px">11:42 PM</div>
+            <div style="font:400 13px Inter;color:#888">Friday · EDC Las Vegas 2026</div>
+          </div>
+
+          <div style="padding:22px 22px 0;display:flex;flex-direction:column;gap:0">
+            <div style="padding:16px 0;border-top:1px solid rgba(255,255,255,.1)">
+              <div style="display:flex;justify-content:space-between"><span style="font:600 11px Inter;text-transform:uppercase;letter-spacing:.04em;color:#777">Kinetic Field</span><span style="font:400 11px Inter;color:#666">until 1:00</span></div>
+              <div style="font:600 19px Inter;margin-top:5px;letter-spacing:-.01em">Aphelion</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div class="stack" style="display:flex;--ring:#000"><div style="width:24px;height:24px;border-radius:50%;background:#ff5d8f;font:600 9px Inter;display:flex;align-items:center;justify-content:center">SR</div><div style="width:24px;height:24px;border-radius:50%;background:#36c1cc;font:600 9px Inter;display:flex;align-items:center;justify-content:center">MJ</div><div style="width:24px;height:24px;border-radius:50%;background:#9b6bff;font:600 9px Inter;display:flex;align-items:center;justify-content:center">PK</div></div><span style="font:400 12px Inter;color:#9fc1ff">You, Mike, Priya</span></div>
+            </div>
+            <div style="padding:16px 0;border-top:1px solid rgba(255,255,255,.1)">
+              <div style="display:flex;justify-content:space-between"><span style="font:600 11px Inter;text-transform:uppercase;letter-spacing:.04em;color:#777">Cosmic Meadow</span><span style="font:400 11px Inter;color:#666">until 0:30</span></div>
+              <div style="font:600 19px Inter;margin-top:5px;color:#e6e6e6">BASSNØVA</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div class="stack" style="display:flex;--ring:#000"><div style="width:24px;height:24px;border-radius:50%;background:#f5b400;color:#111;font:600 9px Inter;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:400 12px Inter;color:#888">Jess</span></div>
+            </div>
+            <div style="padding:16px 0;border-top:1px solid rgba(255,255,255,.1)">
+              <div style="display:flex;justify-content:space-between"><span style="font:600 11px Inter;text-transform:uppercase;letter-spacing:.04em;color:#555">BassPod</span><span style="font:400 11px Inter;color:#555">until 0:00</span></div>
+              <div style="font:600 19px Inter;margin-top:5px;color:#777">Phantom Grid</div>
+              <div style="font:400 12px Inter;color:#555;margin-top:10px">No one from your group</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:22px;right:22px;bottom:20px;height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;gap:9px;font:500 13px Inter"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Share snapshot</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= DIRECTION D : Y2K CYBER-RETRO ================= -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-top:2px solid #1a1818;padding-top:14px">
+      <div style="font:900 13px Manrope;letter-spacing:.2em;color:#d400a0">DIRECTION D</div>
+      <div style="font:800 26px Manrope;letter-spacing:-.01em;color:#1a1818">Y2K — Cyber-Retro</div>
+      <div style="font:400 13px Manrope;color:#6a6560">Chrome + purple/yellow mesh · magenta/yellow/cyan · VT323 + mono · brutalist edges · scanlines · glitch-marked picks</div>
+    </div>
+    <div style="display:flex;gap:30px;align-items:flex-start">
+
+      <!-- D1 Groups -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">1 · Groups</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(80% 55% at 18% 8%,rgba(180,0,200,.55),transparent 62%),radial-gradient(70% 50% at 92% 95%,rgba(245,255,0,.22),transparent 60%),linear-gradient(160deg,#1c1030,#0d0818);color:#fff;font-family:Manrope,sans-serif;box-shadow:0 16px 44px rgba(20,4,40,.4)">
+          <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px);z-index:9;mix-blend-mode:multiply;opacity:.5"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 4px;font:700 14px Space Mono,monospace;color:#00e5ff">11:42<span style="font-size:11px;color:#f5ff00">5G ▮▮▮ 86%</span></div>
+          <div style="padding:10px 18px 0;display:flex;justify-content:space-between;align-items:center">
+            <div style="font:400 46px VT323,monospace;line-height:.8;color:#fff;text-shadow:2px 2px 0 #ff00a8,-2px -1px 0 #00e5ff">GROUPS</div>
+            <div style="width:38px;height:38px;border-radius:2px;background:linear-gradient(180deg,#f0f0f5,#9a9aa8 45%,#d8d8e0 55%,#6a6a78);border:1px solid #fff;display:flex;align-items:center;justify-content:center;font:700 13px Space Mono,monospace;color:#1a1228">SR</div>
+          </div>
+
+          <div style="margin:16px 16px 0;background:rgba(20,8,38,.6);border:2px solid #ff00a8;box-shadow:4px 4px 0 rgba(0,229,255,.5)">
+            <div style="height:96px;background:radial-gradient(circle at 70% 30%,#ff00a8,#6a00d4 70%);border-bottom:2px solid #f5ff00;display:flex;align-items:center;justify-content:center;position:relative">
+              <div style="font:400 30px VT323,monospace;color:#f5ff00;letter-spacing:.04em;text-align:center;line-height:.8;text-shadow:2px 2px 0 #d400a0">EDC<br><span style="font-size:18px;color:#00e5ff">VEGAS 2026</span></div>
+            </div>
+            <div style="padding:13px 14px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="font:700 17px Manrope;letter-spacing:-.01em">The Ravers</div>
+                <div style="font:700 12px Space Mono,monospace;letter-spacing:.06em;color:#0d0818;background:#f5ff00;padding:3px 8px">K7M2X9PQ</div>
+              </div>
+              <div style="font:500 11px Space Mono,monospace;color:#c89fff;margin-top:3px">MAY 15-17 // 6 MEMBERS</div>
+              <div style="display:flex;margin-top:12px" class="stack">
+                <div style="--ring:#1a0c2e;width:28px;height:28px;border-radius:2px;background:#ff5d8f;font:700 10px Space Mono,monospace;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:28px;height:28px;border-radius:2px;background:#00d0d8;font:700 10px Space Mono,monospace;color:#06222a;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:28px;height:28px;border-radius:2px;background:#f5ff00;color:#222;font:700 10px Space Mono,monospace;display:flex;align-items:center;justify-content:center">JL</div>
+                <div style="width:28px;height:28px;border-radius:2px;background:#b06bff;font:700 10px Space Mono,monospace;display:flex;align-items:center;justify-content:center">PK</div>
+                <div style="width:28px;height:28px;border-radius:2px;background:#2a1840;border:1px solid #6a4a9a;font:700 10px Space Mono,monospace;color:#c89fff;display:flex;align-items:center;justify-content:center">+2</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin:13px 16px 0;background:rgba(20,8,38,.5);border:2px solid #6a4a9a;padding:12px 14px;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;border-radius:2px;flex:none;background:linear-gradient(135deg,#00e5ff,#6a00d4);border:1px solid #00e5ff;display:flex;align-items:center;justify-content:center;font:400 20px VT323,monospace;color:#fff">LL</div>
+            <div style="flex:1"><div style="font:700 15px Manrope">Bass Heads</div><div style="font:500 11px Space Mono,monospace;color:#a78fd0">LOST LANDS // 3</div></div>
+          </div>
+
+          <div style="position:absolute;left:16px;right:16px;bottom:96px;display:flex;flex-direction:column;gap:10px;z-index:10">
+            <div style="height:52px;background:linear-gradient(135deg,#ff00a8,#f5ff00);display:flex;align-items:center;justify-content:center;font:400 26px VT323,monospace;letter-spacing:.04em;color:#1a0c2e;border:2px solid #fff;box-shadow:3px 3px 0 #00e5ff">+ CREATE A GROUP</div>
+            <div style="height:46px;background:rgba(20,8,38,.5);border:2px solid #00e5ff;display:flex;align-items:center;justify-content:center;font:700 13px Manrope;color:#00e5ff">Join with a code</div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:70px;z-index:10;background:linear-gradient(180deg,#3a2a52,#1a0e2e);border-top:2px solid #ff00a8;display:flex;align-items:center;justify-content:space-around;padding:0 8px 6px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#ff00a8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:700 9px Space Mono,monospace;text-shadow:0 0 8px #ff00a8">GROUPS</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:500 9px Space Mono,monospace">SETS</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:500 9px Space Mono,monospace">NOW</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:500 9px Space Mono,monospace">YOU</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D2 Schedule -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">2 · Schedule</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(80% 55% at 18% 8%,rgba(180,0,200,.5),transparent 62%),radial-gradient(70% 50% at 92% 95%,rgba(245,255,0,.2),transparent 60%),linear-gradient(160deg,#1c1030,#0d0818);color:#fff;font-family:Manrope,sans-serif">
+          <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px);z-index:9;mix-blend-mode:multiply;opacity:.5"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 4px;font:700 14px Space Mono,monospace;color:#00e5ff">11:42<span style="font-size:11px;color:#f5ff00">5G ▮▮▮ 86%</span></div>
+          <div style="padding:8px 18px 0"><div style="font:400 38px VT323,monospace;line-height:.8;text-shadow:2px 2px 0 #ff00a8,-2px -1px 0 #00e5ff">SCHEDULE</div><div style="font:500 11px Space Mono,monospace;color:#c89fff;margin-top:4px">EDC VEGAS 2026 // THE RAVERS</div></div>
+          <div style="display:flex;gap:8px;padding:14px 18px 0">
+            <div style="flex:1;height:40px;background:linear-gradient(135deg,#ff00a8,#f5ff00);color:#1a0c2e;border:2px solid #fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 18px VT323,monospace;line-height:.8">FRI<span style="font:500 7px Space Mono,monospace">MAY15</span></div>
+            <div style="flex:1;height:40px;background:rgba(20,8,38,.5);border:2px solid #6a4a9a;color:#a78fd0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 18px VT323,monospace;line-height:.8">SAT<span style="font:500 7px Space Mono,monospace">MAY16</span></div>
+            <div style="flex:1;height:40px;background:rgba(20,8,38,.5);border:2px solid #6a4a9a;color:#a78fd0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 18px VT323,monospace;line-height:.8">SUN<span style="font:500 7px Space Mono,monospace">MAY17</span></div>
+          </div>
+
+          <div style="padding:16px 16px 0">
+            <div style="font:400 22px VT323,monospace;color:#00e5ff;letter-spacing:.04em;margin-bottom:9px">▸ KINETIC FIELD</div>
+
+            <div style="padding:13px 14px;margin-bottom:9px;background:rgba(255,0,168,.14);border:2px solid #ff00a8;box-shadow:3px 3px 0 #00e5ff;position:relative">
+              <div style="position:absolute;top:-1px;right:-1px;background:#ff00a8;color:#fff;font:700 8px Space Mono,monospace;padding:2px 6px;letter-spacing:.1em">◆ MARKED</div>
+              <div style="font:500 11px Space Mono,monospace;color:#ffb3e6">23:30 - 01:00</div>
+              <div style="font:700 19px Manrope;margin-top:2px;text-shadow:1px 1px 0 rgba(0,229,255,.4)">Aphelion</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
+                <div class="stack" style="display:flex;--ring:#2a0c28">
+                  <div style="width:24px;height:24px;border-radius:2px;background:#ff5d8f;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">SR</div>
+                  <div style="width:24px;height:24px;border-radius:2px;background:#00d0d8;color:#06222a;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">MJ</div>
+                  <div style="width:24px;height:24px;border-radius:2px;background:#b06bff;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">PK</div>
+                </div>
+                <span style="font:600 11px Space Mono,monospace;color:#ffb3e6">YOU +2</span>
+              </div>
+            </div>
+
+            <div style="padding:13px 14px;margin-bottom:9px;background:rgba(20,8,38,.4);border:2px solid #4a3868">
+              <div style="font:500 11px Space Mono,monospace;color:#a78fd0">22:00 - 23:30</div>
+              <div style="font:700 19px Manrope;margin-top:2px;color:#ddd">Krystal Void</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:11px"><div class="stack" style="display:flex;--ring:#170a26"><div style="width:24px;height:24px;border-radius:2px;background:#f5ff00;color:#222;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:600 11px Space Mono,monospace;color:#8a7aa8">JESS</span></div>
+            </div>
+
+            <div style="font:400 22px VT323,monospace;color:#00e5ff;letter-spacing:.04em;margin:14px 0 9px">▸ COSMIC MEADOW</div>
+            <div style="padding:13px 14px;background:rgba(20,8,38,.4);border:2px solid #4a3868">
+              <div style="font:500 11px Space Mono,monospace;color:#a78fd0">23:00 - 00:30</div>
+              <div style="font:700 19px Manrope;margin-top:2px;color:#ddd">BASSNØVA</div>
+              <div style="font:600 11px Space Mono,monospace;color:#6a5a88;margin-top:11px">// NO PICKS YET</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;height:70px;z-index:10;background:linear-gradient(180deg,#3a2a52,#1a0e2e);border-top:2px solid #ff00a8;display:flex;align-items:center;justify-content:space-around;padding:0 8px 6px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span style="font:500 9px Space Mono,monospace">GROUPS</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#ff00a8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span style="font:700 9px Space Mono,monospace;text-shadow:0 0 8px #ff00a8">SETS</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="font:500 9px Space Mono,monospace">NOW</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#8a7aa8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:500 9px Space Mono,monospace">YOU</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D3 Artist -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">3 · Artist detail</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:#0d0818;color:#fff;font-family:Manrope,sans-serif">
+          <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px);z-index:9;mix-blend-mode:multiply;opacity:.5"></div>
+          <div style="position:relative;height:248px;background:radial-gradient(circle at 65% 30%,#ff00a8,#6a00d4 60%,#1a0c2e 100%)">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 45%,#0d0818)"></div>
+            <div style="position:absolute;top:14px;left:16px;width:32px;height:32px;border-radius:2px;background:rgba(0,0,0,.4);border:1px solid #00e5ff;display:flex;align-items:center;justify-content:center;font-size:17px;color:#00e5ff">⌄</div>
+            <div style="position:absolute;left:18px;bottom:14px;right:18px">
+              <div style="font:400 56px VT323,monospace;line-height:.78;color:#f5ff00;text-shadow:3px 3px 0 #ff00a8,-2px -1px 0 #00e5ff">APHELION</div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 0;position:relative;z-index:2">
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span style="font:700 10px Space Mono,monospace;padding:4px 10px;background:rgba(0,229,255,.12);border:1px solid #00e5ff;color:#00e5ff">MELODIC BASS</span>
+              <span style="font:700 10px Space Mono,monospace;padding:4px 10px;background:rgba(255,0,168,.12);border:1px solid #ff00a8;color:#ff8ad6">DUBSTEP</span>
+              <span style="font:700 10px Space Mono,monospace;padding:4px 10px;background:rgba(245,255,0,.1);border:1px solid #c8d000;color:#f5ff00">FUTURE</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:9px;margin-top:14px;background:rgba(255,0,168,.12);border:2px solid #ff00a8;padding:9px 12px">
+              <div class="stack" style="display:flex;--ring:#1a0820">
+                <div style="width:26px;height:26px;border-radius:2px;background:#ff5d8f;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">SR</div>
+                <div style="width:26px;height:26px;border-radius:2px;background:#00d0d8;color:#06222a;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">MJ</div>
+                <div style="width:26px;height:26px;border-radius:2px;background:#b06bff;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">PK</div>
+              </div>
+              <span style="font:600 11px Space Mono,monospace;color:#ffb3e6">YOU, MIKE &amp; PRIYA GOING</span>
+            </div>
+
+            <div style="font:400 20px VT323,monospace;color:#00e5ff;margin:14px 2px 9px">▸ TOP TRACKS</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:2px;background:linear-gradient(135deg,#ff00a8,#f5ff00);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#1a0c2e"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope">Event Horizon</div><div style="font:500 10px Space Mono,monospace;color:#8a7aa8">3:48 // 30s</div></div></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:2px;background:rgba(20,8,38,.6);border:1px solid #4a3868;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#a78fd0"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#ddd">Gravity Well</div><div style="font:500 10px Space Mono,monospace;color:#8a7aa8">4:12</div></div></div>
+              <div style="display:flex;align-items:center;gap:11px"><div style="width:36px;height:36px;border-radius:2px;background:rgba(20,8,38,.6);border:1px solid #4a3868;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#a78fd0"><path d="M7 4v16l13-8z"/></svg></div><div style="flex:1"><div style="font:600 13px Manrope;color:#ddd">Supernova</div><div style="font:500 10px Space Mono,monospace;color:#8a7aa8">3:21</div></div></div>
+            </div>
+
+            <div style="font:400 20px VT323,monospace;color:#00e5ff;margin:14px 2px 9px">▸ SIMILAR</div>
+            <div style="display:flex;gap:11px">
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:2px;background:linear-gradient(135deg,#00e5ff,#1453d6);border:1px solid #00e5ff"></div><div style="font:600 10px Space Mono,monospace;margin-top:5px">SOLARIS</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:2px;background:linear-gradient(135deg,#ff8a4a,#c8245d);border:1px solid #ff8a4a"></div><div style="font:600 10px Space Mono,monospace;margin-top:5px">NYX</div></div>
+              <div style="text-align:center"><div style="width:64px;height:64px;border-radius:2px;background:linear-gradient(135deg,#b06bff,#4b1fa8);border:1px solid #b06bff"></div><div style="font:600 10px Space Mono,monospace;margin-top:5px">VELDT</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D4 Right Now -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:9px">
+        <div style="font:600 12px Manrope;color:#6a6560">4 · Right Now</div>
+        <div style="width:340px;height:736px;border-radius:40px;overflow:hidden;position:relative;background:radial-gradient(90% 55% at 50% 5%,rgba(180,0,200,.55),transparent 60%),radial-gradient(70% 50% at 92% 95%,rgba(245,255,0,.22),transparent 60%),linear-gradient(160deg,#1c1030,#0d0818);color:#fff;font-family:Manrope,sans-serif">
+          <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px);z-index:9;mix-blend-mode:multiply;opacity:.5"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 4px;font:700 14px Space Mono,monospace;color:#00e5ff">11:42<span style="font-size:11px;color:#f5ff00">5G ▮▮▮ 86%</span></div>
+          <div style="text-align:center;padding:14px 18px 0">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:#ff00a8;padding:4px 13px;border:1px solid #fff"><span style="width:8px;height:8px;border-radius:50%;background:#f5ff00"></span><span style="font:700 11px Space Mono,monospace;letter-spacing:.1em;color:#fff">RIGHT NOW</span></div>
+            <div style="font:400 88px VT323,monospace;line-height:.72;margin-top:8px;color:#f5ff00;text-shadow:3px 3px 0 #ff00a8,-3px -1px 0 #00e5ff">11:42</div>
+            <div style="font:500 11px Space Mono,monospace;color:#c89fff;letter-spacing:.06em">FRIDAY // EDC LAS VEGAS</div>
+          </div>
+
+          <div style="padding:16px 16px 0;display:flex;flex-direction:column;gap:10px">
+            <div style="padding:12px 14px;background:rgba(255,0,168,.14);border:2px solid #ff00a8;box-shadow:3px 3px 0 #00e5ff">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:400 18px VT323,monospace;color:#00e5ff">KINETIC FIELD</span><span style="font:500 10px Space Mono,monospace;color:#ffb3e6">END 01:00</span></div>
+              <div style="font:700 18px Manrope;margin-top:1px">Aphelion</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><div class="stack" style="display:flex;--ring:#2a0c28"><div style="width:24px;height:24px;border-radius:2px;background:#ff5d8f;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">SR</div><div style="width:24px;height:24px;border-radius:2px;background:#00d0d8;color:#06222a;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">MJ</div><div style="width:24px;height:24px;border-radius:2px;background:#b06bff;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">PK</div></div><span style="font:600 11px Space Mono,monospace;color:#ffb3e6">YOU+MIKE+PRIYA</span></div>
+            </div>
+            <div style="padding:12px 14px;background:rgba(20,8,38,.4);border:2px solid #4a3868">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:400 18px VT323,monospace;color:#a9c8ff">COSMIC MEADOW</span><span style="font:500 10px Space Mono,monospace;color:#a78fd0">END 00:30</span></div>
+              <div style="font:700 18px Manrope;margin-top:1px;color:#ddd">BASSNØVA</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><div class="stack" style="display:flex;--ring:#170a26"><div style="width:24px;height:24px;border-radius:2px;background:#f5ff00;color:#222;font:700 9px Space Mono,monospace;display:flex;align-items:center;justify-content:center">JL</div></div><span style="font:600 11px Space Mono,monospace;color:#8a7aa8">JESS HERE</span></div>
+            </div>
+            <div style="padding:12px 14px;background:rgba(20,8,38,.3);border:2px solid #322648;opacity:.75">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:400 18px VT323,monospace;color:#6a5a88">BASSPOD</span><span style="font:500 10px Space Mono,monospace;color:#6a5a88">END 00:00</span></div>
+              <div style="font:700 18px Manrope;margin-top:1px;color:#8a7aa8">Phantom Grid</div>
+              <div style="font:600 10px Space Mono,monospace;color:#6a5a88;margin-top:9px">// NO GROUP MEMBERS</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:16px;right:16px;bottom:18px;height:48px;z-index:10;background:linear-gradient(135deg,#ff00a8,#f5ff00);border:2px solid #fff;box-shadow:3px 3px 0 #00e5ff;display:flex;align-items:center;justify-content:center;gap:9px;font:400 24px VT323,monospace;letter-spacing:.04em;color:#1a0c2e"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a0c2e" stroke-width="2.4"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>SHARE SNAPSHOT</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

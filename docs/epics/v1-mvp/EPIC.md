@@ -2,7 +2,7 @@
 
 **Status:** Design — awaiting Jerome sign-off before any ticket is opened in GitHub.
 **Last updated:** 2026-06-23
-**Source prototype:** [`.local-data/design/FestApp.dc.html`](../../../.local-data/design/FestApp.dc.html) — Cosmic-Neon, 7 screens.
+**Source prototype:** [`docs/design/FestApp.dc.html`](../../../docs/design/FestApp.dc.html) — Cosmic-Neon, 7 screens.
 **Authoritative schema:** [ADR-006](../../decisions/ADR-006-initial-data-schema.md).
 **Authoritative wire shapes:** [`docs/schemas/reference/v1_pydantic.py`](../../schemas/reference/v1_pydantic.py).
 
@@ -234,5 +234,5 @@ The epic is closed when:
 - [features/artist-drilldown-spec.md](../../features/artist-drilldown-spec.md) — Wave-3 FE-007 baseline
 - [`docs/schemas/reference/v1_pydantic.py`](../../schemas/reference/v1_pydantic.py) — wire shapes
 - [`code_review_template.md`](../../code_review_template.md) + [`code_review_known_fixes.md`](../../code_review_known_fixes.md) — review bar
-- [`.local-data/design/FestApp.dc.html`](../../../.local-data/design/FestApp.dc.html) — chosen Cosmic-Neon prototype
-- [`.local-data/design/competitor-reference/`](../../../.local-data/design/competitor-reference/) — Jerome's reference screenshots
+- [`docs/design/FestApp.dc.html`](../../../docs/design/FestApp.dc.html) — chosen Cosmic-Neon prototype
+- [`docs/design/competitor-reference/`](../../design/competitor-reference/) — Jerome's reference screenshots

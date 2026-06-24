@@ -1,6 +1,6 @@
 # DESIGN-TOKENS — setlist-picker v1 (Cosmic-Neon)
 
-Tokens extracted from the chosen prototype `.local-data/design/FestApp.dc.html` (715 lines, 7 screens). Every value here is grepped from that file — no invented values. Where a value depends on theme (light vs dark), v1 is **dark only** (per EPIC OQ-04). Light theme is `BACKLOG-001-light-theme.md`.
+Tokens extracted from the chosen prototype `docs/design/FestApp.dc.html` (715 lines, 7 screens). Every value here is grepped from that file — no invented values. Where a value depends on theme (light vs dark), v1 is **dark only** (per EPIC OQ-04). Light theme is `BACKLOG-001-light-theme.md`.
 
 Implementer reads this file and writes:
 
@@ -326,7 +326,7 @@ This is consistent with prototype intent (FE-007 maps directly to `isArtist` scr
 
 ## 7. References
 
-- Prototype source: [`.local-data/design/FestApp.dc.html`](../../../.local-data/design/FestApp.dc.html)
+- Prototype source: [`docs/design/FestApp.dc.html`](../../../docs/design/FestApp.dc.html)
 - EPIC: [EPIC.md](./EPIC.md)
 - Open question OQ-02 (mixed aesthetic): [EPIC § 7](./EPIC.md#7-open-questions-for-jerome)
 - Open question OQ-04 (light theme): [EPIC § 7](./EPIC.md#7-open-questions-for-jerome)

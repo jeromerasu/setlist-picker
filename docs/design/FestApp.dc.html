@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0a0712}
+  .stk>*{margin-left:-7px;box-shadow:0 0 0 2px var(--ring,#140e34)}
+  .stk>*:first-child{margin-left:0}
+  .nob{-webkit-appearance:none;border:none;background:none;font:inherit;color:inherit;cursor:pointer;padding:0}
+  .scrl::-webkit-scrollbar{display:none}
+  .scrl{scrollbar-width:none}
+  @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  input::placeholder{color:#6a6592}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;background:radial-gradient(circle at 50% 0%,#1a1038,#0a0712);font-family:Manrope,sans-serif">
+  <div style="width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;background:radial-gradient(125% 70% at 50% -6%,#34165e 0%,#150e34 50%,#08060f 100%);box-shadow:0 24px 70px rgba(20,8,48,.6);color:#fff">
+
+    <!-- status bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font:700 14px Orbitron;z-index:60">
+      <span>9:59</span><span style="font:600 12px Manrope;opacity:.85">5G ▮▮ 70</span>
+    </div>
+
+    <!-- ============ SCREEN: GROUPS ============ -->
+    <sc-if value="{{ isGroups }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;padding:54px 0 96px;animation:fadeIn .25s">
+      <div style="padding:0 22px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font:900 30px Orbitron;letter-spacing:.03em;background:linear-gradient(120deg,#ff2d9b,#a64bff,#28e0ff);-webkit-background-clip:text;background-clip:text;color:transparent">GROUPS</div>
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7b5cff);display:flex;align-items:center;justify-content:center;font:800 14px Manrope">DF</div>
+      </div>
+      <div style="font:500 13px Manrope;color:#9a8fc4;margin:5px 22px 0">Pick sets together. See who's where.</div>
+
+      <div class="scrl" style="margin-top:18px;padding:0 22px;overflow-y:auto;max-height:560px;display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+          <button class="nob" onClick="{{ g.open }}" style="text-align:left;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)">
+            <div style="height:96px;background:{{ g.bg }};position:relative;display:flex;align-items:flex-end;padding:13px 15px">
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,6,15,.55),transparent 70%)"></div>
+              <div style="position:relative;font:700 19px Manrope;letter-spacing:-.01em">{{ g.name }}</div>
+            </div>
+            <div style="padding:13px 15px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px">🎪</span><span style="font:600 14px Manrope">{{ g.event }}</span></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:7px"><span style="font-size:12px;opacity:.7">📅</span><span style="font:500 12px Manrope;color:#a99fce">{{ g.date }}</span></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:7px"><span style="font-size:12px;opacity:.7">👥</span><span style="font:500 12px Manrope;color:#a99fce">{{ g.members }} members</span></div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="position:absolute;left:18px;right:18px;bottom:90px;display:flex;flex-direction:column;gap:10px">
+        <button class="nob" onClick="{{ goCreate }}" style="height:52px;border-radius:15px;background:linear-gradient(120deg,#ff2d9b,#a64bff,#28e0ff);display:flex;align-items:center;justify-content:center;font:700 14px Orbitron;letter-spacing:.05em;box-shadow:0 10px 26px rgba(166,75,255,.45)">+ CREATE A GROUP</button>
+        <button class="nob" onClick="{{ goJoin }}" style="height:48px;border-radius:15px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font:600 13px Manrope;color:#e6def7">Join a group</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: CREATE ============ -->
+    <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;padding:54px 0 0;animation:fadeIn .25s">
+      <div style="padding:0 18px;display:flex;align-items:center;gap:14px">
+        <button class="nob" onClick="{{ goGroups }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+        <div style="font:700 19px Manrope">New group</div>
+      </div>
+
+      <div style="padding:30px 22px 0;display:flex;flex-direction:column;gap:22px">
+        <div>
+          <div style="font:700 12px Manrope;letter-spacing:.08em;color:#9b8cff;text-transform:uppercase;margin-bottom:9px">Group name</div>
+          <input value="{{ cgName }}" onInput="{{ onName }}" placeholder="e.g. ravefam" style="width:100%;height:54px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:0 16px;font:600 16px Manrope;color:#fff;outline:none" />
+        </div>
+        <div>
+          <div style="font:700 12px Manrope;letter-spacing:.08em;color:#9b8cff;text-transform:uppercase;margin-bottom:9px">Event</div>
+          <button class="nob" onClick="{{ goEventPicker }}" style="width:100%;height:54px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:0 16px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font:600 16px Manrope;color:{{ cgEventColor }}">{{ cgEventLabel }}</span>
+            <span style="font-size:18px;color:#8a82b8">›</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="position:absolute;left:22px;right:22px;bottom:34px">
+        <button class="nob" onClick="{{ submitCreate }}" style="width:100%;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font:700 15px Manrope;transition:.2s;background:{{ createBtnBg }};border:1.5px solid {{ createBtnBorder }};color:{{ createBtnColor }};box-shadow:{{ createBtnShadow }}">Create</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: EVENT PICKER ============ -->
+    <sc-if value="{{ isEventPicker }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;padding:54px 0 0;animation:fadeIn .2s">
+      <div style="padding:0 18px;display:flex;align-items:center;gap:14px">
+        <button class="nob" onClick="{{ goCreate }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+        <div style="font:700 19px Manrope">Choose event</div>
+      </div>
+      <div style="padding:16px 22px 0">
+        <div style="display:flex;align-items:center;gap:10px;height:48px;border-radius:13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);padding:0 14px">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a82b8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input value="{{ eventQuery }}" onInput="{{ onEventQuery }}" placeholder="Search festivals…" style="flex:1;background:none;border:none;outline:none;font:500 15px Manrope;color:#fff" />
+        </div>
+      </div>
+      <div class="scrl" style="margin-top:14px;padding:0 22px;overflow-y:auto;max-height:600px;display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ filteredEvents }}" as="e" hint-placeholder-count="5">
+          <button class="nob" onClick="{{ e.pick }}" style="text-align:left;display:flex;align-items:center;gap:13px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px 14px">
+            <div style="width:46px;height:46px;border-radius:11px;flex:none;background:{{ e.bg }};display:flex;align-items:center;justify-content:center;font:800 17px Orbitron">{{ e.mono }}</div>
+            <div style="flex:1"><div style="font:700 15px Manrope">{{ e.name }}</div><div style="font:500 12px Manrope;color:#a99fce;margin-top:2px">{{ e.date }} · {{ e.loc }}</div></div>
+          </button>
+        </sc-for>
+        <sc-if value="{{ noEvents }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:40px 0;font:500 14px Manrope;color:#8a82b8">No festivals match “{{ eventQuery }}”</div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: JOIN ============ -->
+    <sc-if value="{{ isJoin }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;padding:54px 0 0;animation:fadeIn .25s">
+      <div style="padding:0 18px;display:flex;align-items:center;gap:14px">
+        <button class="nob" onClick="{{ goGroups }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+      </div>
+      <div style="padding:46px 30px 0;text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto;background:rgba(166,75,255,.16);border:1px solid rgba(166,75,255,.4);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c8b9ff" stroke-width="2"><path d="M16 11a4 4 0 100-8 4 4 0 000 8z"/><path d="M3 21c0-4 3-6 7-6M17 14l4 4m0-4l-4 4"/></svg></div>
+        <div style="font:800 26px Manrope;letter-spacing:-.01em;margin-top:18px">Join a group</div>
+        <div style="font:500 14px Manrope;color:#a99fce;margin-top:6px">Enter the invite code</div>
+      </div>
+      <div style="padding:30px 26px 0">
+        <div style="font:700 12px Manrope;letter-spacing:.08em;color:#9b8cff;text-transform:uppercase;margin-bottom:9px">Invite code</div>
+        <input value="{{ joinCode }}" onInput="{{ onJoinCode }}" placeholder="8-character code" maxlength="8" style="width:100%;height:56px;border-radius:14px;background:rgba(255,255,255,.06);border:1.5px solid {{ joinInputBorder }};padding:0 16px;font:700 18px 'Space Mono',monospace;letter-spacing:.18em;color:#fff;outline:none;text-transform:uppercase" />
+        <sc-if value="{{ joinError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:7px;margin-top:11px;font:500 13px Manrope;color:#ff6a8a"><span style="font-size:14px">⚠</span> This invite link is invalid or expired</div>
+        </sc-if>
+        <div style="font:500 12px Manrope;color:#6a6592;margin-top:11px">Tip: try <span style="color:#9b8cff;font-family:'Space Mono',monospace">K7M2X9PQ</span></div>
+      </div>
+      <div style="position:absolute;left:26px;right:26px;bottom:34px">
+        <button class="nob" onClick="{{ submitJoin }}" style="width:100%;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font:700 15px Manrope;transition:.2s;background:{{ joinBtnBg }};border:1.5px solid {{ joinBtnBorder }};color:{{ joinBtnColor }};box-shadow:{{ joinBtnShadow }}">Join Group</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: GROUP (individual) ============ -->
+    <sc-if value="{{ isGroup }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:54px 0 96px;animation:fadeIn .25s">
+      <div style="padding:0 18px;display:flex;align-items:center;justify-content:space-between">
+        <button class="nob" onClick="{{ goGroups }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+      </div>
+      <div class="scrl" style="overflow-y:auto;max-height:660px;padding:0 0 20px">
+        <!-- top half -->
+        <div style="padding:8px 22px 18px;border-bottom:1px solid rgba(255,255,255,.08)">
+          <div style="font:900 28px Orbitron;letter-spacing:.02em;background:linear-gradient(120deg,#ff2d9b,#a64bff,#28e0ff);-webkit-background-clip:text;background-clip:text;color:transparent">{{ G.name }}</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;font:600 13px Manrope"><span style="font-size:13px;width:18px">🎪</span>{{ G.event }}</div>
+            <div style="display:flex;align-items:center;gap:10px;font:500 13px Manrope;color:#b6acd8"><span style="font-size:12px;width:18px">📅</span>{{ G.date }}</div>
+            <div style="display:flex;align-items:center;gap:10px;font:500 13px Manrope;color:#b6acd8"><span style="font-size:12px;width:18px">📍</span>{{ G.loc }}</div>
+            <div style="display:flex;align-items:center;gap:10px;font:500 13px Manrope;color:#b6acd8"><span style="font-size:12px;width:18px">🔑</span><span style="font-family:'Space Mono',monospace;letter-spacing:.12em;color:#c8b9ff">{{ G.code }}</span></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="nob" onClick="{{ invite }}" style="flex:1;height:46px;border-radius:13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;gap:8px;font:600 13px Manrope"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Invite friends</button>
+            <button class="nob" onClick="{{ goSchedule }}" style="flex:1;height:46px;border-radius:13px;background:linear-gradient(120deg,#a64bff,#28e0ff);display:flex;align-items:center;justify-content:center;gap:8px;font:700 13px Manrope;box-shadow:0 8px 20px rgba(166,75,255,.4)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</button>
+          </div>
+          <sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:11px;text-align:center;font:600 12px Manrope;color:#28e0ff;animation:fadeIn .2s">✓ Invite copied — “Join my group on Setlist! Group code: {{ G.code }}”</div>
+          </sc-if>
+        </div>
+
+        <!-- bottom half: artists -->
+        <div style="padding:18px 22px 0">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <div style="font:800 20px Manrope">Artists</div>
+            <div style="font:500 12px Manrope;color:#8a82b8">{{ artistCount }} acts</div>
+          </div>
+          <div class="scrl" style="display:flex;gap:8px;margin-top:13px;overflow-x:auto">
+            <sc-for list="{{ artistTabs }}" as="t" hint-placeholder-count="5">
+              <button class="nob" onClick="{{ t.pick }}" style="flex:none;padding:8px 15px;border-radius:99px;font:700 13px Manrope;white-space:nowrap;background:{{ t.bg }};border:1px solid {{ t.border }};color:{{ t.color }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- ALL ARTISTS (alphabetical) -->
+        <sc-if value="{{ artistTabAll }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:14px 22px 0;display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ allArtists }}" as="a" hint-placeholder-count="6">
+            <button class="nob" onClick="{{ a.open }}" style="text-align:left;display:flex;align-items:center;gap:13px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:11px 13px">
+              <div style="width:46px;height:46px;border-radius:11px;flex:none;background:{{ a.bg }}"></div>
+              <div style="flex:1"><div style="font:700 15px Manrope">{{ a.artist }}</div><div style="font:500 12px Manrope;color:#a99fce;margin-top:2px">{{ a.genre }}</div></div>
+              <span style="width:9px;height:9px;border-radius:50%;background:{{ a.stageColor }}"></span>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- PER DAY (by stage, chronological) -->
+        <sc-if value="{{ artistTabDay }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:14px 22px 0">
+          <sc-for list="{{ dayStageGroups }}" as="sg" hint-placeholder-count="3">
+            <div style="margin-bottom:18px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:9px;height:9px;border-radius:50%;background:{{ sg.color }};box-shadow:0 0 8px {{ sg.color }}"></span><span style="font:700 12px Orbitron;letter-spacing:.08em;color:{{ sg.color }}">{{ sg.name }}</span></div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ sg.sets }}" as="s" hint-placeholder-count="2">
+                  <button class="nob" onClick="{{ s.toggle }}" style="text-align:left;display:flex;align-items:center;justify-content:space-between;border-radius:14px;padding:12px 14px;transition:.18s;background:{{ s.bg }};border:1.5px solid {{ s.border }}">
+                    <div>
+                      <div style="font:700 16px Manrope">{{ s.artist }}</div>
+                      <div style="font:500 12px 'Space Mono',monospace;color:{{ s.timeColor }};margin-top:3px">{{ s.sLabel }} – {{ s.eLabel }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <sc-if value="{{ s.hasGoing }}" hint-placeholder-val="{{ false }}">
+                        <div class="stk" style="display:flex">
+                          <sc-for list="{{ s.going }}" as="m" hint-placeholder-count="1"><div style="width:24px;height:24px;border-radius:50%;background:{{ m.c }};font:800 9px Manrope;display:flex;align-items:center;justify-content:center;color:{{ m.t }}">{{ m.i }}</div></sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ s.picked }}" hint-placeholder-val="{{ false }}">
+                        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ff2d9b,#28e0ff);display:flex;align-items:center;justify-content:center;animation:pop .25s"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></div>
+                      </sc-if>
+                      <sc-if value="{{ s.notPicked }}" hint-placeholder-val="{{ true }}">
+                        <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28)"></div>
+                      </sc-if>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: ARTIST (cyber-retro) ============ -->
+    <sc-if value="{{ isArtist }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#0d0818;animation:fadeIn .2s;overflow:hidden">
+      <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px);z-index:9;mix-blend-mode:multiply;opacity:.5"></div>
+      <div class="scrl" style="position:absolute;inset:0;overflow-y:auto">
+        <div style="position:relative;height:280px;background:{{ A.heroBg }}">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 42%,#0d0818)"></div>
+          <button class="nob" onClick="{{ backFromArtist }}" style="position:absolute;top:50px;left:18px;width:34px;height:34px;border-radius:2px;background:rgba(0,0,0,.4);border:1px solid #00e5ff;display:flex;align-items:center;justify-content:center;font-size:17px;color:#00e5ff;z-index:5">‹</button>
+          <div style="position:absolute;left:18px;bottom:14px;right:18px;z-index:3">
+            <div style="font:400 56px VT323,monospace;line-height:.78;color:#f5ff00;text-shadow:3px 3px 0 #ff00a8,-2px -1px 0 #00e5ff">{{ A.nameUpper }}</div>
+          </div>
+        </div>
+        <div style="padding:10px 18px 40px;position:relative;z-index:2">
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <sc-for list="{{ A.genres }}" as="g" hint-placeholder-count="3"><span style="font:700 10px 'Space Mono',monospace;padding:4px 10px;background:{{ g.bg }};border:1px solid {{ g.bd }};color:{{ g.fg }}">{{ g.t }}</span></sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:14px;background:rgba(255,0,168,.12);border:2px solid #ff00a8;padding:9px 12px">
+            <sc-if value="{{ A.hasFriends }}" hint-placeholder-val="{{ true }}">
+              <div class="stk" style="display:flex;--ring:#1a0820"><sc-for list="{{ A.friends }}" as="m" hint-placeholder-count="2"><div style="width:26px;height:26px;border-radius:2px;background:{{ m.c }};font:700 9px 'Space Mono',monospace;display:flex;align-items:center;justify-content:center;color:{{ m.t }}">{{ m.i }}</div></sc-for></div>
+            </sc-if>
+            <span style="font:600 11px 'Space Mono',monospace;color:#ffb3e6">{{ A.friendsLabel }}</span>
+          </div>
+          <div style="font:400 20px VT323,monospace;color:#00e5ff;margin:16px 2px 9px">▸ TOP TRACKS</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ A.tracks }}" as="t" hint-placeholder-count="3">
+              <button class="nob" onClick="{{ t.play }}" style="text-align:left;display:flex;align-items:center;gap:11px">
+                <div style="width:36px;height:36px;border-radius:2px;background:{{ t.btnBg }};border:{{ t.btnBorder }};display:flex;align-items:center;justify-content:center">
+                  <sc-if value="{{ t.playing }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="#1a0c2e"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></sc-if>
+                  <sc-if value="{{ t.idle }}" hint-placeholder-val="{{ true }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="{{ t.icon }}"><path d="M7 4v16l13-8z"/></svg></sc-if>
+                </div>
+                <div style="flex:1"><div style="font:600 13px Manrope;color:{{ t.titleColor }}">{{ t.name }}</div><div style="font:500 10px 'Space Mono',monospace;color:#8a7aa8">{{ t.meta }}</div></div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font:400 20px VT323,monospace;color:#00e5ff;margin:16px 2px 9px">▸ SIMILAR</div>
+          <div class="scrl" style="display:flex;gap:11px;overflow-x:auto">
+            <sc-for list="{{ A.similar }}" as="s" hint-placeholder-count="3">
+              <button class="nob" onClick="{{ s.open }}" style="text-align:center;flex:none"><div style="width:64px;height:64px;border-radius:2px;background:{{ s.bg }};border:1px solid {{ s.bd }}"></div><div style="font:600 10px 'Space Mono',monospace;margin-top:5px">{{ s.name }}</div></button>
+            </sc-for>
+          </div>
+          <div style="margin-top:18px;height:46px;border-radius:2px;background:#1db954;display:flex;align-items:center;justify-content:center;gap:9px;font:700 13px Manrope"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="12"/></svg>Open in Spotify</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SCREEN: SCHEDULE (calendar) ============ -->
+    <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:48px 0 0;animation:fadeIn .25s">
+      <!-- top bar -->
+      <div style="padding:0 16px;display:flex;align-items:center;justify-content:space-between">
+        <button class="nob" onClick="{{ backToGroup }}" style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:19px">‹</button>
+        <button class="nob" onClick="{{ toggleDayMenu }}" style="display:flex;align-items:center;gap:6px;font:700 19px Manrope">Day {{ schedDay }} <span style="font-size:13px;color:#a78bfa">{{ dayCaret }}</span></button>
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></div>
+      </div>
+
+      <!-- sub tabs -->
+      <div style="display:flex;margin-top:14px;padding:0 22px">
+        <button class="nob" onClick="{{ schedStages }}" style="flex:1;padding-bottom:11px;display:flex;align-items:center;justify-content:center;gap:7px;font:600 15px Manrope;color:{{ stagesTabColor }};border-bottom:2px solid {{ stagesTabBorder }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="{{ stagesTabColor }}"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>All Stages</button>
+        <button class="nob" onClick="{{ schedTimeline }}" style="flex:1;padding-bottom:11px;display:flex;align-items:center;justify-content:center;gap:7px;font:600 15px Manrope;color:{{ schedTabColor }};border-bottom:2px solid {{ schedTabBorder }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ schedTabColor }}" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</button>
+      </div>
+
+      <!-- ===== ALL STAGES grid ===== -->
+      <sc-if value="{{ schedIsStages }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;top:150px;left:0;right:0;bottom:0">
+        <div style="padding:12px 22px 4px">
+          <div style="display:flex;align-items:center;gap:8px;font:500 13px Manrope;color:#b6acd8"><span style="font-size:14px">👆</span>Tap once for going, tap again for maybe</div>
+          <div style="display:flex;gap:16px;margin-top:9px">
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:13px;border-radius:3px;border:1.5px solid #a78bfa"></span><span style="font:500 11px Manrope;color:#a99fce">Maybe</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:13px;border-radius:3px;background:#a78bfa"></span><span style="font:500 11px Manrope;color:#a99fce">Going</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;height:42px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:0 13px;margin-top:11px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a82b8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input value="{{ gridQuery }}" onInput="{{ onGridQuery }}" placeholder="Search artist or set…" style="flex:1;background:none;border:none;outline:none;font:500 14px Manrope;color:#fff" />
+          </div>
+        </div>
+        <!-- scroll region -->
+        <div class="scrl" style="position:absolute;top:150px;left:0;right:0;bottom:0;overflow:auto">
+          <div style="position:relative;width:{{ gridWidth }}px;min-width:100%">
+            <!-- stage headers -->
+            <div style="position:sticky;top:0;z-index:6;display:flex;padding-left:48px;background:linear-gradient(#150e34,#150e34 70%,transparent)">
+              <sc-for list="{{ stages }}" as="st" hint-placeholder-count="4">
+                <div style="width:148px;flex:none;margin-right:10px;height:54px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="width:9px;height:9px;border-radius:50%;background:{{ st.color }};margin-bottom:5px"></span><span style="font:700 13px Manrope;white-space:nowrap">{{ st.name }}</span></div>
+              </sc-for>
+            </div>
+            <!-- time grid -->
+            <div style="position:relative;height:{{ gridHeight }}px;margin-top:6px">
+              <sc-for list="{{ hourLines }}" as="h" hint-placeholder-count="10">
+                <div style="position:absolute;left:0;right:0;top:{{ h.top }}px;border-top:1px solid rgba(255,255,255,.06)"><span style="position:absolute;left:8px;top:-8px;font:600 11px Manrope;color:#7a7298">{{ h.label }}</span></div>
+              </sc-for>
+              <sc-for list="{{ gridSets }}" as="s" hint-placeholder-count="6">
+                <button class="nob" onClick="{{ s.cycle }}" style="position:absolute;left:{{ s.left }}px;top:{{ s.top }}px;width:138px;height:{{ s.height }}px;border-radius:13px;padding:10px 11px;text-align:left;overflow:hidden;transition:.18s;background:{{ s.bg }};border:1.5px solid {{ s.border }};opacity:{{ s.opacity }}">
+                  <div style="font:700 14px Manrope;color:{{ s.titleColor }};line-height:1.05">{{ s.artist }}</div>
+                  <div style="font:500 11px 'Space Mono',monospace;color:{{ s.timeColor }};margin-top:3px">{{ s.sLabel }}</div>
+                  <sc-if value="{{ s.going }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;right:8px;bottom:8px;width:24px;height:24px;border-radius:50%;background:#a78bfa;border:2px solid {{ s.avRing }};display:flex;align-items:center;justify-content:center;font:800 9px Manrope;color:#1a0c2e">DF</div>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===== SCHEDULE timeline ===== -->
+      <sc-if value="{{ schedIsTimeline }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:150px;left:0;right:0;bottom:0">
+        <div style="padding:12px 22px 4px">
+          <div style="display:flex;align-items:center;gap:8px;font:500 13px Manrope;color:#b6acd8"><span style="font-size:14px">👥</span>Tap avatars on a set to see who's going</div>
+          <div style="display:flex;gap:10px;margin-top:11px">
+            <button class="nob" onClick="{{ openFilterSheet }}" style="display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:99px;font:700 14px Manrope;background:{{ groupChipBg }};border:1px solid {{ groupChipBorder }};color:{{ groupChipColor }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M15 19c0-2 1-3.5 3-3.5"/></svg>Group <span style="opacity:.6">|</span> <span style="font-size:11px">⌄</span></button>
+            <button class="nob" onClick="{{ filterMine }}" style="display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font:700 14px Manrope;background:{{ mineChipBg }};border:1px solid {{ mineChipBorder }};color:{{ mineChipColor }}"><span style="font-size:13px">★</span> Mine</button>
+          </div>
+        </div>
+
+        <div class="scrl" style="position:absolute;top:96px;left:0;right:0;bottom:0;overflow-y:auto;padding:6px 22px 30px">
+          <!-- no filter -->
+          <sc-if value="{{ filterNone }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:90px 30px 0">
+              <div style="width:64px;height:64px;border-radius:50%;margin:0 auto;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8a82b8" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg></div>
+              <div style="font:700 22px 'Playfair Display';margin-top:18px;color:#cfc7e6">No Filter Selected</div>
+              <div style="font:500 14px Manrope;color:#8a82b8;margin-top:8px;line-height:1.5">Tap Mine or Group above<br>to see sets</div>
+            </div>
+          </sc-if>
+          <!-- mine timeline -->
+          <sc-if value="{{ filterMineActive }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ hasMine }}" hint-placeholder-val="{{ true }}">
+              <div style="border-radius:18px;padding:15px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden;margin-bottom:18px">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(#ff2d9b,#a64bff)"></div>
+                <div style="font:700 11px Manrope;letter-spacing:.1em;color:#ff8ad6">UP NEXT <span style="color:#8a82b8;font-weight:500">{{ upNextIn }}</span></div>
+                <div style="font:700 30px 'Playfair Display';margin-top:4px">{{ upNext.artist }}</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font:500 13px Manrope;color:#c8b9ff"><span style="width:8px;height:8px;border-radius:50%;background:{{ upNext.color }}"></span>{{ upNext.stage }} · {{ upNext.sLabel }} – {{ upNext.eLabel }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px"><span style="width:18px;height:18px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a0c2e" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></span><span style="font:800 13px Manrope;letter-spacing:.06em;color:#a78bfa">GOING</span><span style="margin-left:auto;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:700 12px Manrope;color:#a99fce">{{ mineCount }}</span></div>
+              <div style="position:relative;padding-left:8px">
+                <sc-for list="{{ mineSets }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;gap:14px;margin-bottom:16px">
+                    <div style="width:62px;flex:none;text-align:left;position:relative">
+                      <div style="font:700 15px Manrope">{{ s.sLabel }}</div>
+                      <div style="font:500 12px Manrope;color:#8a82b8">{{ s.eLabel }}</div>
+                    </div>
+                    <div style="position:relative;flex:none;width:14px"><span style="position:absolute;left:1px;top:5px;width:11px;height:11px;border-radius:50%;background:{{ s.color }};box-shadow:0 0 8px {{ s.color }}"></span><span style="position:absolute;left:6px;top:16px;bottom:-16px;width:1px;background:rgba(255,255,255,.12)"></span></div>
+                    <div style="flex:1;border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);position:relative">
+                      <button class="nob" onClick="{{ s.remove }}" style="position:absolute;top:11px;right:11px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:13px;color:#a99fce">✕</button>
+                      <button class="nob" onClick="{{ s.open }}" style="text-align:left;display:block"><div style="font:700 18px 'Playfair Display'">{{ s.artist }}</div></button>
+                      <div style="display:flex;align-items:center;gap:7px;margin-top:7px;font:500 13px Manrope;color:#b6acd8"><span style="width:8px;height:8px;border-radius:50%;background:{{ s.color }}"></span>{{ s.stage }}</div>
+                      <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div style="width:26px;height:26px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center;font:800 10px Manrope;color:#1a0c2e">DF</div><span style="font:500 12px Manrope;color:#a99fce">{{ s.goingLabel }}</span></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noMine }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:80px 30px 0">
+                <div style="font-size:40px">🎟️</div>
+                <div style="font:700 22px 'Playfair Display';margin-top:14px;color:#cfc7e6">Pick your first set</div>
+                <div style="font:500 14px Manrope;color:#8a82b8;margin-top:8px">Head to All Stages and tap a set to mark you're going</div>
+              </div>
+            </sc-if>
+          </sc-if>
+          <!-- group timeline -->
+          <sc-if value="{{ filterGroupActive }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ hasGroupSets }}" hint-placeholder-val="{{ true }}">
+              <div style="position:relative;padding-left:8px">
+                <sc-for list="{{ groupSets }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;gap:14px;margin-bottom:16px">
+                    <div style="width:62px;flex:none"><div style="font:700 15px Manrope">{{ s.sLabel }}</div><div style="font:500 12px Manrope;color:#8a82b8">{{ s.eLabel }}</div></div>
+                    <div style="position:relative;flex:none;width:14px"><span style="position:absolute;left:1px;top:5px;width:11px;height:11px;border-radius:50%;background:{{ s.color }}"></span><span style="position:absolute;left:6px;top:16px;bottom:-16px;width:1px;background:rgba(255,255,255,.12)"></span></div>
+                    <div style="flex:1;border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)">
+                      <button class="nob" onClick="{{ s.open }}" style="text-align:left;display:block"><div style="font:700 18px 'Playfair Display'">{{ s.artist }}</div></button>
+                      <div style="display:flex;align-items:center;gap:7px;margin-top:7px;font:500 13px Manrope;color:#b6acd8"><span style="width:8px;height:8px;border-radius:50%;background:{{ s.color }}"></span>{{ s.stage }}</div>
+                      <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div class="stk" style="display:flex;--ring:#1c143a"><sc-for list="{{ s.going }}" as="m" hint-placeholder-count="2"><div style="width:26px;height:26px;border-radius:50%;background:{{ m.c }};display:flex;align-items:center;justify-content:center;font:800 10px Manrope;color:{{ m.t }}">{{ m.i }}</div></sc-for></div><span style="font:500 12px Manrope;color:#a99fce">{{ s.goingLabel }}</span></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noGroupSets }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:80px 30px 0">
+                <div style="width:70px;height:50px;margin:0 auto;color:#5a5278"><svg width="70" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 14c3 0 6 2 6 5"/></svg></div>
+                <div style="font:700 22px 'Playfair Display';margin-top:14px;color:#cfc7e6">No Group Sets Yet</div>
+                <div style="font:500 14px Manrope;color:#8a82b8;margin-top:8px;line-height:1.5">When group members mark sets,<br>they'll appear here</div>
+              </div>
+            </sc-if>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- day menu -->
+      <sc-if value="{{ dayMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ toggleDayMenu }}" style="position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.4);animation:fadeIn .15s"></div>
+        <div style="position:absolute;top:84px;left:50%;transform:translateX(-50%);z-index:41;width:230px;border-radius:18px;overflow:hidden;background:#241a44;border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 40px rgba(0,0,0,.5);animation:fadeIn .15s">
+          <sc-for list="{{ dayOptions }}" as="d" hint-placeholder-count="4">
+            <button class="nob" onClick="{{ d.pick }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06)">
+              <span style="width:30px;height:30px;border-radius:50%;background:{{ d.numBg }};display:flex;align-items:center;justify-content:center;font:700 13px Manrope;color:{{ d.numColor }}">{{ d.n }}</span>
+              <span style="font:600 15px Manrope;color:{{ d.color }};flex:1;text-align:left">Day {{ d.n }}</span>
+              <sc-if value="{{ d.active }}" hint-placeholder-val="{{ false }}"><span style="color:#a78bfa">✓</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- filter group sheet -->
+      <sc-if value="{{ filterSheetOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeFilterSheet }}" style="position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.5);animation:fadeIn .15s"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;z-index:41;border-radius:24px 24px 0 0;background:#1a1232;border-top:1px solid rgba(255,255,255,.12);padding:14px 22px 30px;animation:sheetUp .25s">
+          <div style="width:40px;height:5px;border-radius:99px;background:rgba(255,255,255,.2);margin:0 auto 16px"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font:800 20px Manrope">Filter Group</div><button class="nob" onClick="{{ closeFilterSheet }}" style="font:700 15px Manrope;color:#fff;background:rgba(255,255,255,.1);padding:7px 16px;border-radius:99px">Done</button></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)"><button class="nob" style="font:700 14px Manrope;color:#a78bfa">Clear All</button><span style="font:500 13px Manrope;color:#8a82b8">Showing all</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px;margin-top:10px">
+            <sc-for list="{{ memberList }}" as="m" hint-placeholder-count="3">
+              <button class="nob" onClick="{{ m.toggle }}" style="display:flex;align-items:center;gap:12px;padding:11px 4px">
+                <div style="width:34px;height:34px;border-radius:50%;background:{{ m.c }};display:flex;align-items:center;justify-content:center;font:800 12px Manrope;color:{{ m.t }}">{{ m.i }}</div>
+                <span style="flex:1;text-align:left;font:600 15px Manrope">{{ m.name }}</span>
+                <span style="width:24px;height:24px;border-radius:7px;border:1.5px solid {{ m.checkBorder }};background:{{ m.checkBg }};display:flex;align-items:center;justify-content:center"><sc-if value="{{ m.on }}" hint-placeholder-val="{{ true }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a0c2e" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ============ BOTTOM NAV ============ -->
+    <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:14px;right:14px;bottom:16px;height:64px;border-radius:22px;background:rgba(18,12,40,.72);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:space-around;z-index:30">
+      <button class="nob" onClick="{{ goGroups }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ navHomeColor }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg><span style="font:700 9px Manrope">Home</span></button>
+      <button class="nob" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span style="font:600 9px Manrope">Search</span></button>
+      <button class="nob" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6a6592"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span style="font:600 9px Manrope">You</span></button>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:454,&quot;height&quot;:908}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'groups',
+    activeGroupId: 'ravers',
+    cgName: '', cgEvent: null, eventQuery: '',
+    joinCode: '', joinError: false,
+    artistTab: 'all', activeArtistId: null, artistFrom: 'group',
+    schedTab: 'stages', schedFilter: 'mine', schedDay: 1,
+    dayMenuOpen: false, filterSheetOpen: false,
+    gridQuery: '', playingTrack: null, copied: false,
+    picks: { eggy:'going', harry:'going', alleycvt:'going', nighttapes:'maybe', jackie:'maybe' },
+    groups: [
+      { id:'ravers', name:'Rave Fam', event:'EDC Las Vegas 2026', date:'May 15–17, 2026', loc:'Las Vegas Motor Speedway', code:'K7M2X9PQ', members:6, bg:'radial-gradient(circle at 70% 25%,#ff2d9b,#5b1bd6 72%)' },
+      { id:'bass', name:'Bass Heads', event:'Lost Lands 2026', date:'Sep 25–27, 2026', loc:'Legend Valley, OH', code:'BH4SS882', members:3, bg:'radial-gradient(circle at 70% 25%,#28e0ff,#1453d6 72%)' },
+    ],
+  };
+
+  STAGES = [
+    { id:'sherwood', name:'Sherwood Court', color:'#ff4f9a' },
+    { id:'tripolee', name:'Tripolee', color:'#36c6ff' },
+    { id:'ranch', name:'Ranch Arena', color:'#a06bff' },
+    { id:'cosmic', name:'Cosmic Meadow', color:'#2dd4bf' },
+  ];
+  MEMBERS = [
+    { id:'marcus', i:'MJ', name:'Marcus', c:'#36c6ff', t:'#062' },
+    { id:'priya',  i:'PK', name:'Priya',  c:'#a06bff', t:'#fff' },
+    { id:'jess',   i:'JL', name:'Jess',   c:'#f5d90a', t:'#222' },
+  ];
+  ME = { i:'DF', name:'You', c:'#a78bfa', t:'#1a0c2e' };
+
+  EVENTS = [
+    { name:'EDC Las Vegas 2026', date:'May 15–17, 2026', loc:'Las Vegas, NV', mono:'ED', bg:'linear-gradient(135deg,#ff2d9b,#5b1bd6)' },
+    { name:'Lightning in a Bottle', date:'May 21–26, 2026', loc:'Buena Vista, CA', mono:'LB', bg:'linear-gradient(135deg,#ffd23f,#ff6a3d)' },
+    { name:'Bonnaroo 2026', date:'Jun 11–14, 2026', loc:'Manchester, TN', mono:'BN', bg:'linear-gradient(135deg,#2dd4bf,#1453d6)' },
+    { name:'Electric Forest', date:'Jun 25–28, 2026', loc:'Rothbury, MI', mono:'EF', bg:'linear-gradient(135deg,#28e0ff,#5b1bd6)' },
+    { name:'Lollapalooza 2026', date:'Jul 30–Aug 2, 2026', loc:'Chicago, IL', mono:'LL', bg:'linear-gradient(135deg,#ff4f9a,#a06bff)' },
+    { name:'Lost Lands 2026', date:'Sep 25–27, 2026', loc:'Legend Valley, OH', mono:'LL', bg:'linear-gradient(135deg,#a06bff,#1453d6)' },
+    { name:'III Points 2026', date:'Oct 16–17, 2026', loc:'Miami, FL', mono:'3P', bg:'linear-gradient(135deg,#ff6a3d,#d400a0)' },
+  ];
+
+  // sets: start/end decimal hours; group = member ids also going
+  SETS = [
+    { id:'effin', artist:'Effin', stage:'ranch', day:1, start:18.5, end:19.75, group:[] },
+    { id:'harry', artist:'H&rry', stage:'tripolee', day:1, start:18.5, end:19.75, group:['marcus'] },
+    { id:'eggy', artist:'Eggy', stage:'sherwood', day:1, start:19, end:20.25, group:[] },
+    { id:'cfo', artist:'Close Friends Only', stage:'tripolee', day:1, start:19.75, end:21, group:[] },
+    { id:'midnight', artist:'Midnight Generation', stage:'ranch', day:1, start:20.25, end:21.5, group:['priya'] },
+    { id:'jackie', artist:'Jackie Hollander', stage:'tripolee', day:1, start:20.75, end:22, group:['marcus'] },
+    { id:'nighttapes', artist:'Night Tapes', stage:'sherwood', day:1, start:21, end:22.25, group:[] },
+    { id:'daniel', artist:'Daniel Allan', stage:'tripolee', day:1, start:21.75, end:23, group:['jess'] },
+    { id:'disco', artist:'Disco Lines', stage:'ranch', day:1, start:21.75, end:23, group:['priya','jess'] },
+    { id:'bassnova', artist:'BASSNØVA', stage:'cosmic', day:1, start:21.5, end:23, group:[] },
+    { id:'alleycvt', artist:'Alleycvt', stage:'sherwood', day:1, start:23, end:24.25, group:[] },
+    { id:'phantom', artist:'Phantom Grid', stage:'cosmic', day:1, start:22.5, end:24, group:['marcus'] },
+  ];
+
+  ARTMETA = {
+    _default: { genres:['Electronic','Bass','Live'], tracks:['Event Horizon','Gravity Well','Supernova'], similar:['Solaris','Nyx','VELDT'], hero:'radial-gradient(circle at 65% 30%,#ff00a8,#6a00d4 60%,#1a0c2e 100%)' },
+    alleycvt: { genres:['Melodic Bass','Dubstep','Future'], tracks:['Event Horizon','Gravity Well','Supernova'], similar:['Solaris','Nyx','VELDT'], hero:'radial-gradient(circle at 65% 30%,#ff00a8,#6a00d4 60%,#1a0c2e 100%)' },
+    eggy: { genres:['Jam','Electronic','Funk'], tracks:['Saturday Sun','Walls','Photographs'], similar:['Goose','Lotus','Tipper'], hero:'radial-gradient(circle at 60% 30%,#ff4f9a,#7a1f6a 60%,#1a0c2e 100%)' },
+    harry: { genres:['House','Tech House','Disco'], tracks:['Reflections','Late Night','Pulse'], similar:['Disco Lines','Effin','Eggy'], hero:'radial-gradient(circle at 60% 30%,#36c6ff,#1453d6 60%,#0a1230 100%)' },
+  };
+
+  HUES = ['linear-gradient(135deg,#ff4f9a,#7a1f6a)','linear-gradient(135deg,#36c6ff,#1453d6)','linear-gradient(135deg,#a06bff,#4b1fa8)','linear-gradient(135deg,#2dd4bf,#0e7c66)','linear-gradient(135deg,#ffd23f,#ff6a3d)','linear-gradient(135deg,#ff2d9b,#5b1bd6)'];
+
+  set(p){ this.setState(p); }
+  stageOf(id){ return this.STAGES.find(s=>s.id===id); }
+  fmt(h){ let hr=Math.floor(h)%24, m=Math.round((h-Math.floor(h))*60); let ap=hr>=12&&hr<24?'PM':'AM'; let h12=hr%12; if(h12===0)h12=12; if(hr===24){h12=12;ap='AM'} return `${h12}:${m===0?'00':m} ${ap}`; }
+
+  cycleGrid(id){ this.setState(s=>{ const p={...s.picks}; const cur=p[id]; if(!cur)p[id]='going'; else if(cur==='going')p[id]='maybe'; else delete p[id]; return {picks:p}; }); }
+  toggleGoing(id){ this.setState(s=>{ const p={...s.picks}; if(p[id]==='going')delete p[id]; else p[id]='going'; return {picks:p}; }); }
+  removePick(id){ this.setState(s=>{ const p={...s.picks}; delete p[id]; return {picks:p}; }); }
+
+  goingMembers(set){
+    const arr=[];
+    if(this.state.picks[set.id]==='going') arr.push(this.ME);
+    set.group.forEach(mid=>{ const m=this.MEMBERS.find(x=>x.id===mid); if(m)arr.push(m); });
+    return arr;
+  }
+
+  renderVals(){
+    const st=this.state, scr=st.screen;
+    const G=st.groups.find(g=>g.id===st.activeGroupId)||st.groups[0];
+    const v={
+      isGroups:scr==='groups', isCreate:scr==='create', isEventPicker:scr==='eventPicker',
+      isJoin:scr==='join', isGroup:scr==='group', isArtist:scr==='artist', isSchedule:scr==='schedule',
+      showNav: scr==='groups'||scr==='group',
+      navHomeColor: scr==='groups'?'#a78bfa':'#fff',
+      goGroups:()=>this.set({screen:'groups',dayMenuOpen:false,filterSheetOpen:false}),
+      goCreate:()=>this.set({screen:'create'}),
+      goJoin:()=>this.set({screen:'join',joinCode:'',joinError:false}),
+      goEventPicker:()=>this.set({screen:'eventPicker'}),
+    };
+
+    // groups list
+    v.groups = st.groups.map(g=>({ ...g, open:()=>this.set({screen:'group',activeGroupId:g.id,artistTab:'all'}) }));
+
+    // create
+    v.cgName=st.cgName;
+    v.onName=e=>this.set({cgName:e.target.value});
+    v.cgEventLabel = st.cgEvent? st.cgEvent.name : 'Choose a festival';
+    v.cgEventColor = st.cgEvent? '#fff' : '#6a6592';
+    const createReady = st.cgName.trim() && st.cgEvent;
+    v.createBtnBg = createReady? 'linear-gradient(120deg,#ff2d9b,#a64bff,#28e0ff)':'transparent';
+    v.createBtnBorder = createReady? 'transparent':'rgba(255,255,255,.22)';
+    v.createBtnColor = createReady? '#fff':'#6a6592';
+    v.createBtnShadow = createReady? '0 10px 26px rgba(166,75,255,.4)':'none';
+    v.submitCreate = ()=>{ if(!createReady)return; const id='grp'+Date.now(); const ng={ id, name:st.cgName.trim(), event:st.cgEvent.name, date:st.cgEvent.date, loc:st.cgEvent.loc, code:Math.random().toString(36).slice(2,10).toUpperCase(), members:1, bg:this.HUES[st.groups.length%this.HUES.length] }; this.setState(s=>({ groups:[...s.groups,ng], screen:'group', activeGroupId:id, cgName:'', cgEvent:null, artistTab:'all' })); };
+
+    // event picker
+    v.eventQuery=st.eventQuery;
+    v.onEventQuery=e=>this.set({eventQuery:e.target.value});
+    const q=st.eventQuery.trim().toLowerCase();
+    const fe=this.EVENTS.filter(e=>!q||e.name.toLowerCase().includes(q)||e.loc.toLowerCase().includes(q));
+    v.filteredEvents=fe.map(e=>({ ...e, pick:()=>this.set({cgEvent:e,screen:'create',eventQuery:''}) }));
+    v.noEvents=fe.length===0;
+
+    // join
+    v.joinCode=st.joinCode; v.joinError=st.joinError;
+    v.onJoinCode=e=>this.set({joinCode:e.target.value.toUpperCase().slice(0,8),joinError:false});
+    v.joinInputBorder=st.joinError?'#ff6a8a':'rgba(255,255,255,.14)';
+    const joinReady=st.joinCode.length===8;
+    v.joinBtnBg=joinReady?'linear-gradient(120deg,#ff2d9b,#a64bff,#28e0ff)':'transparent';
+    v.joinBtnBorder=joinReady?'transparent':'rgba(255,255,255,.22)';
+    v.joinBtnColor=joinReady?'#fff':'#6a6592';
+    v.joinBtnShadow=joinReady?'0 10px 26px rgba(166,75,255,.4)':'none';
+    v.submitJoin=()=>{ if(!joinReady)return; const m=st.groups.find(g=>g.code===st.joinCode); if(m){ this.set({screen:'group',activeGroupId:m.id,joinCode:'',joinError:false,artistTab:'all'}); } else { this.set({joinError:true}); } };
+
+    // ===== GROUP view =====
+    v.G={ name:G.name, event:G.event, date:G.date, loc:G.loc, code:G.code };
+    v.copied=st.copied;
+    v.invite=()=>{ this.set({copied:true}); setTimeout(()=>this.set({copied:false}),2600); };
+    v.goSchedule=()=>this.set({screen:'schedule',schedTab:'stages',schedFilter:'mine'});
+    const daySets=this.SETS.filter(s=>s.day===1);
+    v.artistCount=daySets.length;
+    const tabsDef=[{k:'all',l:'All Artists'},{k:'d1',l:'Day 1'},{k:'d2',l:'Day 2'},{k:'d3',l:'Day 3'},{k:'d4',l:'Day 4'}];
+    v.artistTabs=tabsDef.map(t=>{ const on=st.artistTab===t.k; return { label:t.l, pick:()=>this.set({artistTab:t.k}), bg:on?'#a78bfa':'rgba(255,255,255,.06)', border:on?'transparent':'rgba(255,255,255,.14)', color:on?'#1a0c2e':'#cfc7e6' }; });
+    v.artistTabAll=st.artistTab==='all';
+    v.artistTabDay=st.artistTab!=='all';
+    const sortedA=[...daySets].sort((a,b)=>a.artist.localeCompare(b.artist));
+    v.allArtists=sortedA.map((s,i)=>({ artist:s.artist, genre:(this.ARTMETA[s.id]||this.ARTMETA._default).genres.slice(0,2).join(' · '), bg:this.HUES[i%this.HUES.length], stageColor:this.stageOf(s.stage).color, open:()=>this.set({screen:'artist',activeArtistId:s.id,artistFrom:'group'}) }));
+    // per-day grouped by stage
+    const dn=st.artistTab==='d2'?2:st.artistTab==='d3'?3:st.artistTab==='d4'?4:1;
+    v.dayStageGroups=this.STAGES.map(stg=>{
+      const ss=this.SETS.filter(s=>s.stage===stg.id&&s.day===dn).sort((a,b)=>a.start-b.start);
+      return { name:stg.name.toUpperCase(), color:stg.color, sets: ss.map(s=>{ const picked=st.picks[s.id]==='going'; const going=this.goingMembers(s).filter(m=>m!==this.ME); return {
+        artist:s.artist, sLabel:this.fmt(s.start), eLabel:this.fmt(s.end), toggle:()=>this.toggleGoing(s.id),
+        picked, notPicked:!picked, hasGoing:going.length>0, timeColor:picked?'#ffd6ec':'#9a8fc4',
+        going:going.map(m=>({i:m.i,c:m.c,t:m.t})),
+        bg:picked?'linear-gradient(135deg,rgba(255,45,155,.22),rgba(40,224,255,.12))':'rgba(255,255,255,.05)',
+        border:picked?'rgba(255,45,155,.5)':'rgba(255,255,255,.1)' }; }) };
+    }).filter(g=>g.sets.length>0);
+
+    // ===== ARTIST =====
+    const a=this.SETS.find(s=>s.id===st.activeArtistId)||this.SETS[0];
+    const meta=this.ARTMETA[a.id]||this.ARTMETA._default;
+    const friends=this.goingMembers(a);
+    const gpills=[{bg:'rgba(0,229,255,.12)',bd:'#00e5ff',fg:'#00e5ff'},{bg:'rgba(255,0,168,.12)',bd:'#ff00a8',fg:'#ff8ad6'},{bg:'rgba(245,255,0,.1)',bd:'#c8d000',fg:'#f5ff00'}];
+    v.A={
+      nameUpper:a.artist.toUpperCase(), heroBg:meta.hero,
+      genres:meta.genres.map((t,i)=>({t:t.toUpperCase(),...gpills[i%3]})),
+      hasFriends:friends.length>0,
+      friends:friends.map(m=>({i:m.i,c:m.c,t:m.t})),
+      friendsLabel: friends.length? (friends.map(m=>m===this.ME?'YOU':m.name.toUpperCase()).join(', ')+' GOING') : 'NO ONE GOING YET',
+      tracks:meta.tracks.map((nm,i)=>{ const playing=st.playingTrack===a.id+i; return { name:nm, meta:i===0?'3:48 // 30s':'—', play:()=>this.set({playingTrack:playing?null:a.id+i}), playing, idle:!playing, icon:i===0?'#1a0c2e':'#a78fd0', titleColor:i===0?'#fff':'#ddd', btnBg:i===0||playing?'linear-gradient(135deg,#ff00a8,#f5ff00)':'rgba(20,8,38,.6)', btnBorder:i===0||playing?'none':'1px solid #4a3868' }; }),
+      similar:meta.similar.map((nm,i)=>({ name:nm.toUpperCase(), bg:this.HUES[(i+1)%this.HUES.length], bd:'#b06bff', open:()=>{} })),
+    };
+    v.backFromArtist=()=>this.set({screen:st.artistFrom==='schedule'?'schedule':'group'});
+
+    // ===== SCHEDULE =====
+    v.schedDay=st.schedDay;
+    v.dayCaret=st.dayMenuOpen?'▲':'▼';
+    v.backToGroup=()=>this.set({screen:'group',dayMenuOpen:false,filterSheetOpen:false});
+    v.toggleDayMenu=()=>this.set({dayMenuOpen:!st.dayMenuOpen});
+    v.schedStages=()=>this.set({schedTab:'stages'});
+    v.schedTimeline=()=>this.set({schedTab:'schedule'});
+    v.schedIsStages=st.schedTab==='stages';
+    v.schedIsTimeline=st.schedTab==='schedule';
+    v.stagesTabColor=st.schedTab==='stages'?'#a78bfa':'#8a82b8';
+    v.stagesTabBorder=st.schedTab==='stages'?'#a78bfa':'transparent';
+    v.schedTabColor=st.schedTab==='schedule'?'#a78bfa':'#8a82b8';
+    v.schedTabBorder=st.schedTab==='schedule'?'#a78bfa':'transparent';
+    v.stages=this.STAGES;
+    v.dayOptions=[1,2,3,4].map(n=>({ n, active:st.schedDay===n, pick:()=>this.set({schedDay:n,dayMenuOpen:false}), numBg:st.schedDay===n?'#a78bfa':'rgba(255,255,255,.1)', numColor:st.schedDay===n?'#1a0c2e':'#a99fce', color:st.schedDay===n?'#fff':'#a99fce' }));
+
+    // grid
+    const daySetsForGrid=this.SETS.filter(s=>s.day===st.schedDay);
+    const AX=Math.floor(Math.min(...daySetsForGrid.map(s=>s.start),18)-0.5), PXH=84;
+    v.gridQuery=st.gridQuery;
+    v.onGridQuery=e=>this.set({gridQuery:e.target.value});
+    v.gridWidth=48+this.STAGES.length*158;
+    const maxEnd=Math.max(...this.SETS.filter(s=>s.day===st.schedDay).map(s=>s.end),24.5);
+    v.gridHeight=(maxEnd-AX)*PXH+20;
+    v.hourLines=[]; for(let h=AX;h<=Math.ceil(maxEnd);h++){ v.hourLines.push({top:(h-AX)*PXH, label:this.fmt(h)}); }
+    const gq=st.gridQuery.trim().toLowerCase();
+    v.gridSets=this.SETS.filter(s=>s.day===st.schedDay).map(s=>{
+      const stg=this.stageOf(s.stage); const idx=this.STAGES.indexOf(stg);
+      const pick=st.picks[s.id]; const going=pick==='going', maybe=pick==='maybe';
+      const dim=gq&&!s.artist.toLowerCase().includes(gq);
+      return { artist:s.artist, sLabel:this.fmt(s.start), cycle:()=>this.cycleGrid(s.id),
+        left:48+idx*158, top:(s.start-AX)*PXH, height:Math.max((s.end-s.start)*PXH-8,46),
+        going, opacity:dim?0.25:1, avRing:going?stg.color:'#150e34',
+        bg: going?stg.color : maybe?'transparent':'rgba(255,255,255,.05)',
+        border: going?stg.color : maybe?stg.color:'rgba(255,255,255,.1)',
+        titleColor: going?'#0d0818':'#fff', timeColor: going?'rgba(13,8,24,.7)':'#9a8fc4' };
+    });
+
+    // timeline (schedule sub-tab)
+    v.groupChipBg=st.schedFilter==='group'?'#cdb4fe':'rgba(255,255,255,.06)';
+    v.groupChipBorder=st.schedFilter==='group'?'transparent':'rgba(255,255,255,.16)';
+    v.groupChipColor=st.schedFilter==='group'?'#1a0c2e':'#fff';
+    v.mineChipBg=st.schedFilter==='mine'?'#cdb4fe':'rgba(255,255,255,.06)';
+    v.mineChipBorder=st.schedFilter==='mine'?'transparent':'rgba(255,255,255,.16)';
+    v.mineChipColor=st.schedFilter==='mine'?'#1a0c2e':'#fff';
+    v.filterMine=()=>this.set({schedFilter:st.schedFilter==='mine'?'none':'mine'});
+    v.openFilterSheet=()=>this.set({schedFilter:'group',filterSheetOpen:true});
+    v.closeFilterSheet=()=>this.set({filterSheetOpen:false});
+    v.filterSheetOpen=st.filterSheetOpen;
+    v.dayMenuOpen=st.dayMenuOpen;
+    v.filterNone=st.schedFilter==='none';
+    v.filterMineActive=st.schedFilter==='mine';
+    v.filterGroupActive=st.schedFilter==='group';
+
+    const mine=this.SETS.filter(s=>s.day===st.schedDay&&st.picks[s.id]==='going').sort((a,b)=>a.start-b.start);
+    v.hasMine=mine.length>0; v.noMine=mine.length===0; v.mineCount=mine.length;
+    const un=mine[0]||this.SETS.find(s=>st.picks[s.id]==='going');
+    if(un){ v.upNext={ artist:un.artist, stage:this.stageOf(un.stage).name, color:this.stageOf(un.stage).color, sLabel:this.fmt(un.start), eLabel:this.fmt(un.end) }; v.upNextIn='in 63min'; }
+    else { v.upNext={artist:'—',stage:'',color:'#888',sLabel:'',eLabel:''}; v.upNextIn=''; }
+    v.mineSets=mine.map(s=>({ artist:s.artist, sLabel:this.fmt(s.start), eLabel:this.fmt(s.end), stage:this.stageOf(s.stage).name, color:this.stageOf(s.stage).color, goingLabel:'You going', remove:()=>this.removePick(s.id), open:()=>this.set({screen:'artist',activeArtistId:s.id,artistFrom:'schedule'}) }));
+
+    const grp=this.SETS.filter(s=>s.day===st.schedDay&&this.goingMembers(s).length>0).sort((a,b)=>a.start-b.start);
+    v.hasGroupSets=grp.length>0; v.noGroupSets=grp.length===0;
+    v.groupSets=grp.map(s=>{ const gm=this.goingMembers(s); return { artist:s.artist, sLabel:this.fmt(s.start), eLabel:this.fmt(s.end), stage:this.stageOf(s.stage).name, color:this.stageOf(s.stage).color, goingLabel:gm.length+' going', going:gm.map(m=>({i:m.i,c:m.c,t:m.t})), open:()=>this.set({screen:'artist',activeArtistId:s.id,artistFrom:'schedule'}) }; });
+
+    v.memberList=this.MEMBERS.map(m=>({ i:m.i, name:m.name, c:m.c, t:m.t, on:true, toggle:()=>{}, checkBorder:'#a78bfa', checkBg:'#a78bfa' }));
+
+    return v;
+  }
+}
+</script>
+</body>
+</html>
