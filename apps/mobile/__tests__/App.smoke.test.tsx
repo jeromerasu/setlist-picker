@@ -11,6 +11,18 @@ jest.mock("expo-status-bar", () => ({
   StatusBar: () => null,
 }));
 
+jest.mock("react-native-safe-area-context", () => ({
+  SafeAreaProvider: ({ children }: { children: unknown }) => {
+    const R = require("react");
+    return R.createElement(R.Fragment, null, children);
+  },
+  SafeAreaView: ({ children }: { children: unknown }) => {
+    const R = require("react");
+    return R.createElement(R.Fragment, null, children);
+  },
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
+
 jest.mock("@react-navigation/native", () => ({
   NavigationContainer: ({ children }: { children: unknown }) => {
     const R = require("react");

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { NeonGradientButton } from "@/components/NeonGradientButton";
@@ -30,7 +31,7 @@ export function AuthLanding() {
   const error = apple.error ?? google.error;
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top", "bottom"]} style={styles.screen}>
       <View style={styles.top}>
         <Text style={styles.wordmark}>setlist</Text>
         <Text style={styles.sub}>Pick sets. Vote with your crew.</Text>
@@ -63,7 +64,7 @@ export function AuthLanding() {
           New here? Create an account
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

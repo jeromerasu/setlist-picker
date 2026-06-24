@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { NeonGradientButton } from "@/components/NeonGradientButton";
@@ -36,6 +37,7 @@ export function LocalLogin() {
   };
 
   return (
+    <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea}>
     <KeyboardAvoidingView
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -80,13 +82,17 @@ export function LocalLogin() {
         <Text style={styles.footer}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.bg.canvas,
+  },
+  screen: {
+    flex: 1,
     paddingHorizontal: spacing.screenPad,
     paddingTop: spacing[9],
     paddingBottom: spacing[12],
