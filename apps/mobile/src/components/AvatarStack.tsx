@@ -10,25 +10,25 @@ interface Member {
 
 export interface AvatarStackProps {
   members: Member[];
-  size?: 24 | 26;
+  size?: 18 | 24 | 26;
+  maxVisible?: number;
   ringColor?: string;
   overlap?: number;
   testID?: string;
 }
 
-const MAX_VISIBLE = 4;
-
 export function AvatarStack({
   members,
   size = 24,
+  maxVisible = 4,
   ringColor = colors.bg.mid,
   overlap = -7,
   testID,
 }: AvatarStackProps) {
   if (members.length === 0) return <View style={{ width: 0 }} />;
 
-  const visible = members.slice(0, MAX_VISIBLE);
-  const extra = members.length - MAX_VISIBLE;
+  const visible = members.slice(0, maxVisible);
+  const extra = members.length - maxVisible;
 
   return (
     <View style={styles.row} testID={testID}>
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   pillText: {
-    color: colors.text.secondary,
+    color: colors.text.iconAccent,
     fontSize: 10,
     fontWeight: "600",
   },

@@ -8,6 +8,8 @@ import {
   View,
 } from "react-native";
 import { usePickToggle } from "@/hooks/usePickToggle";
+import { useGroupSchedule } from "@/hooks/useGroupSchedule";
+import { AvatarStack } from "@/components/AvatarStack";
 import { colors, radius, spacing } from "@/theme/tokens";
 import type { MemberOut, PickSummary, SetDetail, StageDetail } from "@/types/api";
 import type { StageInfo } from "@/hooks/useScheduleData";
@@ -64,6 +66,12 @@ export function AllStagesGrid({
   const [maybeSetIds, setMaybeSetIds] = useState(new Set<string>());
   const { mutate: togglePick } = usePickToggle();
 
+  const dayLabel = sets[0]?.day_label ?? "";
+  const { data: groupSchedule } = useGroupSchedule(invite_code, dayLabel);
+  const groupScheduleBySetId = new Map(
+    (groupSchedule?.sets ?? []).map((gs) => [gs.set_id, gs]),
+  );
+
   // Sorted stage list drives column ordering
   const sortedStages = [...stages].sort((a, b) => a.display_order - b.display_order);
 
@@ -119,7 +127,6 @@ export function AllStagesGrid({
 
   const q = searchQuery.trim().toLowerCase();
   const myMember = members.find((m) => m.member_id === myMemberId);
-  const myInitials = myMember != null ? getInitials(myMember.display_name) : "ME";
 
   return (
     <View style={styles.root}>
@@ -206,6 +213,18 @@ export function AllStagesGrid({
                   const timeColor =
                     state === "going" ? "rgba(13,8,24,0.7)" : "#9a8fc4";
 
+                  // Group going avatars: prefer BE data; fall back to user's own avatar
+                  const gsItem = groupScheduleBySetId.get(set.set_id);
+                  const goingAvatars =
+                    gsItem != null
+                      ? gsItem.going_members.map((m) => ({
+                          initials: m.display_name.trim().slice(0, 2).toUpperCase() || "??",
+                          color: m.avatar_color,
+                        }))
+                      : state === "going" && myMember != null
+                        ? [{ initials: getInitials(myMember.display_name), color: myMember.avatar_color }]
+                        : [];
+
                   return (
                     <TouchableOpacity
                       key={set.set_id}
@@ -233,9 +252,16 @@ export function AllStagesGrid({
                       <Text style={[styles.cardTime, { color: timeColor }]}>
                         {fmt24(startH)}
                       </Text>
-                      {state === "going" && (
-                        <View style={[styles.goingAvatar, { borderColor: color }]}>
-                          <Text style={styles.goingAvatarText}>{myInitials}</Text>
+                      {goingAvatars.length > 0 && (
+                        <View style={styles.goingStack}>
+                          <AvatarStack
+                            members={goingAvatars}
+                            size={18}
+                            maxVisible={9}
+                            ringColor="#140e34"
+                            overlap={-6}
+                            testID={`going-stack-${set.set_id}`}
+                          />
                         </View>
                       )}
                     </TouchableOpacity>
@@ -399,22 +425,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 3,
   },
-  // Going state avatar — prototype line 332-334
-  goingAvatar: {
+  // Going member avatar stack — absolute at card bottom-left
+  goingStack: {
     position: "absolute",
-    right: 8,
     bottom: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.neon.purple,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  goingAvatarText: {
-    fontFamily: "Manrope-ExtraBold",
-    fontSize: 9,
-    color: colors.text.invertedDark,
+    left: 8,
   },
 });

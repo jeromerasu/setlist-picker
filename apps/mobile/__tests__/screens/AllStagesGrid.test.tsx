@@ -5,9 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // ─── Hook mocks ──────────────────────────────────────────────────────────────
 
 const mockMutatePick = jest.fn();
+const mockUseGroupSchedule = jest.fn();
 
 jest.mock("@/hooks/usePickToggle", () => ({
   usePickToggle: () => ({ mutate: mockMutatePick }),
+}));
+jest.mock("@/hooks/useGroupSchedule", () => ({
+  useGroupSchedule: (ic: string, day: string) => mockUseGroupSchedule(ic, day),
 }));
 
 jest.mock("expo-secure-store", () => ({
@@ -19,7 +23,7 @@ jest.mock("expo-secure-store", () => ({
 // ─── Test data ───────────────────────────────────────────────────────────────
 
 import { AllStagesGrid } from "@/screens/schedule/AllStagesGrid";
-import type { SetDetail, StageDetail, ArtistRef, MemberOut } from "@/types/api";
+import type { GroupSetItem, MemberPickInfo, SetDetail, StageDetail, ArtistRef, MemberOut } from "@/types/api";
 
 function makeArtist(id: string, name: string): ArtistRef {
   return { artist_id: id, name, position: 1, spotify_artist_id: null };
@@ -85,8 +89,28 @@ const DEFAULT_PROPS = {
   invite_code: "TESTCODE",
 };
 
+function makeGroupSetItem(setId: string, goingMembers: MemberPickInfo[]): GroupSetItem {
+  return {
+    set_id: setId,
+    display_name: `Set ${setId}`,
+    stage_name: "Mainstage",
+    stage_color_hex: "#ff4f9a",
+    day_label: "Friday",
+    starts_at: "2026-07-05T20:00:00Z",
+    ends_at: "2026-07-05T21:00:00Z",
+    going_members: goingMembers,
+  };
+}
+
+function makePick(memberId: string, setId: string): MemberPickInfo {
+  return { member_id: memberId, display_name: `Member ${memberId}`, avatar_color: "#a78bfa" };
+}
+
+const GROUP_SCHEDULE_EMPTY = { data: { group_id: "g1", event_id: "e1", day_label: "Friday", sets: [] } };
+
 beforeEach(() => {
   mockMutatePick.mockReset();
+  mockUseGroupSchedule.mockReturnValue(GROUP_SCHEDULE_EMPTY);
 });
 
 test("renders_instruction_text", () => {
@@ -173,4 +197,101 @@ test("search_input_is_editable", () => {
   fireEvent.changeText(input, "Deadmau5");
   // input accepts text without crash
   expect(input).toBeTruthy();
+});
+
+// ─── REALIGN-007 / FIX-ALL-STAGES-GROUP-AVATARS: group avatar stack tests ────
+
+test("going_stack_not_rendered_when_zero_going_members", () => {
+  mockUseGroupSchedule.mockReturnValue({
+    data: { group_id: "g1", event_id: "e1", day_label: "Friday", sets: [] },
+  });
+  const { queryByTestId } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  expect(queryByTestId("going-stack-s1")).toBeNull();
+});
+
+test("going_stack_rendered_for_single_going_member", () => {
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", [makePick("m2", "s1")])],
+    },
+  });
+  const { getByTestId } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  expect(getByTestId("going-stack-s1")).toBeTruthy();
+});
+
+test("going_stack_rendered_for_five_going_members", () => {
+  const members = Array.from({ length: 5 }, (_, i) => makePick(`m${i + 1}`, "s1"));
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", members)],
+    },
+  });
+  const { getByTestId } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  expect(getByTestId("going-stack-s1")).toBeTruthy();
+});
+
+test("going_stack_shows_overflow_pill_when_10_going", () => {
+  const members = Array.from({ length: 10 }, (_, i) => makePick(`m${i + 1}`, "s1"));
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", members)],
+    },
+  });
+  // maxVisible=9, so 10 members → 9 shown + "+1" pill
+  const { getByTestId, getByText } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  expect(getByTestId("going-stack-s1")).toBeTruthy();
+  expect(getByText("+1")).toBeTruthy();
+});
+
+test("going_stack_shows_overflow_pill_when_11_going", () => {
+  const members = Array.from({ length: 11 }, (_, i) => makePick(`m${i + 1}`, "s1"));
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", members)],
+    },
+  });
+  // 11 members → 9 shown + "+2" pill
+  const { getByTestId, getByText } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  expect(getByTestId("going-stack-s1")).toBeTruthy();
+  expect(getByText("+2")).toBeTruthy();
+});
+
+test("going_stack_falls_back_to_user_avatar_when_group_schedule_not_loaded", () => {
+  mockUseGroupSchedule.mockReturnValue({ data: null });
+  const props = {
+    ...DEFAULT_PROPS,
+    picks: [{ member_id: "m1", set_id: "s1", state: "active", state_clock_ms: 1 }],
+  };
+  const { getByTestId } = render(<AllStagesGrid {...props} />, { wrapper });
+  // User has "going" state → fallback single avatar rendered
+  expect(getByTestId("going-stack-s1")).toBeTruthy();
+});
+
+test("tap_cycle_still_works_with_group_schedule_data", () => {
+  mockUseGroupSchedule.mockReturnValue({
+    data: {
+      group_id: "g1",
+      event_id: "e1",
+      day_label: "Friday",
+      sets: [makeGroupSetItem("s1", [makePick("m2", "s1")])],
+    },
+  });
+  const { getByTestId } = render(<AllStagesGrid {...DEFAULT_PROPS} />, { wrapper });
+  // Tap once on none card → POST going
+  fireEvent.press(getByTestId("grid-set-s1"));
+  expect(mockMutatePick).toHaveBeenCalledWith(
+    expect.objectContaining({ set_id: "s1", is_picked: false }),
+  );
 });
