@@ -118,7 +118,6 @@ class SpotifyProvider:
                 params={
                     "q": name,
                     "type": "track",
-                    "market": "US",
                     "limit": "50",
                 },
             )
