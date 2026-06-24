@@ -19,6 +19,7 @@ class ArtistCache(Base):
     genres: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     similar_artists: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
     top_track: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
+    top_tracks: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
     similarity_source: Mapped[str | None] = mapped_column(Text, nullable=True)
     fetched_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
     fetch_failure_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

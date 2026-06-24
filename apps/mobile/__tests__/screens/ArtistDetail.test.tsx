@@ -20,12 +20,16 @@ jest.mock("@react-navigation/native", () => {
 // ─── Hook mocks ──────────────────────────────────────────────────────────────
 
 const mockUseArtistDetail = jest.fn();
+const mockUseArtistSpotify = jest.fn();
 const mockPlay = jest.fn(async () => undefined);
 const mockStop = jest.fn(async () => undefined);
 let mockIsPlaying = false;
 
 jest.mock("@/hooks/useArtistDetail", () => ({
   useArtistDetail: (n: string) => mockUseArtistDetail(n),
+}));
+jest.mock("@/hooks/useArtistSpotify", () => ({
+  useArtistSpotify: (n: string) => mockUseArtistSpotify(n),
 }));
 jest.mock("@/hooks/useAudioPreview", () => ({
   useAudioPreview: () => ({ isPlaying: mockIsPlaying, play: mockPlay, stop: mockStop }),
@@ -39,12 +43,18 @@ jest.mock("expo-secure-store", () => ({
 // ─── Subject ─────────────────────────────────────────────────────────────────
 
 import { ArtistDetail } from "@/screens/artist/ArtistDetail";
-import type { ArtistDetailResponse } from "@/types/api";
+import type { ArtistDetailResponse, SpotifyArtistDetail, TopTrack } from "@/types/api";
 
 const MOCK_ARTIST: ArtistDetailResponse = {
   artist_name: "Above & Beyond",
   genres: ["trance", "progressive"],
-  top_track: { name: "Sun & Moon", preview_url: "https://cdn/preview.mp3", external_url: null },
+  top_track: {
+    name: "Sun & Moon",
+    preview_url: "https://cdn/preview.mp3",
+    external_url: null,
+    spotify_url: null,
+    duration_ms: null,
+  },
   similar_artists: [
     { name: "Armin van Buuren", similarity: 0.9 },
     { name: "Ferry Corsten", similarity: 0.8 },
@@ -55,6 +65,38 @@ const MOCK_ARTIST: ArtistDetailResponse = {
   similarity_source: null,
   fetched_at: null,
 };
+
+const MOCK_SPOTIFY: SpotifyArtistDetail = {
+  artist_name: "Above & Beyond",
+  image_url: "https://img.example.com/ab.jpg",
+  genres: ["trance", "progressive"],
+  top_tracks: [
+    {
+      name: "Sun & Moon",
+      preview_url: "https://cdn/preview.mp3",
+      external_url: null,
+      spotify_url: "https://open.spotify.com/t/1",
+      duration_ms: 240_000,
+    },
+    {
+      name: "Northern Soul",
+      preview_url: null,
+      external_url: null,
+      spotify_url: "https://open.spotify.com/t/2",
+      duration_ms: 300_000,
+    },
+    {
+      name: "Thing Called Love",
+      preview_url: null,
+      external_url: null,
+      spotify_url: null,
+      duration_ms: 280_000,
+    },
+  ],
+};
+
+const SPOTIFY_LOADING = { data: undefined, isLoading: true };
+const SPOTIFY_ERROR = { data: undefined, isLoading: false };
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -68,22 +110,52 @@ beforeEach(() => {
   mockStop.mockReset();
   mockIsPlaying = false;
   mockUseArtistDetail.mockReturnValue({ data: MOCK_ARTIST, isLoading: false, error: null });
+  mockUseArtistSpotify.mockReturnValue({ data: MOCK_SPOTIFY, isLoading: false });
 });
+
+// ─── Cosmic-Neon palette: cyberColors must be gone ───────────────────────────
+
+test("no_cyber_import_in_screen", () => {
+  // The screen must not import or reference cyberColors at all
+  const source = require("fs").readFileSync(
+    require.resolve("@/screens/artist/ArtistDetail"),
+    "utf-8",
+  );
+  expect(source).not.toContain("cyberColors");
+  expect(source).not.toContain("cyber");
+});
+
+// ─── Base rendering ──────────────────────────────────────────────────────────
 
 test("renders_artist_name", () => {
   const { getByTestId } = render(<ArtistDetail />, { wrapper });
   expect(getByTestId("artist-name").props.children).toBe("Above & Beyond");
 });
 
-test("renders_genres", () => {
+test("renders_genres_from_spotify_when_available", () => {
   const { getByText } = render(<ArtistDetail />, { wrapper });
   expect(getByText("trance")).toBeTruthy();
   expect(getByText("progressive")).toBeTruthy();
 });
 
-test("renders_top_track", () => {
+test("renders_genres_from_detail_when_spotify_not_loaded", () => {
+  mockUseArtistSpotify.mockReturnValue(SPOTIFY_ERROR);
+  const { getByText } = render(<ArtistDetail />, { wrapper });
+  expect(getByText("trance")).toBeTruthy();
+});
+
+test("renders_top_five_tracks_from_spotify", () => {
   const { getByTestId } = render(<ArtistDetail />, { wrapper });
   expect(getByTestId("track-row-0")).toBeTruthy();
+  expect(getByTestId("track-row-1")).toBeTruthy();
+  expect(getByTestId("track-row-2")).toBeTruthy();
+});
+
+test("falls_back_to_single_track_when_spotify_not_loaded", () => {
+  mockUseArtistSpotify.mockReturnValue(SPOTIFY_ERROR);
+  const { getByTestId, queryByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("track-row-0")).toBeTruthy();
+  expect(queryByTestId("track-row-1")).toBeNull();
 });
 
 test("tap_track_with_preview_calls_play", () => {
@@ -92,9 +164,54 @@ test("tap_track_with_preview_calls_play", () => {
   expect(mockPlay).toHaveBeenCalledWith("https://cdn/preview.mp3");
 });
 
-test("no_track_section_when_top_track_is_null", () => {
+test("no_track_section_play_when_no_preview_url", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  fireEvent.press(getByTestId("track-row-1")); // Northern Soul has no preview
+  expect(mockPlay).not.toHaveBeenCalled();
+});
+
+test("track_duration_displayed", () => {
+  const { getByText } = render(<ArtistDetail />, { wrapper });
+  expect(getByText("4:00")).toBeTruthy(); // 240_000ms
+});
+
+test("spotify_link_icon_shown_when_spotify_url_present", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("spotify-link-0")).toBeTruthy(); // Sun & Moon has spotify_url
+});
+
+test("no_spotify_link_icon_when_no_url", () => {
+  const { queryByTestId } = render(<ArtistDetail />, { wrapper });
+  // Track 2 (Thing Called Love) has no spotify_url
+  expect(queryByTestId("spotify-link-2")).toBeNull();
+});
+
+test("hero_image_shown_when_spotify_image_available", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("artist-hero-image")).toBeTruthy();
+});
+
+test("empty_state_shown_when_no_tracks_and_not_loading", () => {
+  mockUseArtistDetail.mockReturnValue({
+    data: { ...MOCK_ARTIST, top_track: null },
+    isLoading: false,
+    error: null,
+  });
+  mockUseArtistSpotify.mockReturnValue({ data: { ...MOCK_SPOTIFY, top_tracks: [] }, isLoading: false });
+  const { getByText } = render(<ArtistDetail />, { wrapper });
+  expect(getByText("More info coming soon")).toBeTruthy();
+});
+
+test("tracks_loading_spinner_shown_while_spotify_loading", () => {
+  mockUseArtistSpotify.mockReturnValue(SPOTIFY_LOADING);
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("tracks-loading")).toBeTruthy();
+});
+
+test("no_track_section_when_top_track_is_null_and_no_spotify", () => {
   const noTrack = { ...MOCK_ARTIST, top_track: null };
   mockUseArtistDetail.mockReturnValue({ data: noTrack, isLoading: false, error: null });
+  mockUseArtistSpotify.mockReturnValue(SPOTIFY_ERROR);
   const { queryByTestId } = render(<ArtistDetail />, { wrapper });
   expect(queryByTestId("track-row-0")).toBeNull();
 });
@@ -105,10 +222,10 @@ test("tap_similar_artist_pushes_artist_detail", () => {
   expect(mockPush).toHaveBeenCalledWith("ArtistDetail", { artist_name: "Armin van Buuren" });
 });
 
-test("shows_loading_indicator_when_loading", () => {
+test("shows_loading_indicator_when_detail_loading", () => {
   mockUseArtistDetail.mockReturnValue({ data: undefined, isLoading: true, error: null });
-  const { UNSAFE_getByType } = render(<ArtistDetail />, { wrapper });
-  expect(UNSAFE_getByType(require("react-native").ActivityIndicator)).toBeTruthy();
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("artist-loading")).toBeTruthy();
 });
 
 test("shows_error_when_artist_not_found", () => {

@@ -90,23 +90,31 @@ class SpotifyProvider:
         )
 
     async def _get_top_track(self, artist_id: str) -> TopTrack | None:
+        tracks = await self.get_top_tracks(artist_id, limit=1)
+        return tracks[0] if tracks else None
+
+    async def get_top_tracks(self, artist_id: str, limit: int = 5) -> list[TopTrack]:
+        """Return up to `limit` top tracks for the given Spotify artist ID."""
         try:
             r = await self._authed_get(
                 f"{_API_BASE}/artists/{artist_id}/top-tracks",
                 params={"market": "US"},
             )
             tracks = r.json().get("tracks") or []
-            if not tracks:
-                return None
-            track = tracks[0]
-            return TopTrack(
-                name=track["name"],
-                preview_url=track.get("preview_url"),
-                external_url=track.get("external_urls", {}).get("spotify"),
-            )
+            result: list[TopTrack] = []
+            for track in tracks[:limit]:
+                ext = track.get("external_urls", {}).get("spotify")
+                result.append(TopTrack(
+                    name=track["name"],
+                    preview_url=track.get("preview_url"),
+                    external_url=ext,
+                    spotify_url=ext,
+                    duration_ms=track.get("duration_ms"),
+                ))
+            return result
         except Exception:
             _logger.debug("spotify.top_tracks_failed", artist_id=artist_id)
-            return None
+            return []
 
     async def get_similar(
         self, name_normalized: str, genres: list[str] | None

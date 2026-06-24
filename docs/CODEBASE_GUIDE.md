@@ -26,7 +26,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`, `GET /api/users/me/groups`, `POST /api/users/me/devices`, `DELETE /api/users/me/devices/{device_id}` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/schedule` (REALIGN-005), `GET /api/groups/{invite_code}/snapshot` |
 | `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup`, `POST /api/events/import` (admin) |
-| `services/api/app/routes/artists.py` | `GET /api/artists/{artist_name}` — cache-first, Spotify+Last.fm+genre-overlap; 503 on total miss |
+| `services/api/app/routes/artists.py` | `GET /api/artists/{artist_name}` — cache-first, Spotify+Last.fm+genre-overlap; 503 on total miss. `GET /api/artists/{artist_name}/spotify` — returns `SpotifyArtistDetail` (photo, genres, top 5 tracks); serves cached data even when Spotify creds absent |
 | `services/api/app/routes/picks.py` | `POST /api/groups/{invite_code}/picks`, `POST .../picks/sync`, `DELETE .../picks/{set_id}` |
 
 ## `services/api/`
@@ -111,8 +111,9 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
 | `services/lineup_import_service.py` | `import_lineup` — full event/stage/set/artist UPSERT in one transaction; LWW for spotify/image; merge social_links |
 | `services/artist_service.py` | `get_artist_detail` — cache-first (7d TTL), exponential backoff on failure, fan-out to Spotify+Last.fm+genre-overlap |
+| `services/spotify_service.py` | `get_spotify_detail` — cache-first: serves `top_tracks` from `artist_cache` if fresh; falls back to Spotify API (search then top-tracks); raises `ArtistUnavailableError` if no fallback |
 | `services/artist_prewarm.py` | `prewarm_artists_from_event` — background batch populate for all artists in an event; 5-concurrent cap |
-| `services/artist_providers/spotify.py` | `SpotifyProvider` — client-credentials token cache, search+top-tracks; raises `RateLimited` on 429 |
+| `services/artist_providers/spotify.py` | `SpotifyProvider` — client-credentials token cache, `search_and_fetch`, `get_top_tracks(limit=5)` → `list[TopTrack]` with `duration_ms` + `spotify_url`; raises `RateLimited` on 429 |
 | `services/artist_providers/lastfm.py` | `LastFmProvider` — `artist.getsimilar`; returns `[]` on 5xx |
 | `services/artist_providers/genre_overlap.py` | `GenreOverlapProvider` — Jaccard similarity over `artist_cache.genres` rows |
 | `services/artist_providers/protocol.py` | `MusicDataProvider`, `SimilarArtistsProvider` Protocols; `ProviderArtist`, `RateLimited` |
@@ -339,13 +340,14 @@ REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdow
 
 | File | Purpose |
 |---|---|
-| `src/theme/cyber.ts` | Cyber-retro design tokens: neon pink/cyan/green/acid-yellow, dark bg |
+| `src/theme/cyber.ts` | **Preserved, do not import.** Cyber-retro tokens RETIRED 2026-06-25 by SETLIST-ARTIST-DETAIL-COSMIC-NEON (see DESIGN-TOKENS §5) |
 | `src/hooks/useArtistDetail.ts` | TanStack query → `GET /api/artists/:name`; staleTime Infinity |
+| `src/hooks/useArtistSpotify.ts` | TanStack query → `GET /api/artists/:name/spotify`; staleTime 24h; retry:false |
 | `src/hooks/useAudioPreview.ts` | `play(url)` / `stop()` via expo-av; `isPlaying` state |
-| `src/screens/artist/ArtistDetail.tsx` | Genres + top_track preview (single) + similar artists → push ArtistDetail |
+| `src/screens/artist/ArtistDetail.tsx` | **Cosmic-Neon rebuild (SETLIST-ARTIST-DETAIL):** hero image (260px, PlayfairDisplay-Bold 32px name), genre chips (bg.surfaceMed + text.iconAccent), TOP TRACKS section (up to 5 from Spotify; falls back to single top_track; SpaceMono numbers + Manrope-SemiBold names + duration + ▶ play + ↗ Spotify link), similar artists grid |
 | `src/types/global.d.ts` | Stub `expo-av` module declaration (package not yet installed) |
 | `src/__mocks__/expo-av.ts` | Jest mock for expo-av |
-| `__tests__/screens/ArtistDetail.test.tsx` | 9 tests: name, genres, track, play, null track, similar nav, loading, error, back |
+| `__tests__/screens/ArtistDetail.test.tsx` | 19 tests: Cosmic-Neon enforcement (no cyberColors), artist name, genres (Spotify-first fallback), top 5 tracks, single track fallback, play/stop, duration display, Spotify link icon, hero image, loading spinner, empty state, null track + no Spotify, similar nav, loading, error, back |
 
 ### FE-008 — Right Now snapshot
 
@@ -359,7 +361,7 @@ REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdow
 
 ### FE-010 — Typography audit (REALIGN-006)
 
-REALIGN-006 added explicit `fontFamily` values and fixed `fontSize`/`letterSpacing` token deviations across all non-artist screens. Artist screens (`src/screens/artist/`) are intentionally untouched (VT323 cyber-retro divergence per DESIGN-TOKENS § 5).
+REALIGN-006 added explicit `fontFamily` values and fixed `fontSize`/`letterSpacing` token deviations across all non-artist screens. Artist screens were originally exempted (VT323 cyber-retro divergence per DESIGN-TOKENS §5), but that exemption was **lifted by SETLIST-ARTIST-DETAIL-COSMIC-NEON (2026-06-25)** — ArtistDetail now uses the standard Cosmic-Neon palette.
 
 | File | Violations fixed |
 |---|---|

@@ -1,17 +1,34 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
 import { useArtistDetail } from "@/hooks/useArtistDetail";
+import { useArtistSpotify } from "@/hooks/useArtistSpotify";
 import { useAudioPreview } from "@/hooks/useAudioPreview";
-import { cyberColors } from "@/theme/cyber";
-import { spacing } from "@/theme/tokens";
+import { colors, radius, spacing } from "@/theme/tokens";
 import type { HomeStackParamList } from "@/navigation/types";
-import type { TopTrack, ArtistDetailResponse } from "@/types/api";
+import type { TopTrack } from "@/types/api";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "ArtistDetail">;
 type Nav = NativeStackNavigationProp<HomeStackParamList, "ArtistDetail">;
+
+function fmtDuration(ms: number | null): string {
+  if (ms == null) return "";
+  const total = Math.floor(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 export function ArtistDetail() {
   const route = useRoute<Props["route"]>();
@@ -19,12 +36,27 @@ export function ArtistDetail() {
   const { artist_name } = route.params;
 
   const { data, isLoading, error } = useArtistDetail(artist_name);
+  const { data: spotifyData, isLoading: spotifyLoading } = useArtistSpotify(artist_name);
   const { isPlaying, play, stop } = useAudioPreview();
+
+  const handleTrackPress = async (track: TopTrack) => {
+    if (track.preview_url == null) return;
+    if (isPlaying) {
+      await stop();
+    } else {
+      await play(track.preview_url);
+    }
+  };
+
+  const handleSpotifyLink = (url: string | null) => {
+    if (url == null) return;
+    void Linking.openURL(url);
+  };
 
   if (isLoading) {
     return (
       <ScreenContainer style={styles.center}>
-        <ActivityIndicator color={cyberColors.neonCyan} />
+        <ActivityIndicator color={colors.neon.violet} testID="artist-loading" />
       </ScreenContainer>
     );
   }
@@ -37,55 +69,107 @@ export function ArtistDetail() {
     );
   }
 
-  const handleTrackPress = async (track: TopTrack) => {
-    if (track.preview_url == null) return;
-    if (isPlaying) {
-      await stop();
-    } else {
-      await play(track.preview_url);
-    }
-  };
+  // Prefer Spotify-sourced image if available; fall back to existing detail image
+  const heroImage = spotifyData?.image_url ?? data.image_url;
+  // Use Spotify genres list when available (more complete); fall back to detail genres
+  const genres =
+    spotifyData != null && spotifyData.genres.length > 0 ? spotifyData.genres : data.genres;
+  // Top 5 tracks from Spotify endpoint; single track fallback from detail
+  const topTracks: TopTrack[] =
+    spotifyData != null && spotifyData.top_tracks.length > 0
+      ? spotifyData.top_tracks
+      : data.top_track != null
+        ? [data.top_track]
+        : [];
 
   return (
     <ScreenContainer style={styles.screen}>
-      <View style={styles.header}>
-        <BackChip onPress={() => navigation.goBack()} />
+      {/* Hero image + back chip */}
+      <View style={styles.heroContainer}>
+        {heroImage != null ? (
+          <Image
+            source={{ uri: heroImage }}
+            style={styles.heroImage}
+            resizeMode="cover"
+            testID="artist-hero-image"
+          />
+        ) : (
+          <View style={styles.heroPlaceholder} />
+        )}
+        {/* Gradient scrim over hero */}
+        <View style={styles.heroScrim} />
+        <View style={styles.headerRow}>
+          <BackChip onPress={() => navigation.goBack()} />
+        </View>
+        {/* Artist name overlaid on hero */}
+        <View style={styles.heroNameContainer}>
+          <Text style={styles.name} testID="artist-name" numberOfLines={2}>
+            {data.artist_name}
+          </Text>
+        </View>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.name} testID="artist-name">
-          {data.artist_name}
-        </Text>
-
-        {data.genres.length > 0 && (
-          <View style={styles.genres}>
-            {data.genres.map((g) => (
-              <Text key={g} style={styles.genrePill}>
-                {g}
-              </Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Genre chips */}
+        {genres.length > 0 && (
+          <View style={styles.genreRow}>
+            {genres.map((g) => (
+              <View key={g} style={styles.genrePill}>
+                <Text style={styles.genrePillText}>{g}</Text>
+              </View>
             ))}
           </View>
         )}
 
-        {data.top_track != null && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>TOP TRACK</Text>
+        {/* Top tracks section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>TOP TRACKS</Text>
+            {spotifyLoading && (
+              <ActivityIndicator size="small" color={colors.neon.violet} testID="tracks-loading" />
+            )}
+          </View>
+
+          {!spotifyLoading && topTracks.length === 0 && (
+            <Text style={styles.emptyText}>More info coming soon</Text>
+          )}
+
+          {topTracks.map((track, i) => (
             <TouchableOpacity
+              key={`${track.name}-${i}`}
               style={styles.trackRow}
-              onPress={() => void handleTrackPress(data.top_track as TopTrack)}
-              testID="track-row-0"
+              onPress={() => void handleTrackPress(track)}
+              testID={`track-row-${i}`}
+              activeOpacity={track.preview_url != null ? 0.7 : 1}
             >
-              <Text style={styles.trackNum}>01</Text>
+              <Text style={styles.trackNum}>{String(i + 1).padStart(2, "0")}</Text>
               <Text style={styles.trackName} numberOfLines={1}>
-                {data.top_track.name}
+                {track.name}
               </Text>
-              {data.top_track.preview_url != null && (
-                <Text style={styles.playIcon}>{isPlaying ? "■" : "▶"}</Text>
+              <Text style={styles.trackDuration}>{fmtDuration(track.duration_ms)}</Text>
+              {track.preview_url != null && (
+                <Text style={styles.playIcon} testID={`play-icon-${i}`}>
+                  {isPlaying ? "■" : "▶"}
+                </Text>
+              )}
+              {track.spotify_url != null && (
+                <TouchableOpacity
+                  onPress={() => handleSpotifyLink(track.spotify_url)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  testID={`spotify-link-${i}`}
+                >
+                  <Text style={styles.spotifyIcon}>↗</Text>
+                </TouchableOpacity>
               )}
             </TouchableOpacity>
-          </View>
-        )}
+          ))}
+        </View>
 
+        {/* Similar artists */}
         {data.similar_artists.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SIMILAR ARTISTS</Text>
@@ -108,82 +192,148 @@ export function ArtistDetail() {
   );
 }
 
+const HERO_H = 260;
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: cyberColors.bg,
-    paddingTop: spacing[9],
-  },
-  header: {
-    paddingHorizontal: spacing.screenPad,
-    marginBottom: spacing[5],
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: spacing.screenPad,
-    paddingBottom: spacing[12],
-    gap: spacing[6],
+    backgroundColor: colors.bg.canvas,
   },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: cyberColors.bg,
+    backgroundColor: colors.bg.canvas,
+  },
+  // Hero
+  heroContainer: {
+    height: HERO_H,
+    backgroundColor: colors.bg.deep,
+    position: "relative",
+  },
+  heroImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  heroPlaceholder: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.bg.surfaceWeak,
+  },
+  heroScrim: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: HERO_H,
+    // Gradient-style scrim: near-opaque at bottom, transparent at top
+    backgroundColor: "rgba(10,7,18,0.6)",
+  },
+  headerRow: {
+    position: "absolute",
+    top: spacing[9],
+    left: spacing.screenPad,
+    right: spacing.screenPad,
+  },
+  heroNameContainer: {
+    position: "absolute",
+    bottom: spacing[8],
+    left: spacing.screenPad,
+    right: spacing.screenPad,
   },
   name: {
-    color: cyberColors.neonCyan,
-    fontSize: 36,
-    fontWeight: "700",
+    fontFamily: "PlayfairDisplay-Bold",
+    fontSize: 32,
+    color: colors.text.primary,
+    lineHeight: 38,
   },
-  genres: {
+  // Scroll content
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: spacing.screenPad,
+    paddingTop: spacing[7],
+    paddingBottom: spacing[12],
+    gap: spacing[8],
+  },
+  // Genres
+  genreRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[3],
   },
   genrePill: {
-    color: cyberColors.neonPink,
+    backgroundColor: colors.bg.surfaceMed,
+    borderRadius: radius.full,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+  },
+  genrePillText: {
+    fontFamily: "Manrope-SemiBold",
     fontSize: 12,
-    borderWidth: 1,
-    borderColor: cyberColors.neonPink,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    color: colors.text.iconAccent,
   },
-  bio: {
-    color: cyberColors.text,
-    fontSize: 14,
-    lineHeight: 22,
-  },
+  // Sections
   section: { gap: spacing[4] },
-  sectionTitle: {
-    color: cyberColors.textAcid,
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 2,
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
+  sectionTitle: {
+    fontFamily: "Manrope-Bold",
+    fontSize: 12,
+    letterSpacing: 1.2,
+    color: colors.text.secondary,
+    textTransform: "uppercase",
+  },
+  emptyText: {
+    fontFamily: "Manrope-Regular",
+    fontSize: 14,
+    color: colors.text.muted,
+  },
+  // Tracks
   trackRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[4],
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: cyberColors.border,
+    borderBottomColor: colors.border.subtle,
   },
   trackNum: {
-    color: cyberColors.textMuted,
-    fontSize: 13,
-    width: 24,
-    fontFamily: "monospace",
+    fontFamily: "SpaceMono-Regular",
+    fontSize: 12,
+    color: colors.text.muted,
+    width: 22,
   },
   trackName: {
     flex: 1,
-    color: cyberColors.text,
-    fontSize: 14,
+    fontFamily: "Manrope-SemiBold",
+    fontSize: 15,
+    color: colors.text.primary,
+  },
+  trackDuration: {
+    fontFamily: "SpaceMono-Regular",
+    fontSize: 11,
+    color: colors.text.muted,
   },
   playIcon: {
-    color: cyberColors.neonGreen,
-    fontSize: 14,
+    fontFamily: "Manrope-Regular",
+    fontSize: 13,
+    color: colors.neon.violet,
   },
+  spotifyIcon: {
+    fontFamily: "Manrope-Bold",
+    fontSize: 14,
+    color: colors.text.success,
+  },
+  // Similar artists
   similarGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -191,17 +341,20 @@ const styles = StyleSheet.create({
   },
   similarPill: {
     borderWidth: 1,
-    borderColor: cyberColors.border,
+    borderColor: colors.border.default,
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 4,
+    paddingVertical: 6,
+    borderRadius: radius.sm,
+    backgroundColor: colors.bg.surfaceWeak,
   },
   similarName: {
-    color: cyberColors.textMuted,
+    fontFamily: "Manrope-Medium",
     fontSize: 13,
+    color: colors.text.secondary,
   },
   errorText: {
-    color: cyberColors.neonPink,
+    fontFamily: "Manrope-Regular",
     fontSize: 15,
+    color: colors.neon.pink,
   },
 });

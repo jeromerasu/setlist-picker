@@ -202,7 +202,16 @@ export interface GroupSnapshotResponse {
 export interface TopTrack {
   name: string;
   preview_url: string | null;
-  external_url: string | null;
+  external_url: string | null;  // kept for backward compat
+  spotify_url: string | null;
+  duration_ms: number | null;
+}
+
+export interface SpotifyArtistDetail {
+  artist_name: string;
+  image_url: string | null;
+  genres: string[];
+  top_tracks: TopTrack[];
 }
 
 export interface SimilarArtist {

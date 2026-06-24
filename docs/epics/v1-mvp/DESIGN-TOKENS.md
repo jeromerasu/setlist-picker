@@ -314,18 +314,29 @@ The `.stk` class (lines 17–18) overlaps avatars by **-7 px** with a **2 px rin
 | `motion.tapState` | 180 ms (`transition: .18s`, line 207, 327) | Pick-cycle button state change. |
 | `motion.cardState` | 200 ms (`transition: .2s`, line 91) | Create-button enabled/disabled cross-fade. |
 
-## 5. Cyber-retro aesthetic divergence (OQ-02 — intentional)
+## 5. Cyber-retro aesthetic divergence — **RETIRED 2026-06-25**
 
-The artist-detail screen uses a different visual language than the rest of the app, on purpose. This section documents the divergence so it isn't read as inconsistency in code review.
+> **Retired by Jerome, ticket SETLIST-ARTIST-DETAIL-COSMIC-NEON + SPOTIFY.**
+> Artist detail now follows the main Cosmic-Neon palette (§§ 1.1–1.6).
+> All `cyberColors` references and VT323 / scanline usage have been removed from the screen.
+> The `apps/mobile/src/theme/cyber.ts` file is preserved for reference only — do not import it in new code.
 
-- Fonts: `VT323` (display) + `Space Mono` (body) instead of `Manrope` + `Orbitron`.
-- Colors: acid yellow `#f5ff00` + hot pink `#ff00a8` + cyan `#00e5ff` on near-black `#0d0818`. No purples or lilacs.
-- Shapes: 2-px radius (flat tiles) instead of 11–20 px.
-- Texture: a scanline overlay layer (`repeating-linear-gradient` + `mix-blend-mode: multiply`) covers the whole screen.
-- Title styling: dual-offset text-shadow (3px pink, 2px cyan) recreates a chromatic-aberration print effect.
-- A Spotify-green button (`#1db954`) sits at the bottom — the one color in the app that's not negotiable because it's Spotify's brand.
+~~The artist-detail screen uses a different visual language than the rest of the app, on purpose. This section documents the divergence so it isn't read as inconsistency in code review.~~
 
-This is consistent with prototype intent (FE-007 maps directly to `isArtist` screen). Implementer in FE-007 should not "fix" the divergence.
+~~Fonts: `VT323` (display) + `Space Mono` (body) instead of `Manrope` + `Orbitron`.~~
+~~Colors: acid yellow `#f5ff00` + hot pink `#ff00a8` + cyan `#00e5ff` on near-black `#0d0818`. No purples or lilacs.~~
+~~Shapes: 2-px radius (flat tiles) instead of 11–20 px.~~
+~~Texture: a scanline overlay layer + `mix-blend-mode: multiply`.~~
+
+**Current artist detail visual language (post-SETLIST-ARTIST-DETAIL):**
+
+- Hero image with `rgba(10,7,18,0.6)` scrim + artist name in Playfair Display Bold 32px
+- Genre chips: `bg.surfaceMed` + `text.iconAccent` (`#c8b9ff`), Manrope SemiBold 12px
+- Section headers: Manrope Bold 12px uppercase + 1.2 letterSpacing, `text.secondary`
+- Track rows: track number in SpaceMono-Regular, name in Manrope-SemiBold, duration in SpaceMono-Regular
+- Similar artists: `border.default` pill, Manrope-Medium 13px `text.secondary`
+- Spotify link icon: `text.success` (`#28e0ff`)
+- Background: `bg.canvas` (`#0a0712`)
 
 ## 6. Implementation notes
 

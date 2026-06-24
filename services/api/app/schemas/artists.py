@@ -23,7 +23,17 @@ class SimilarArtist(_Model):
 class TopTrack(_Model):
     name: str
     preview_url: str | None = None
-    external_url: str | None = None
+    external_url: str | None = None  # kept for backward compat
+    spotify_url: str | None = None   # same value as external_url, used by new /spotify endpoint
+    duration_ms: int | None = None
+
+
+class SpotifyArtistDetail(_Model):
+    """Response for GET /api/artists/{name}/spotify — richer Spotify content."""
+    artist_name: str
+    image_url: str | None
+    genres: list[str]
+    top_tracks: list[TopTrack]
 
 
 class ArtistDetailResponse(_Model):
