@@ -22,11 +22,11 @@ _EVENT_ID = "8028c52c-219e-4b55-83bb-c5318830afbc"
 def upgrade() -> None:
     op.execute(
         sa.text(
-            """
+            f"""
             INSERT INTO event
                 (event_id, name, start_date, end_date, location, timezone, source_adapter)
             VALUES (
-                :event_id,
+                '{_EVENT_ID}'::uuid,
                 'Tomorrowland 2026 — Weekend 2',
                 '2026-07-24',
                 '2026-07-26',
@@ -36,13 +36,11 @@ def upgrade() -> None:
             )
             ON CONFLICT (event_id) DO NOTHING
             """
-        ).bindparams(event_id=_EVENT_ID)
+        )
     )
 
 
 def downgrade() -> None:
     op.execute(
-        sa.text("DELETE FROM event WHERE event_id = :event_id").bindparams(
-            event_id=_EVENT_ID
-        )
+        sa.text(f"DELETE FROM event WHERE event_id = '{_EVENT_ID}'::uuid")
     )
