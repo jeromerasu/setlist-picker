@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TokenPair } from "@/types/api";
+import type { AuthResponse, TokenPair } from "@/types/api";
 
 import { BASE_URL as API_BASE } from "../api/client";
 
@@ -34,7 +34,7 @@ export function useAppleSignIn(): AppleSignInResult {
         setError("Apple sign-in failed");
         return null;
       }
-      return (await res.json()) as TokenPair;
+      return ((await res.json()) as AuthResponse).tokens;
     } catch {
       setError("Apple sign-in unavailable");
       return null;
