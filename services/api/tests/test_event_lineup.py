@@ -34,8 +34,14 @@ async def lineup_event(db_session: AsyncSession) -> Event:
 async def _make_stage(
     db: AsyncSession, event_id: uuid.UUID, name: str, display_order: int
 ) -> Stage:
+    from app.services.lineup_import_service import _STAGE_COLORS
+
     stage = Stage(
-        event_id=event_id, name=name, display_order=display_order, external_id=name.lower()
+        event_id=event_id,
+        name=name,
+        display_order=display_order,
+        external_id=name.lower(),
+        color_hex=_STAGE_COLORS[display_order % len(_STAGE_COLORS)],
     )
     db.add(stage)
     await db.flush()
@@ -109,6 +115,10 @@ async def test_get_lineup_returns_event_summary_stages_sets(
     assert body["event_id"] == str(lineup_event.event_id)
     assert len(body["stages"]) == 2
     assert len(body["sets"]) == 3
+    for stage in body["stages"]:
+        assert "color_hex" in stage
+        assert stage["color_hex"].startswith("#")
+        assert len(stage["color_hex"]) == 7
 
 
 async def test_get_lineup_orders_stages_by_display_order(

@@ -62,7 +62,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `db/models/group.py` | `Group` ORM model (§ 2.2) |
 | `db/models/member.py` | `Member` ORM model (§ 2.3) |
 | `db/models/device.py` | `Device` ORM model (§ 2.12) |
-| `db/models/stage.py` | `Stage` ORM model (§ 2.5) |
+| `db/models/stage.py` | `Stage` ORM model (§ 2.5) — columns: `stage_id`, `event_id`, `name`, `display_order`, `external_id`, `color_hex` (added REALIGN-001) |
 | `db/models/set_.py` | `Set` ORM model (§ 2.6; named `set_.py` to avoid Python builtin conflict) |
 | `db/models/artist.py` | `Artist`, `ArtistSourceRef`, `SetArtist` ORM models (§ 2.7–2.9) |
 | `db/models/pick.py` | `Pick` ORM model (§ 2.10) |
@@ -90,7 +90,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `schemas/auth.py` | `UserCreate`, `UserLogin`, `TokenPair`, `AuthResponse`, `TokenRefreshRequest`, `AppleSignInRequest`, `GoogleSignInRequest`, `UserOut`, `UserUpdate` |
 | `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse` |
-| `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail`, `EventLineupResponse` |
+| `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail` (includes `color_hex` — REALIGN-001), `EventLineupResponse` |
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
 | `schemas/lineup.py` | `LineupSourceArtist`, `LineupSourceStage`, `LineupSourcePerformance`, `LineupImportRequest`, `LineupImportResponse` |
@@ -307,22 +307,27 @@ Stub.
 | `__tests__/utils/dayBuckets.test.ts` | 3 tests: bucket grouping, empty, pickedSetIds |
 | `__tests__/screens/GroupDetail.test.tsx` | 9 tests: renders, day buckets, loading, error, toggle, nav artist, schedule, snapshot, picked heart |
 
-### FE-006 — Schedule
+### FE-006 — Schedule (REALIGN-002 rebuild)
 
 | File | Purpose |
 |---|---|
-| `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes` — pixel math for grid layout |
+| `src/utils/gridLayout.ts` | `setTop`, `setHeight`, `groupByStage`, `timeToMinutes`, `formatTimeLabel` — grid pixel math + time formatting |
 | `src/utils/dayList.ts` | `uniqueDays(sets)` (insertion-order), `setsForDay(sets, day)` |
-| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup → `{ sets, eventName, isLoading }` |
+| `src/utils/stageColors.ts` | `stageColorByIndex(displayOrder)` — deterministic 6-hue stage color rotation (§ 1.3 DESIGN-TOKENS fallback until REALIGN-001) |
+| `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }` |
+| `src/hooks/useEventLineup.ts` | TanStack query → full `EventLineupResponse` (sets + stages); staleTime Infinity |
+| `src/hooks/usePickToggle.ts` | Mutation `POST /DELETE picks/:set_id`; optimistic removal via `onMutate` (adds rollback via `onError`) |
 | `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
-| `src/screens/schedule/DayMenu.tsx` | Horizontal scrollable day tab pills |
-| `src/screens/schedule/Timeline.tsx` | Absolute-positioned hour labels + tick lines overlay (pointerEvents=none) |
+| `src/screens/schedule/DayMenu.tsx` | Animated day-picker dropdown overlay (backdrop + centered sheet); replaces old pill row |
+| `src/screens/schedule/Timeline.tsx` | Absolute-positioned hour labels + tick lines overlay for AllStagesGrid (pointerEvents=none) |
 | `src/screens/schedule/AllStagesGrid.tsx` | Dual-scroll (h+v) stage columns with absolute-positioned set blocks |
-| `src/screens/schedule/Schedule.tsx` | Root: DayMenu + AllStagesGrid; tap set → ArtistDetail |
+| `src/screens/schedule/ScheduleTimeline.tsx` | Vertical scrolling timeline: Mine / Group filter chips; UP NEXT card; GOING section with per-set cards |
+| `src/screens/schedule/FilterSheet.tsx` | Animated bottom sheet (sheetUp 250ms) for narrowing group view by member |
+| `src/screens/schedule/Schedule.tsx` | Root: top-bar day-dropdown + All Stages / Schedule tabs + DayMenu overlay + FilterSheet |
 | `__tests__/utils/gridLayout.test.ts` | 6 tests: timeToMinutes, setTop, setHeight, clamp, groupByStage |
 | `__tests__/utils/dayList.test.ts` | 3 tests: uniqueDays order, empty, setsForDay filter |
 | `__tests__/hooks/useUpNext.test.ts` | 3 tests: nearest upcoming, all past, empty |
-| `__tests__/screens/Schedule.test.tsx` | 6 tests: event name, day tabs, tab switch, set tap nav, loading, back |
+| `__tests__/screens/Schedule.test.tsx` | 10 tests: day picker, dropdown open/close, All Stages default, set tap nav, loading, back, tab switch, mine empty state |
 
 ### FE-007 — Artist detail (cyber-retro)
 

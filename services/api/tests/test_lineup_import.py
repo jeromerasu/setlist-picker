@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import uuid
 from datetime import date, datetime, timezone
 from unittest.mock import AsyncMock, patch
@@ -16,7 +17,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.artist import Artist, SetArtist
 from app.db.models.event import Event
 from app.db.models.set_ import Set
+from app.db.models.stage import Stage
 from app.schemas.lineup import LineupImportRequest, LineupImportResponse
+from app.services.lineup_import_service import _STAGE_COLORS
+
+_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 _ADMIN = "test-admin-token"
 _FIXTURES = pathlib.Path(__file__).parent / "fixtures"
@@ -359,3 +364,81 @@ async def test_cli_invokes_service_with_parsed_args(tmp_path: pathlib.Path) -> N
         assert req.event_name == "TML Sample"
         assert req.external_id == "tml-sample"
         assert len(req.performances) == 5
+
+
+# ---------------------------------------------------------------------------
+# REALIGN-001: _STAGE_COLORS invariants
+# ---------------------------------------------------------------------------
+
+
+def test_stage_colors_has_15_entries() -> None:
+    assert len(_STAGE_COLORS) == 15
+
+
+def test_stage_colors_all_valid_hex() -> None:
+    for color in _STAGE_COLORS:
+        assert _HEX_RE.match(color), f"Invalid hex: {color!r}"
+
+
+def test_stage_colors_all_distinct() -> None:
+    assert len(set(_STAGE_COLORS)) == len(_STAGE_COLORS), "Duplicate entry in _STAGE_COLORS"
+
+
+# ---------------------------------------------------------------------------
+# REALIGN-001: deterministic color assignment at import time
+# ---------------------------------------------------------------------------
+
+
+async def test_import_assigns_color_hex_matching_palette_formula(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    """Each new stage receives color_hex = _STAGE_COLORS[display_order % 15]."""
+    result = await _import(client, _load_sample_payload())
+
+    from sqlalchemy import select as sa_select
+
+    rows = (
+        await db_session.execute(
+            sa_select(Stage)
+            .where(Stage.event_id == result["event_id"])
+            .order_by(Stage.display_order.asc())
+        )
+    ).scalars().all()
+
+    assert len(rows) == 2  # tml_sample has 2 stages
+    for stage in rows:
+        assert _HEX_RE.match(stage.color_hex), f"Bad color on stage {stage.name}: {stage.color_hex}"
+        expected = _STAGE_COLORS[stage.display_order % len(_STAGE_COLORS)]
+        assert stage.color_hex == expected, (
+            f"Stage '{stage.name}' display_order={stage.display_order}: "
+            f"expected {expected!r}, got {stage.color_hex!r}"
+        )
+
+
+async def test_reimport_does_not_change_color_hex(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    """Re-importing identical payload preserves color_hex on existing stages."""
+    payload = _load_sample_payload({"external_id": "color-stable-test"})
+    first = await _import(client, payload)
+
+    from sqlalchemy import select as sa_select
+
+    rows_before = (
+        await db_session.execute(
+            sa_select(Stage)
+            .where(Stage.event_id == first["event_id"])
+            .order_by(Stage.display_order.asc())
+        )
+    ).scalars().all()
+    colors_before = {r.stage_id: r.color_hex for r in rows_before}
+
+    await _import(client, payload)
+
+    for r in rows_before:
+        await db_session.refresh(r)
+        assert r.color_hex == colors_before[r.stage_id], (
+            f"color_hex changed on re-import for stage {r.name}"
+        )

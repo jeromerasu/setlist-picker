@@ -263,6 +263,7 @@ async def picks_setup(
         name="Test Stage",
         display_order=1,
         external_id="test-stage",
+        color_hex="#ff4f9a",
     )
     db_session.add(stage)
     await db_session.flush()
