@@ -51,6 +51,7 @@ import type { ArtistDetailResponse, SpotifyArtistDetail, TopTrack } from "@/type
 
 const MOCK_ARTIST: ArtistDetailResponse = {
   artist_name: "Above & Beyond",
+  spotify_url: "https://open.spotify.com/artist/xyz",
   genres: ["trance", "progressive"],
   top_track: {
     name: "Sun & Moon",
@@ -270,4 +271,21 @@ test("back_chip_navigates_back", () => {
   const { getByLabelText } = render(<ArtistDetail />, { wrapper });
   fireEvent.press(getByLabelText("Go back"));
   expect(mockGoBack).toHaveBeenCalled();
+});
+
+// ─── Spotify external link ────────────────────────────────────────────────────
+
+test("spotify_external_link_shown_when_url_present", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(getByTestId("spotify-external-link")).toBeTruthy();
+});
+
+test("spotify_external_link_hidden_when_url_null", () => {
+  mockUseArtistDetail.mockReturnValue({
+    data: { ...MOCK_ARTIST, spotify_url: null },
+    isLoading: false,
+    error: null,
+  });
+  const { queryByTestId } = render(<ArtistDetail />, { wrapper });
+  expect(queryByTestId("spotify-external-link")).toBeNull();
 });

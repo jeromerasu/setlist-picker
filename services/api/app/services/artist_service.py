@@ -11,6 +11,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings
+from app.db.models.artist import Artist
 from app.db.models.artist_cache import ArtistCache
 from app.schemas.artists import (
     ArtistDetailResponse,
@@ -41,7 +42,9 @@ def _in_backoff(row: ArtistCache, max_backoff_hours: int) -> bool:
     return datetime.now(timezone.utc) < window_end
 
 
-def _row_to_response(row: ArtistCache, status: CacheStatus) -> ArtistDetailResponse:
+def _row_to_response(
+    row: ArtistCache, status: CacheStatus, spotify_url: str | None = None
+) -> ArtistDetailResponse:
     similar: list[SimilarArtist] = []
     if row.similar_artists:
         for item in row.similar_artists:
@@ -65,6 +68,7 @@ def _row_to_response(row: ArtistCache, status: CacheStatus) -> ArtistDetailRespo
     return ArtistDetailResponse(
         artist_name=row.display_name or row.name_normalized,
         spotify_artist_id=row.spotify_artist_id,
+        spotify_url=spotify_url,
         image_url=row.image_url,
         genres=row.genres or [],
         similar_artists=similar,
@@ -84,6 +88,17 @@ async def _load_cache_row(db: AsyncSession, name_normalized: str) -> ArtistCache
     return result.scalar_one_or_none()
 
 
+async def _get_spotify_url(db: AsyncSession, name_normalized: str) -> str | None:
+    result = await db.execute(
+        select(Artist.social_links).where(Artist.name_normalized == name_normalized)
+    )
+    row = result.scalar_one_or_none()
+    if row is None:
+        return None
+    url = row.get("spotify")
+    return str(url) if url else None
+
+
 async def get_artist_detail(
     db: AsyncSession,
     raw_name: str,
@@ -95,12 +110,13 @@ async def get_artist_detail(
     name_normalized = normalize(raw_name)
     t0 = time.monotonic()
 
+    spotify_url = await _get_spotify_url(db, name_normalized)
     row = await _load_cache_row(db, name_normalized)
 
     if row is not None:
         if _is_fresh(row, cfg.artist_cache_ttl_seconds):
             _logger.debug("artist.cache_hit_fresh", name_normalized=name_normalized)
-            return _row_to_response(row, "fresh")
+            return _row_to_response(row, "fresh", spotify_url)
 
         if row.fetch_failure_count > 0 and _in_backoff(row, cfg.artist_max_backoff_hours):
             _logger.debug(
@@ -108,7 +124,7 @@ async def get_artist_detail(
                 name_normalized=name_normalized,
                 in_backoff=True,
             )
-            return _row_to_response(row, "stale")
+            return _row_to_response(row, "stale", spotify_url)
 
         _logger.debug(
             "artist.cache_hit_stale",
@@ -184,7 +200,7 @@ async def get_artist_detail(
             # Return stale cached data rather than 503 when we have something
             row2 = await _load_cache_row(db, name_normalized)
             if row2 and (row2.genres or row2.similar_artists or row2.top_track):
-                return _row_to_response(row2, "stale")
+                return _row_to_response(row2, "stale", spotify_url)
         _logger.error("artist.unavailable", name_normalized=name_normalized)
         raise ArtistUnavailableError(name_normalized)
 
@@ -248,7 +264,7 @@ async def get_artist_detail(
     refreshed = await _load_cache_row(db, name_normalized)
     if refreshed is None:
         raise ArtistUnavailableError(name_normalized)
-    return _row_to_response(refreshed, "fresh")
+    return _row_to_response(refreshed, "fresh", spotify_url)
 
 
 class ArtistUnavailableError(Exception):

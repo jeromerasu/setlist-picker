@@ -153,6 +153,20 @@ export function ArtistDetail() {
           </View>
         )}
 
+        {/* Spotify external link */}
+        {data.spotify_url != null && (
+          <TouchableOpacity
+            style={styles.spotifyButton}
+            onPress={() => {
+              void Linking.openURL(data.spotify_url as string).catch(() => undefined);
+            }}
+            activeOpacity={0.75}
+            testID="spotify-external-link"
+          >
+            <Text style={styles.spotifyButtonText}>🎵  Open in Spotify</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Top tracks section */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
@@ -327,6 +341,23 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope-SemiBold",
     fontSize: 13,
     color: colors.text.iconAccent,
+  },
+  // Spotify link
+  spotifyButton: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.bg.surfaceMed,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    paddingHorizontal: spacing[6],
+    paddingVertical: spacing[4],
+  },
+  spotifyButtonText: {
+    fontFamily: "Manrope-SemiBold",
+    fontSize: 14,
+    color: colors.text.success,
   },
   // Sections
   section: { gap: spacing[4] },

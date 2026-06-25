@@ -55,6 +55,7 @@ class AppleMusicArtistDetail(_Model):
 class ArtistDetailResponse(_Model):
     artist_name: str
     spotify_artist_id: str | None
+    spotify_url: str | None
     image_url: str | None
     genres: list[str]
     similar_artists: list[SimilarArtist]

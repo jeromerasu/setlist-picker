@@ -238,6 +238,7 @@ export interface SimilarArtist {
 export interface ArtistDetailResponse {
   artist_name: string;
   spotify_artist_id: string | null;
+  spotify_url: string | null;
   image_url: string | null;
   genres: string[];
   similar_artists: SimilarArtist[];
