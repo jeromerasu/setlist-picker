@@ -7,6 +7,7 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from app.config import Settings
 from app.logging import configure_logging
@@ -40,6 +41,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             allow_headers=["*"],
         )
     app.add_middleware(RequestIdMiddleware)
+    # GzipMiddleware outermost: compresses responses before leaving the stack.
+    # minimum_size=500 skips compression on small auth/health responses.
+    app.add_middleware(GZipMiddleware, minimum_size=500)
 
     app.include_router(health.router)
     app.include_router(auth.router)

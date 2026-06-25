@@ -25,7 +25,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/api/app/routes/auth.py` | `POST /api/auth/signup`, `/login`, `/refresh`, `/apple`, `/google` |
 | `services/api/app/routes/users.py` | `GET /api/users/me`, `PATCH /api/users/me`, `GET /api/users/me/groups`, `POST /api/users/me/devices`, `DELETE /api/users/me/devices/{device_id}` |
 | `services/api/app/routes/groups.py` | `POST /api/groups`, `POST /api/groups/join`, `GET /api/groups/{invite_code}`, `GET /api/groups/{invite_code}/schedule` (REALIGN-005), `GET /api/groups/{invite_code}/snapshot` |
-| `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup`, `POST /api/events/import` (admin) |
+| `services/api/app/routes/events.py` | `GET /api/events`, `GET /api/events/{event_id}/lineup` (ETag via `imported_at` sha256[:16], 304 on `If-None-Match`), `POST /api/events/import` (admin) |
 | `services/api/app/routes/artists.py` | `GET /api/artists/{artist_name}` — cache-first, Spotify+Last.fm+genre-overlap; 503 on total miss. `GET /api/artists/{artist_name}/spotify` — returns `SpotifyArtistDetail` (photo, genres, top 5 tracks); serves cached data even when Spotify creds absent. `?refresh=true` forces a full re-search bypassing the cache |
 | `services/api/app/routes/picks.py` | `POST /api/groups/{invite_code}/picks`, `POST .../picks/sync`, `DELETE .../picks/{set_id}` |
 
@@ -36,7 +36,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | File | Purpose |
 |---|---|
 | `app/__init__.py` | Package marker |
-| `app/main.py` | `create_app(settings?)` — FastAPI factory with lifespan logging |
+| `app/main.py` | `create_app(settings?)` — FastAPI factory with lifespan logging; `GzipMiddleware(minimum_size=500)` outermost, `RequestIdMiddleware` inner |
 | `app/config.py` | `Settings(BaseSettings)` — env-var loader (pydantic-settings) |
 | `app/logging.py` | `configure_logging(level)` — installs structlog JSON renderer |
 
@@ -56,7 +56,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `db/__init__.py` | Re-exports `Base`, `async_session_maker`, `get_db` |
 | `db/base.py` | `Base(DeclarativeBase)` + `TIMESTAMPTZ` type alias |
 | `db/uuid7.py` | `uuid7() -> uuid.UUID` wrapper around `uuid_utils.uuid7()` |
-| `db/session.py` | Lazy-init `AsyncEngine`, `get_session_maker()`, `get_db()` FastAPI dep |
+| `db/session.py` | Lazy-init `AsyncEngine`, `get_session_maker()`, `get_db()` FastAPI dep; pool_size=10, max_overflow=40 (50 total) |
 | `db/models/user.py` | `User` ORM model (ADR-006 § 2.1) |
 | `db/models/event.py` | `Event` ORM model (§ 2.4) |
 | `db/models/group.py` | `Group` ORM model (§ 2.2) |

@@ -14,8 +14,8 @@ from app.config import Settings
 
 _logger = structlog.get_logger()
 
-_POOL_MIN = 5
-_POOL_MAX = 20
+_POOL_MIN = 10
+_POOL_MAX = 50
 
 _engine: AsyncEngine | None = None
 _session_maker: async_sessionmaker[AsyncSession] | None = None
