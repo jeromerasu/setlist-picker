@@ -146,7 +146,7 @@ function DayStageView({
                   ]}
                   activeOpacity={0.8}
                   onPress={() => {
-                    togglePick({ invite_code, set_id: set.set_id, is_picked: isPicked });
+                    togglePick({ invite_code, set_id: set.set_id, is_picked: isPicked, member_id: myMemberId ?? "" });
                   }}
                 >
                   <View style={dsStyles.setInfo}>

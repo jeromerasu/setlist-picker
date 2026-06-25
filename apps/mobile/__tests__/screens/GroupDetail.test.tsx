@@ -242,6 +242,7 @@ test("tapping_day_set_row_toggles_pick", () => {
     invite_code: "TESTCODE",
     set_id: "s1",
     is_picked: false,
+    member_id: "m1",
   });
 });
 

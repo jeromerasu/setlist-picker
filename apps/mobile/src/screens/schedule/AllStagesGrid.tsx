@@ -93,12 +93,12 @@ export function AllStagesGrid({
   function handleTap(setId: string): void {
     const current = cardState(setId);
     if (current === "none") {
-      togglePick({ invite_code, set_id: setId, is_picked: false });
+      togglePick({ invite_code, set_id: setId, is_picked: false, member_id: myMemberId ?? "" });
     } else if (current === "going") {
       setMaybeSetIds((prev) => new Set([...prev, setId]));
     } else {
       setMaybeSetIds((prev) => { const n = new Set(prev); n.delete(setId); return n; });
-      togglePick({ invite_code, set_id: setId, is_picked: true });
+      togglePick({ invite_code, set_id: setId, is_picked: true, member_id: myMemberId ?? "" });
     }
   }
 

@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { fetchWithAuth, type ApiError } from "@/api/client";
-import type { PickResult, GroupStateResponse } from "@/types/api";
+import type { PickResult, PickSummary, GroupStateResponse } from "@/types/api";
 
 interface PickToggleInput {
   invite_code: string;
   set_id: string;
   is_picked: boolean; // true = currently picked → DELETE; false = not picked → POST
+  member_id: string;  // caller must supply — needed for same-frame optimistic add
 }
 
 interface PickToggleContext {
@@ -25,15 +26,24 @@ export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickTog
             method: "POST",
             body: JSON.stringify({ set_id, state: "active", state_clock_ms: Date.now() }),
           }),
-    onMutate: async ({ invite_code, set_id, is_picked }) => {
+    onMutate: async ({ invite_code, set_id, is_picked, member_id }) => {
       const context: PickToggleContext = { prev: undefined };
-      // Only optimistically update for removals — adds need member_id not available locally
-      if (!is_picked) return context;
+      // Skip optimistic update for adds when member_id is unknown (edge case: group not yet loaded)
+      if (!is_picked && !member_id) return context;
       await queryClient.cancelQueries({ queryKey: ["group", invite_code] });
       context.prev = queryClient.getQueryData<GroupStateResponse>(["group", invite_code]);
       queryClient.setQueryData<GroupStateResponse>(["group", invite_code], (old) => {
         if (!old) return old;
-        return { ...old, picks: old.picks.filter((p) => p.set_id !== set_id) };
+        if (is_picked) {
+          return { ...old, picks: old.picks.filter((p) => p.set_id !== set_id) };
+        }
+        const newPick: PickSummary = {
+          member_id,
+          set_id,
+          state: "active",
+          state_clock_ms: Date.now(),
+        };
+        return { ...old, picks: [...old.picks, newPick] };
       });
       return context;
     },

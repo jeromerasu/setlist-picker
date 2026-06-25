@@ -152,7 +152,7 @@ test("tap_none_card_posts_going_pick", () => {
   fireEvent.press(getByTestId("grid-set-s1"));
   expect(mockMutatePick).toHaveBeenCalledTimes(1);
   expect(mockMutatePick).toHaveBeenCalledWith(
-    expect.objectContaining({ invite_code: "TESTCODE", set_id: "s1", is_picked: false }),
+    expect.objectContaining({ invite_code: "TESTCODE", set_id: "s1", is_picked: false, member_id: "m1" }),
   );
 });
 
@@ -181,7 +181,7 @@ test("tap_maybe_card_removes_pick", () => {
   fireEvent.press(getByTestId("grid-set-s1"));
   expect(mockMutatePick).toHaveBeenCalledTimes(1);
   expect(mockMutatePick).toHaveBeenCalledWith(
-    expect.objectContaining({ invite_code: "TESTCODE", set_id: "s1", is_picked: true }),
+    expect.objectContaining({ invite_code: "TESTCODE", set_id: "s1", is_picked: true, member_id: "m1" }),
   );
 });
 
@@ -292,7 +292,7 @@ test("tap_cycle_still_works_with_group_schedule_data", () => {
   // Tap once on none card → POST going
   fireEvent.press(getByTestId("grid-set-s1"));
   expect(mockMutatePick).toHaveBeenCalledWith(
-    expect.objectContaining({ set_id: "s1", is_picked: false }),
+    expect.objectContaining({ set_id: "s1", is_picked: false, member_id: "m1" }),
   );
 });
 

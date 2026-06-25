@@ -58,7 +58,7 @@ export function Schedule() {
 
   const handleRemovePick = (setId: string) => {
     console.info("[schedule] remove pick", { setId, invite_code });
-    togglePick({ invite_code, set_id: setId, is_picked: true });
+    togglePick({ invite_code, set_id: setId, is_picked: true, member_id: myMemberId ?? "" });
   };
 
   const handleToggleMember = (memberId: string) => {
