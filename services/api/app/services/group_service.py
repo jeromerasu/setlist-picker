@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import structlog
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.invite_code import generate_invite_code, normalize
@@ -332,54 +332,86 @@ async def get_group_schedule(
     if mem_result.scalar_one_or_none() is None:
         raise HTTPException(status_code=403, detail={"error_code": "not_a_member"})
 
-    # Single round-trip: active picks with set/stage/member/user context
+    # Single round-trip: LEFT JOIN keeps zero-pick sets; COUNT FILTER in SQL.
+    # Member JOIN filtered to this group so cross-group picks do not pollute counts.
+    going_count_col = (
+        func.count(Member.id)
+        .filter(Pick.state == "active")
+        .over(partition_by=Set.set_id)
+        .label("going_count")
+    )
+    maybe_count_col = (
+        func.count(Member.id)
+        .filter(Pick.state == "maybe")
+        .over(partition_by=Set.set_id)
+        .label("maybe_count")
+    )
+
     rows_result = await db.execute(
-        select(Pick, Set, Stage, Member, User)
-        .join(Set, Set.set_id == Pick.set_id)
-        .join(Stage, Stage.stage_id == Set.stage_id)
-        .join(Member, Member.id == Pick.member_id)
-        .join(User, User.id == Member.user_id)
-        .where(
-            Member.group_id == group.id,
-            Set.day_label == day_label,
-            Pick.state == "active",
+        select(
+            Set.set_id,
+            Set.display_name,
+            Set.day_label,
+            Set.starts_at,
+            Set.ends_at,
+            Stage.name.label("stage_name"),
+            Stage.color_hex.label("stage_color_hex"),
+            going_count_col,
+            maybe_count_col,
+            Pick.state.label("pick_state"),
+            Member.id.label("member_id"),
+            Member.display_name_override.label("member_display_name_override"),
+            User.display_name.label("user_display_name"),
+            User.avatar_color.label("user_avatar_color"),
         )
+        .select_from(Set)
+        .join(Stage, Stage.stage_id == Set.stage_id)
+        .outerjoin(Pick, Pick.set_id == Set.set_id)
+        .outerjoin(
+            Member,
+            and_(Member.id == Pick.member_id, Member.group_id == group.id),
+        )
+        .outerjoin(User, User.id == Member.user_id)
+        .where(Set.event_id == group.event_id, Set.day_label == day_label)
         .order_by(Set.starts_at.asc(), Member.joined_at.asc())
     )
     rows = rows_result.all()
 
-    # Aggregate: group by set_id, preserving start-time order
+    # Aggregate going_members in Python; going_count/maybe_count come from SQL
     sets_seen: dict[uuid.UUID, GroupSetItem] = {}
-    for pick, set_obj, stage, member, user in rows:
-        if set_obj.set_id not in sets_seen:
-            sets_seen[set_obj.set_id] = GroupSetItem(
-                set_id=set_obj.set_id,
-                display_name=set_obj.display_name,
-                stage_name=stage.name,
-                stage_color_hex=stage.color_hex,
-                day_label=set_obj.day_label,
-                starts_at=set_obj.starts_at,
-                ends_at=set_obj.ends_at,
+    for row in rows:
+        set_id: uuid.UUID = row.set_id
+        if set_id not in sets_seen:
+            sets_seen[set_id] = GroupSetItem(
+                set_id=set_id,
+                display_name=row.display_name,
+                stage_name=row.stage_name,
+                stage_color_hex=row.stage_color_hex,
+                day_label=row.day_label,
+                starts_at=row.starts_at,
+                ends_at=row.ends_at,
+                going_count=row.going_count,
+                maybe_count=row.maybe_count,
                 going_members=[],
             )
-        display_name = member.display_name_override or user.display_name or "Member"
-        sets_seen[set_obj.set_id].going_members.append(
-            MemberPickInfo(
-                member_id=member.id,
-                display_name=display_name,
-                avatar_color=user.avatar_color,
+        if row.member_id is not None and row.pick_state == "active":
+            display_name = row.member_display_name_override or row.user_display_name or "Member"
+            sets_seen[set_id].going_members.append(
+                MemberPickInfo(
+                    member_id=row.member_id,
+                    display_name=display_name,
+                    avatar_color=row.user_avatar_color,
+                )
             )
-        )
 
     sets_out = list(sets_seen.values())
-    total_picks = sum(len(s.going_members) for s in sets_out)
 
     _logger.info(
-        "group.schedule_served",
-        group_id=str(group.id),
+        "group.schedule.computed",
+        entity_id=group.invite_code,
         day_label=day_label,
         set_count=len(sets_out),
-        total_picks=total_picks,
+        statement_count=1,
     )
 
     return GroupScheduleResponse(

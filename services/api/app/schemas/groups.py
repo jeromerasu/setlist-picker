@@ -113,6 +113,8 @@ class GroupSetItem(_Model):
     day_label: str
     starts_at: datetime
     ends_at: datetime
+    going_count: int
+    maybe_count: int
     going_members: list[MemberPickInfo]
 
 

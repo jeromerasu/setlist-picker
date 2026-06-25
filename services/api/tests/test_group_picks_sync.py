@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
+from typing import Any
 
 import pytest
 from httpx import AsyncClient
@@ -67,7 +69,7 @@ async def batch_setup(
     return token, invite_code, member_id, set_ids
 
 
-def _pick_stmt_counter() -> tuple[list[int], object]:
+def _pick_stmt_counter() -> tuple[list[int], Callable[..., Any]]:
     """Returns (count_list, listener_fn). count_list[0] increments per pick-table DML."""
     count: list[int] = [0]
 

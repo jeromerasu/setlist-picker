@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
+from typing import Any
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.db.models.event import Event
 from app.db.models.pick import Pick
@@ -131,7 +134,7 @@ async def test_schedule_returns_sets_with_active_picks(
         str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
     ],
 ) -> None:
-    """Returns only sets where at least one group member has an active pick."""
+    """All sets for the day appear; sets with active picks have going_count > 0."""
     owner_token, _, invite_code, owner_mid, _, set1_id, set2_id, _, _ = schedule_setup
 
     db_session.add(Pick(member_id=owner_mid, set_id=set1_id, state="active", state_clock_ms=1))
@@ -144,13 +147,16 @@ async def test_schedule_returns_sets_with_active_picks(
     assert r.status_code == 200
     body = r.json()
     assert body["day_label"] == "FRIDAY"
-    assert len(body["sets"]) == 1
-    assert body["sets"][0]["set_id"] == str(set1_id)
-    assert body["sets"][0]["display_name"] == "Artist A"
-    assert body["sets"][0]["stage_name"] == "Main Stage"
-    assert body["sets"][0]["stage_color_hex"] == "#ff4f9a"
-    assert len(body["sets"][0]["going_members"]) == 1
-    assert body["sets"][0]["going_members"][0]["member_id"] == str(owner_mid)
+    # Both FRIDAY sets appear via LEFT JOIN; set1 has an active pick, set2 does not
+    assert len(body["sets"]) == 2
+    sets_by_id = {s["set_id"]: s for s in body["sets"]}
+    s1 = sets_by_id[str(set1_id)]
+    assert s1["display_name"] == "Artist A"
+    assert s1["stage_name"] == "Main Stage"
+    assert s1["stage_color_hex"] == "#ff4f9a"
+    assert s1["going_count"] == 1
+    assert len(s1["going_members"]) == 1
+    assert s1["going_members"][0]["member_id"] == str(owner_mid)
 
 
 async def test_schedule_excludes_sets_with_no_active_picks(
@@ -160,7 +166,7 @@ async def test_schedule_excludes_sets_with_no_active_picks(
         str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
     ],
 ) -> None:
-    """Sets with no active picks are absent from the response."""
+    """Sets with no active picks appear in the response with going_count=0 (LEFT JOIN guarantee)."""
     owner_token, _, invite_code, owner_mid, _, set1_id, set2_id, _, _ = schedule_setup
 
     # Only set1 has a pick; set2 on FRIDAY does not
@@ -172,8 +178,10 @@ async def test_schedule_excludes_sets_with_no_active_picks(
         headers={"authorization": f"Bearer {owner_token}"},
     )
     assert r.status_code == 200
-    set_ids = [s["set_id"] for s in r.json()["sets"]]
-    assert str(set2_id) not in set_ids
+    sets_by_id = {s["set_id"]: s for s in r.json()["sets"]}
+    assert str(set2_id) in sets_by_id
+    assert sets_by_id[str(set2_id)]["going_count"] == 0
+    assert sets_by_id[str(set2_id)]["going_members"] == []
 
 
 async def test_schedule_excludes_tombstoned_picks(
@@ -183,7 +191,7 @@ async def test_schedule_excludes_tombstoned_picks(
         str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
     ],
 ) -> None:
-    """Tombstoned picks do not count as going."""
+    """Tombstoned picks are not counted as going; the set still appears with going_count=0."""
     owner_token, _, invite_code, owner_mid, _, set1_id, set2_id, _, _ = schedule_setup
 
     db_session.add(
@@ -196,7 +204,10 @@ async def test_schedule_excludes_tombstoned_picks(
         headers={"authorization": f"Bearer {owner_token}"},
     )
     assert r.status_code == 200
-    assert r.json()["sets"] == []
+    sets_by_id = {s["set_id"]: s for s in r.json()["sets"]}
+    assert str(set1_id) in sets_by_id
+    assert sets_by_id[str(set1_id)]["going_count"] == 0
+    assert sets_by_id[str(set1_id)]["going_members"] == []
 
 
 async def test_schedule_returns_403_for_non_member(
@@ -310,3 +321,140 @@ async def test_schedule_day_label_filters_correctly(
     sets = r.json()["sets"]
     assert len(sets) == 1
     assert sets[0]["set_id"] == str(set3_id)
+
+
+# ---------------------------------------------------------------------------
+# TASK-PERF-COUNT-SQL: SQL aggregation tests
+# ---------------------------------------------------------------------------
+
+
+def _schedule_stmt_counter() -> tuple[list[int], Callable[..., Any]]:
+    """Count before_execute events whose FROM clause contains a JOIN.
+
+    The schedule query (Set JOIN Stage LEFT JOIN Pick ...) produces a Join in
+    froms; the auth/member-check selects are simple single-table selects and
+    are not counted.
+    """
+    count: list[int] = [0]
+
+    def _has_join(from_clause: object) -> bool:
+        return hasattr(from_clause, "left") and hasattr(from_clause, "right")
+
+    def _listener(
+        conn: object,
+        clauseelement: object,
+        multiparams: object,
+        params: object,
+        execution_options: object,
+    ) -> None:
+        get_froms = getattr(clauseelement, "get_final_froms", None)
+        froms = get_froms() if get_froms is not None else []
+        if any(_has_join(f) for f in froms):
+            count[0] += 1
+
+    return count, _listener
+
+
+async def test_going_count_aggregated_from_sql(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    schedule_setup: tuple[
+        str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
+    ],
+) -> None:
+    """going_count and maybe_count are computed in SQL, not Python."""
+    owner_token, _, invite_code, owner_mid, member2_mid, set1_id, _, _, _ = schedule_setup
+
+    db_session.add(Pick(member_id=owner_mid, set_id=set1_id, state="active", state_clock_ms=1))
+    db_session.add(Pick(member_id=member2_mid, set_id=set1_id, state="maybe", state_clock_ms=2))
+    await db_session.flush()
+
+    r = await client.get(
+        f"{_BASE}/{invite_code}/schedule?day_label=FRIDAY",
+        headers={"authorization": f"Bearer {owner_token}"},
+    )
+    assert r.status_code == 200
+    sets_by_id = {s["set_id"]: s for s in r.json()["sets"]}
+    s1 = sets_by_id[str(set1_id)]
+    assert s1["going_count"] == 1
+    assert s1["maybe_count"] == 1
+
+
+async def test_zero_pick_sets_still_appear_with_zero_counts(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    schedule_setup: tuple[
+        str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
+    ],
+) -> None:
+    """Sets with no picks appear in the response with going_count=0 and maybe_count=0."""
+    owner_token, _, invite_code, owner_mid, _, set1_id, set2_id, _, _ = schedule_setup
+
+    db_session.add(Pick(member_id=owner_mid, set_id=set1_id, state="active", state_clock_ms=1))
+    await db_session.flush()
+
+    r = await client.get(
+        f"{_BASE}/{invite_code}/schedule?day_label=FRIDAY",
+        headers={"authorization": f"Bearer {owner_token}"},
+    )
+    assert r.status_code == 200
+    sets_by_id = {s["set_id"]: s for s in r.json()["sets"]}
+    assert str(set2_id) in sets_by_id
+    assert sets_by_id[str(set2_id)]["going_count"] == 0
+    assert sets_by_id[str(set2_id)]["maybe_count"] == 0
+    assert sets_by_id[str(set2_id)]["going_members"] == []
+
+
+async def test_response_shape_unchanged_member_picks_present(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    schedule_setup: tuple[
+        str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
+    ],
+) -> None:
+    """Response shape includes going_count, maybe_count, and going_members per set."""
+    owner_token, _, invite_code, owner_mid, _, set1_id, _, _, _ = schedule_setup
+
+    db_session.add(Pick(member_id=owner_mid, set_id=set1_id, state="active", state_clock_ms=1))
+    await db_session.flush()
+
+    r = await client.get(
+        f"{_BASE}/{invite_code}/schedule?day_label=FRIDAY",
+        headers={"authorization": f"Bearer {owner_token}"},
+    )
+    assert r.status_code == 200
+    for s in r.json()["sets"]:
+        assert "going_count" in s
+        assert "maybe_count" in s
+        assert "going_members" in s
+        assert isinstance(s["going_count"], int)
+        assert isinstance(s["maybe_count"], int)
+        assert isinstance(s["going_members"], list)
+
+
+async def test_one_statement_per_request(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    schedule_setup: tuple[
+        str, str, str, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, Stage
+    ],
+    test_engine: AsyncEngine,
+) -> None:
+    """The schedule data is fetched in exactly one SQL statement (set-table query)."""
+    owner_token, _, invite_code, owner_mid, _, set1_id, _, _, _ = schedule_setup
+
+    db_session.add(Pick(member_id=owner_mid, set_id=set1_id, state="active", state_clock_ms=1))
+    await db_session.flush()
+
+    count, listener = _schedule_stmt_counter()
+    event.listen(test_engine.sync_engine, "before_execute", listener)
+    try:
+        r = await client.get(
+            f"{_BASE}/{invite_code}/schedule?day_label=FRIDAY",
+            headers={"authorization": f"Bearer {owner_token}"},
+        )
+    finally:
+        event.remove(test_engine.sync_engine, "before_execute", listener)
+
+    assert r.status_code == 200
+    assert count[0] == 1

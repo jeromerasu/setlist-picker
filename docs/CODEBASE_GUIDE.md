@@ -89,7 +89,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | File | Purpose |
 |---|---|
 | `schemas/auth.py` | `UserCreate`, `UserLogin`, `TokenPair`, `AuthResponse`, `TokenRefreshRequest`, `AppleSignInRequest`, `GoogleSignInRequest`, `UserOut`, `UserUpdate` |
-| `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse`, `MemberPickInfo`, `GroupSetItem`, `GroupScheduleResponse` (REALIGN-005) |
+| `schemas/groups.py` | `GroupCreate`, `GroupCreateResponse`, `GroupJoinRequest`, `MemberOut`, `MyGroupListItem`, `GroupJoinResponse`, `MyGroupListResponse`, `EventSummary`, `PickSummary`, `GroupStateResponse`, `MemberPickInfo`, `GroupSetItem` (adds `going_count`, `maybe_count` — PERF-COUNT-SQL), `GroupScheduleResponse` (REALIGN-005) |
 | `schemas/events.py` | `EventListItem`, `EventListResponse`, `ArtistRef`, `SetDetail`, `StageDetail` (includes `color_hex` — REALIGN-001), `EventLineupResponse` |
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
@@ -103,7 +103,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 |---|---|
 | `services/user_service.py` | `create_local_user`, `authenticate`, `patch_user`, `get_or_create_apple_user`, `get_or_create_google_user` — IntegrityError handled via `begin_nested()` |
 | `services/activity_service.py` | `ActivityKind` enum, `log_activity()` — inserts `GroupActivity` rows |
-| `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state`, `get_group_schedule` (REALIGN-005) |
+| `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state`, `get_group_schedule` (REALIGN-005) — schedule query uses LEFT JOIN + `COUNT() FILTER OVER (PARTITION BY)` to compute `going_count`/`maybe_count` in SQL (PERF-COUNT-SQL) |
 | `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → "Member" |
 | `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
 | `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard; `upsert_picks_batch` uses single `INSERT … ON CONFLICT RETURNING` (1 pick-table statement, within-batch dedup by highest clock) |

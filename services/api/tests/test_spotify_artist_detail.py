@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -41,7 +42,7 @@ async def auth_headers(client: AsyncClient) -> dict[str, str]:
 async def _seed_cache(
     db: AsyncSession,
     name_normalized: str,
-    top_tracks: list[dict[str, object]] | None = None,
+    top_tracks: list[dict[str, Any]] | None = None,
     spotify_artist_id: str | None = "spot-fisher",
     image_url: str | None = "https://img.example.com/fisher.jpg",
     genres: list[str] | None = None,
