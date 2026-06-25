@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { usePickToggle } from "@/hooks/usePickToggle";
 import { useGroupSchedule } from "@/hooks/useGroupSchedule";
+import { OfflineBadge } from "@/components/OfflineBadge";
 import { AvatarStack } from "@/components/AvatarStack";
 import { GoingMembersSheet } from "@/components/GoingMembersSheet";
 import { colors, radius, spacing } from "@/theme/tokens";
@@ -145,6 +146,8 @@ export function AllStagesGrid({
           onClose={() => setOpenSheetSetId(null)}
         />
       )}
+
+      <OfflineBadge invite_code={invite_code} />
 
       {/* Instruction + legend + search — prototype lines 301-311 */}
       <View style={styles.headerSection}>

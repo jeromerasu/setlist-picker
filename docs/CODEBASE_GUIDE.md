@@ -165,13 +165,14 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | File / Dir | Purpose |
 |---|---|
 | `src/api/client.ts` | `fetchWithAuth<T>` — base-URL + Bearer + 401→refresh→retry; `ApiError`, `UnauthenticatedError` |
-| `src/api/queryClient.ts` | TanStack `QueryClient` (15s `staleTime`, offline-first) |
+| `src/api/queryClient.ts` | TanStack `QueryClient` (15s `staleTime`, `networkMode: 'offlineFirst'`, NetInfo→`onlineManager`); exports `asyncStoragePersister` (used by `PersistQueryClientProvider` in `App.tsx` to survive app restarts) |
 | `src/auth/token-store.ts` | `getTokens / setTokens / clearTokens` — `expo-secure-store` wrapper |
 | `src/types/api.ts` | Snake_case TypeScript interfaces mirroring BE Pydantic shapes |
 | `src/theme/tokens.ts` | Single source of truth: `colors`, `gradients`, `radius`, `spacing`, `sizes`, `motion` constants |
 | `src/theme/fonts.ts` | `FONT_MAP` — 14 Orbitron / Playfair / Manrope / SpaceMono / VT323 entries (TTFs in `assets/fonts/`) |
 | `src/theme/motion.ts` | Re-exports `motion` from tokens + `easing` presets |
 | `src/theme/spacing.ts` | Re-exports `spacing` + `sizes` from tokens |
+| `src/components/OfflineBadge.tsx` | `<OfflineBadge invite_code>` — pill banner: "Offline — picks queued" (no internet) / "Syncing N picks…" (draining); shown in Schedule, GroupDetail, AllStagesGrid; also drains `offlinePickQueue.ts` on reconnect |
 | `src/components/GlassCard.tsx` | `<GlassCard variant border withInsetHighlight>` — glass surface container |
 | `src/components/Avatar.tsx` | `<Avatar initials color size ringColor>` — single circle avatar |
 | `src/components/AvatarStack.tsx` | `<AvatarStack members size>` — overlapping row, +N overflow badge |
@@ -206,6 +207,8 @@ React Native + Expo SDK 52 mobile app. Run with `npx expo start` from `apps/mobi
 | `auth/useLocalAuth.test.ts` | 5 tests: login 200, login error, network error, signup 200, snake_case body |
 | `screens/AuthLanding.test.tsx` | 3 tests: CTA presence, email→LocalLogin, signup link→LocalSignup |
 | `screens/LocalLogin.test.tsx` | 3 tests: disabled when empty, submit calls login+signIn, back chip goBack |
+| `hooks/usePickToggle.offline.test.tsx` | 4 tests: queues + preserves state on network error, drains on reconnect, rolls back on server error, success removes op |
+| `components/OfflineBadge.test.tsx` | 3 tests: renders when offline, renders with pending mutations, hides when online+idle |
 
 ### Config
 
@@ -322,7 +325,8 @@ REALIGN-002 replaced the old pill-row + grid-only view with a day-picker dropdow
 | `src/hooks/useScheduleData.ts` | Composes useGroupState + useEventLineup + useMyGroups → `{ sets, stages, stageBySetId, myMemberId, eventName, isLoading }`. Uses `stage.color_hex ?? stageColorByIndex` per REALIGN-001. |
 | `src/hooks/useEventLineup.ts` | TanStack query → full `EventLineupResponse` (sets + stages); staleTime Infinity |
 | `src/hooks/useGroupSchedule.ts` | REALIGN-007: TanStack query → `GET /api/groups/{code}/schedule?day_label=`; staleTime 30s; returns `GroupScheduleResponse` with per-set `going_members`. |
-| `src/hooks/usePickToggle.ts` | Mutation: POST `/picks` / DELETE `/picks/:set_id`; optimistic remove; REALIGN-007: invalidates `["group-schedule", invite_code]` on success to refetch going data. |
+| `src/hooks/usePickToggle.ts` | Mutation: POST `/picks` / DELETE `/picks/:set_id`; optimistic add/remove; name-based `isNetworkError` guard (preserves state on transport failure, rolls back on HTTP error); awaits `enqueuePickOp` in `onMutate`; invalidates `["group", invite_code]` + `["group-schedule", invite_code]` on success |
+| `src/lib/offlinePickQueue.ts` | AsyncStorage-backed `@picks_offline_queue_v1` queue: `enqueuePickOp / removePickOp / peekPickQueue` — upserts by `(invite_code, set_id)`; drained by `OfflineBadge` on reconnect |
 | `src/hooks/useUpNext.ts` | Finds nearest upcoming set relative to `nowIso` (or Date.now()) |
 | `src/screens/schedule/DayMenu.tsx` | Animated day-picker dropdown overlay (backdrop + centered sheet); replaces old pill row |
 | `src/screens/schedule/AllStagesGrid.tsx` | REALIGN-003 rewrite: instruction + legend + search, sticky stage headers, absolute-positioned set cards, three-state cycle (none → going → maybe → none) |

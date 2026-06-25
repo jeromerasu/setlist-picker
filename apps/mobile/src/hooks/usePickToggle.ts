@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
-import { fetchWithAuth, ApiError, UnauthenticatedError } from "@/api/client";
+import { fetchWithAuth } from "@/api/client";
+import type { ApiError } from "@/api/client";
 import { enqueuePickOp, removePickOp } from "@/lib/offlinePickQueue";
 import type { PickResult, PickSummary, GroupStateResponse } from "@/types/api";
 
@@ -17,12 +18,11 @@ interface PickToggleContext {
 // Any error that isn't an HTTP response from the BE is treated as a transient
 // network failure — optimistic state is preserved and the op stays in the queue
 // for retry on reconnect.
+// Use name-based check (not instanceof) so it works correctly in Jest where
+// class identity can differ across mock factory boundaries.
 function isNetworkError(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    !(error instanceof ApiError) &&
-    !(error instanceof UnauthenticatedError)
-  );
+  if (!(error instanceof Error)) return false;
+  return error.name !== "ApiError" && error.name !== "UnauthenticatedError";
 }
 
 export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickToggleInput, PickToggleContext> {
@@ -43,8 +43,8 @@ export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickTog
       const context: PickToggleContext = { prev: undefined };
       if (!is_picked && !member_id) return context;
 
-      // Write to AsyncStorage queue before firing — enables recovery if app is killed while offline.
-      void enqueuePickOp({ invite_code, set_id, is_picked, member_id, queued_at: Date.now() });
+      // Await enqueue so the op is durably queued before the network request fires.
+      await enqueuePickOp({ invite_code, set_id, is_picked, member_id, queued_at: Date.now() });
 
       await queryClient.cancelQueries({ queryKey: ["group", invite_code] });
       context.prev = queryClient.getQueryData<GroupStateResponse>(["group", invite_code]);
@@ -65,6 +65,7 @@ export function usePickToggle(): UseMutationResult<PickResult, ApiError, PickTog
     },
     onError: (err, variables, context) => {
       if (isNetworkError(err)) {
+        console.info("[pick-toggle] queued offline", { set_id: variables.set_id, member_id: variables.member_id });
         // Queue entry stays in AsyncStorage — React Query will auto-retry when
         // onlineManager signals reconnect; drain hook replays it on next app launch.
         return;

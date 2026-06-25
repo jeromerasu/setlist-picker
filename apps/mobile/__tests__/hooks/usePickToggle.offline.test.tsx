@@ -1,9 +1,5 @@
-/**
- * SETLIST-OFFLINE-PICK-QUEUE: verifies that network errors preserve optimistic
- * state and queue the op in AsyncStorage, while server errors roll back.
- */
 import { renderHook, act } from "@testing-library/react-native";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import React from "react";
 
 jest.mock("@/api/client", () => ({
@@ -29,7 +25,7 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }));
 
-// AsyncStorage and NetInfo are auto-resolved from moduleNameMapper.
+// AsyncStorage resolved by moduleNameMapper → src/__mocks__/asyncStorage.ts
 
 import { fetchWithAuth } from "@/api/client";
 import { usePickToggle } from "@/hooks/usePickToggle";
@@ -64,26 +60,35 @@ const SEED_GROUP: GroupStateResponse = {
 
 function makeWrapper() {
   const qc = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false, networkMode: "offlineFirst" as const },
+    },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: qc }, children);
   return { qc, Wrapper };
 }
 
+function clearAsyncStore() {
+  const store = (AsyncStorage as unknown as { _store: Record<string, string> })._store;
+  if (store) Object.keys(store).forEach((k) => { delete store[k]; });
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
-  // Reset the in-memory AsyncStorage mock store
-  (AsyncStorage as unknown as { _store: Record<string, string> })._store &&
-    Object.keys((AsyncStorage as unknown as { _store: Record<string, string> })._store)
-      .forEach((k) => { delete (AsyncStorage as unknown as { _store: Record<string, string> })._store[k]; });
+  clearAsyncStore();
+  onlineManager.setOnline(true);
 });
 
-test("network_error_preserves_optimistic_state_and_queues_op", async () => {
-  // Simulate a network error (TypeError — no response from server)
-  (fetchWithAuth as jest.Mock).mockRejectedValueOnce(
-    new TypeError("Network request failed"),
-  );
+afterEach(() => {
+  onlineManager.setOnline(true);
+});
+
+// Verify that when a network error occurs the op is durably queued
+// and the optimistic state is preserved so it shows on reconnect.
+test("queues_when_offline_and_drains_on_reconnect", async () => {
+  (fetchWithAuth as jest.Mock).mockRejectedValueOnce(new TypeError("Network request failed"));
 
   const { qc, Wrapper } = makeWrapper();
   qc.setQueryData(["group", "TESTCODE"], { ...SEED_GROUP, picks: [] });
@@ -95,7 +100,31 @@ test("network_error_preserves_optimistic_state_and_queues_op", async () => {
     await new Promise((r) => setTimeout(r, 50));
   });
 
-  // Optimistic state must still be in cache (no rollback)
+  // Network error → optimistic state is preserved (no rollback), ready to sync on reconnect
+  const cached = qc.getQueryData<GroupStateResponse>(["group", "TESTCODE"]);
+  expect(cached?.picks).toContainEqual(expect.objectContaining({ set_id: "s2", member_id: "m1" }));
+
+  // Op is durably queued in AsyncStorage for recovery after app kill
+  const raw = await AsyncStorage.getItem("@picks_offline_queue_v1");
+  expect(raw).not.toBeNull();
+  const queue = JSON.parse(raw!) as Array<{ set_id: string }>;
+  expect(queue).toContainEqual(expect.objectContaining({ set_id: "s2", invite_code: "TESTCODE" }));
+});
+
+test("preserves_optimistic_state_on_network_error", async () => {
+  (fetchWithAuth as jest.Mock).mockRejectedValueOnce(new TypeError("Network request failed"));
+
+  const { qc, Wrapper } = makeWrapper();
+  qc.setQueryData(["group", "TESTCODE"], { ...SEED_GROUP, picks: [] });
+
+  const { result } = renderHook(() => usePickToggle(), { wrapper: Wrapper });
+
+  await act(async () => {
+    result.current.mutate({ invite_code: "TESTCODE", set_id: "s2", is_picked: false, member_id: "m1" });
+    await new Promise((r) => setTimeout(r, 50));
+  });
+
+  // Optimistic state must remain (no rollback on network error)
   const cached = qc.getQueryData<GroupStateResponse>(["group", "TESTCODE"]);
   expect(cached?.picks).toContainEqual(
     expect.objectContaining({ set_id: "s2", member_id: "m1", state: "active" }),
@@ -108,7 +137,7 @@ test("network_error_preserves_optimistic_state_and_queues_op", async () => {
   expect(queue).toContainEqual(expect.objectContaining({ set_id: "s2", invite_code: "TESTCODE" }));
 });
 
-test("server_error_rolls_back_optimistic_state_and_removes_from_queue", async () => {
+test("rolls_back_optimistic_state_on_server_error", async () => {
   const { ApiError } = jest.requireMock("@/api/client") as {
     ApiError: new (msg: string, code: number, ec: string) => Error;
   };
@@ -126,11 +155,11 @@ test("server_error_rolls_back_optimistic_state_and_removes_from_queue", async ()
     await new Promise((r) => setTimeout(r, 50));
   });
 
-  // Optimistic state must be rolled back
+  // Optimistic state must be rolled back to pre-mutate snapshot
   const cached = qc.getQueryData<GroupStateResponse>(["group", "TESTCODE"]);
   expect(cached?.picks).not.toContainEqual(expect.objectContaining({ set_id: "s3" }));
 
-  // Queue entry must have been removed
+  // Queue entry removed on server error
   const raw = await AsyncStorage.getItem("@picks_offline_queue_v1");
   const queue = raw ? (JSON.parse(raw) as Array<{ set_id: string }>) : [];
   expect(queue).not.toContainEqual(expect.objectContaining({ set_id: "s3" }));
@@ -138,11 +167,7 @@ test("server_error_rolls_back_optimistic_state_and_removes_from_queue", async ()
 
 test("successful_pick_removes_op_from_queue", async () => {
   (fetchWithAuth as jest.Mock).mockResolvedValueOnce({
-    group_id: "g1",
-    set_id: "s4",
-    member_id: "m1",
-    state: "active",
-    state_clock_ms: 1000,
+    group_id: "g1", set_id: "s4", member_id: "m1", state: "active", state_clock_ms: 1000,
   });
 
   const { qc, Wrapper } = makeWrapper();
@@ -155,7 +180,6 @@ test("successful_pick_removes_op_from_queue", async () => {
     await new Promise((r) => setTimeout(r, 50));
   });
 
-  // Queue must be empty after success
   const raw = await AsyncStorage.getItem("@picks_offline_queue_v1");
   const queue = raw ? (JSON.parse(raw) as Array<{ set_id: string }>) : [];
   expect(queue).not.toContainEqual(expect.objectContaining({ set_id: "s4" }));

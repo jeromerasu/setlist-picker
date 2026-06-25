@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useQueryClient } from "@tanstack/react-query";
-import NetInfo from "@react-native-community/netinfo";
+import { useIsMutating, useQueryClient } from "@tanstack/react-query";
+import { useNetInfo } from "@react-native-community/netinfo";
 import { peekPickQueue, removePickOp } from "@/lib/offlinePickQueue";
 import { fetchWithAuth } from "@/api/client";
 import { colors, radius, spacing } from "@/theme/tokens";
@@ -11,9 +11,6 @@ interface Props {
   invite_code: string;
 }
 
-// Drains the AsyncStorage pick queue after reconnect. Fires when the device
-// transitions from offline → online. Handles only the app-kill-while-offline
-// case — React Query's onlineManager auto-retries in-memory paused mutations.
 async function drainQueue(invite_code: string, onDone: () => void): Promise<void> {
   const ops = await peekPickQueue();
   if (ops.length === 0) { onDone(); return; }
@@ -39,55 +36,37 @@ async function drainQueue(invite_code: string, onDone: () => void): Promise<void
 }
 
 export function OfflineBadge({ invite_code }: Props) {
+  const netInfo = useNetInfo();
+  const pendingMutations = useIsMutating({ mutationKey: ["pick-toggle"] });
   const queryClient = useQueryClient();
-  const [isOffline, setIsOffline] = useState(false);
-  const [pausedCount, setPausedCount] = useState(0);
   const prevOnline = useRef<boolean | null>(null);
   const draining = useRef(false);
 
-  // Track paused pick-toggle mutations from React Query's MutationCache
+  const isOffline = netInfo.isInternetReachable === false;
+
+  // Drain AsyncStorage queue on reconnect (app-kill-while-offline recovery path).
+  // React Query's onlineManager handles the in-memory paused-mutation resume;
+  // this effect handles ops that were queued in a previous app session.
   useEffect(() => {
-    const unsub = queryClient.getMutationCache().subscribe(() => {
-      const count = queryClient
-        .getMutationCache()
-        .getAll()
-        .filter(
-          (m) =>
-            Array.isArray(m.options.mutationKey) &&
-            m.options.mutationKey[0] === "pick-toggle" &&
-            m.state.isPaused,
-        ).length;
-      setPausedCount(count);
-    });
-    return unsub;
-  }, [queryClient]);
+    const online = !isOffline;
+    const wasOffline = prevOnline.current === false;
+    prevOnline.current = online;
 
-  // Watch network state: update badge + drain queue on reconnect
-  useEffect(() => {
-    const unsub = NetInfo.addEventListener((state) => {
-      const online = !!state.isConnected && state.isInternetReachable !== false;
-      const wasOffline = prevOnline.current === false;
-      prevOnline.current = online;
-      setIsOffline(!online);
+    if (wasOffline && online && !draining.current) {
+      draining.current = true;
+      void drainQueue(invite_code, () => {
+        draining.current = false;
+        void queryClient.invalidateQueries({ queryKey: ["group", invite_code] });
+        void queryClient.invalidateQueries({ queryKey: ["group-schedule", invite_code] });
+      });
+    }
+  }, [isOffline, invite_code, queryClient]);
 
-      if (wasOffline && online && !draining.current) {
-        draining.current = true;
-        void drainQueue(invite_code, () => {
-          draining.current = false;
-          void queryClient.invalidateQueries({ queryKey: ["group", invite_code] });
-          void queryClient.invalidateQueries({ queryKey: ["group-schedule", invite_code] });
-        });
-      }
-    });
-    return unsub;
-  }, [invite_code, queryClient]);
+  if (!isOffline && pendingMutations === 0) return null;
 
-  if (!isOffline && pausedCount === 0) return null;
-
-  const label =
-    pausedCount > 0
-      ? `${pausedCount} pick${pausedCount > 1 ? "s" : ""} pending sync`
-      : "Offline — picks queued";
+  const label = isOffline
+    ? "Offline — picks queued"
+    : `Syncing ${pendingMutations} pick${pendingMutations > 1 ? "s" : ""}…`;
 
   return (
     <View style={styles.badge} testID="offline-badge">
@@ -103,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     gap: spacing[2],
-    backgroundColor: colors.bg.elevated,
+    backgroundColor: colors.bg.surfaceMed,
     borderWidth: 1,
     borderColor: colors.border.mid,
     borderRadius: radius.full,
@@ -119,8 +98,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neon.pink,
   },
   label: {
-    fontFamily: "Manrope-SemiBold",
+    fontFamily: "Manrope-Medium",
     fontSize: 12,
-    color: colors.text.secondary,
+    color: colors.text.iconAccent,
   },
 });
