@@ -15,6 +15,7 @@ class ArtistCache(Base):
     name_normalized: Mapped[str] = mapped_column(Text, primary_key=True)
     display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     spotify_artist_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    apple_music_artist_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     genres: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     similar_artists: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)

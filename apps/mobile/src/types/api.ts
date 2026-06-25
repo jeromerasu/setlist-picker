@@ -204,6 +204,7 @@ export interface TopTrack {
   preview_url: string | null;
   external_url: string | null;  // kept for backward compat
   spotify_url: string | null;
+  apple_music_url: string | null;
   duration_ms: number | null;
 }
 
@@ -212,6 +213,21 @@ export interface SpotifyArtistDetail {
   image_url: string | null;
   genres: string[];
   top_tracks: TopTrack[];
+}
+
+export interface AppleMusicArtistDetail {
+  artist_name: string;
+  apple_music_artist_id: string | null;
+  image_url: string | null;
+  genres: string[];
+  top_tracks: AppleMusicTrack[];
+}
+
+export interface AppleMusicTrack {
+  name: string;
+  duration_ms: number | null;
+  apple_music_url: string | null;
+  preview_url: string | null;
 }
 
 export interface SimilarArtist {

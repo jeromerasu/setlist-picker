@@ -27,6 +27,14 @@ class Settings(BaseSettings):
     artist_cache_ttl_seconds: int = 604800  # 7 days
     artist_max_backoff_hours: int = 24
 
+    # Apple Music — developer JWT credentials
+    apple_music_team_id: str = ""
+    apple_music_key_id: str = ""
+    apple_music_private_key_base64: SecretStr = SecretStr("")
+    # Controls which source is tried first for artist detail enrichment.
+    # Values: "apple_music" | "spotify" | "both"
+    artist_source: str = "apple_music"
+
     cors_origins: list[str] = []
     trusted_hosts: list[str] = ["*"]
 

@@ -21,6 +21,7 @@ jest.mock("@react-navigation/native", () => {
 
 const mockUseArtistDetail = jest.fn();
 const mockUseArtistSpotify = jest.fn();
+const mockUseAppleMusicArtist = jest.fn();
 const mockPlay = jest.fn(async () => undefined);
 const mockStop = jest.fn(async () => undefined);
 let mockIsPlaying = false;
@@ -30,6 +31,9 @@ jest.mock("@/hooks/useArtistDetail", () => ({
 }));
 jest.mock("@/hooks/useArtistSpotify", () => ({
   useArtistSpotify: (n: string) => mockUseArtistSpotify(n),
+}));
+jest.mock("@/hooks/useAppleMusicArtist", () => ({
+  useAppleMusicArtist: (n: string) => mockUseAppleMusicArtist(n),
 }));
 jest.mock("@/hooks/useAudioPreview", () => ({
   useAudioPreview: () => ({ isPlaying: mockIsPlaying, play: mockPlay, stop: mockStop }),
@@ -53,6 +57,7 @@ const MOCK_ARTIST: ArtistDetailResponse = {
     preview_url: "https://cdn/preview.mp3",
     external_url: null,
     spotify_url: null,
+    apple_music_url: null,
     duration_ms: null,
   },
   similar_artists: [
@@ -76,6 +81,7 @@ const MOCK_SPOTIFY: SpotifyArtistDetail = {
       preview_url: "https://cdn/preview.mp3",
       external_url: null,
       spotify_url: "https://open.spotify.com/t/1",
+      apple_music_url: null,
       duration_ms: 240_000,
     },
     {
@@ -83,6 +89,7 @@ const MOCK_SPOTIFY: SpotifyArtistDetail = {
       preview_url: null,
       external_url: null,
       spotify_url: "https://open.spotify.com/t/2",
+      apple_music_url: null,
       duration_ms: 300_000,
     },
     {
@@ -90,6 +97,7 @@ const MOCK_SPOTIFY: SpotifyArtistDetail = {
       preview_url: null,
       external_url: null,
       spotify_url: null,
+      apple_music_url: null,
       duration_ms: 280_000,
     },
   ],
@@ -111,6 +119,7 @@ beforeEach(() => {
   mockIsPlaying = false;
   mockUseArtistDetail.mockReturnValue({ data: MOCK_ARTIST, isLoading: false, error: null });
   mockUseArtistSpotify.mockReturnValue({ data: MOCK_SPOTIFY, isLoading: false });
+  mockUseAppleMusicArtist.mockReturnValue({ data: undefined, isLoading: false });
 });
 
 // ─── Cosmic-Neon palette: cyberColors must be gone ───────────────────────────
@@ -225,8 +234,8 @@ test("empty_state_shown_when_no_tracks_and_not_loading", () => {
   expect(getByText("More info coming soon")).toBeTruthy();
 });
 
-test("tracks_loading_spinner_shown_while_spotify_loading", () => {
-  mockUseArtistSpotify.mockReturnValue(SPOTIFY_LOADING);
+test("tracks_loading_spinner_shown_while_apple_music_loading", () => {
+  mockUseAppleMusicArtist.mockReturnValue({ data: undefined, isLoading: true });
   const { getByTestId } = render(<ArtistDetail />, { wrapper });
   expect(getByTestId("tracks-loading")).toBeTruthy();
 });

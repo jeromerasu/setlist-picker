@@ -14,11 +14,12 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BackChip } from "@/components/BackChip";
 import { useArtistDetail } from "@/hooks/useArtistDetail";
+import { useAppleMusicArtist } from "@/hooks/useAppleMusicArtist";
 import { useArtistSpotify } from "@/hooks/useArtistSpotify";
 import { useAudioPreview } from "@/hooks/useAudioPreview";
 import { colors, radius, spacing } from "@/theme/tokens";
 import type { HomeStackParamList } from "@/navigation/types";
-import type { TopTrack } from "@/types/api";
+import type { AppleMusicTrack, TopTrack } from "@/types/api";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "ArtistDetail">;
 type Nav = NativeStackNavigationProp<HomeStackParamList, "ArtistDetail">;
@@ -41,10 +42,12 @@ export function ArtistDetail() {
   const { artist_name } = route.params;
 
   const { data, isLoading, error } = useArtistDetail(artist_name);
-  const { data: spotifyData, isLoading: spotifyLoading } = useArtistSpotify(artist_name);
+  // Apple Music is primary source; Spotify kept as fallback for preview URLs
+  const { data: appleMusicData, isLoading: appleMusicLoading } = useAppleMusicArtist(artist_name);
+  const { data: spotifyData } = useArtistSpotify(artist_name);
   const { isPlaying, play, stop } = useAudioPreview();
 
-  const handleTrackPress = async (track: TopTrack) => {
+  const handleTrackPress = async (track: AppleMusicTrack | TopTrack) => {
     if (track.preview_url == null) return;
     if (isPlaying) {
       await stop();
@@ -53,7 +56,7 @@ export function ArtistDetail() {
     }
   };
 
-  const handleSpotifyLink = (url: string | null) => {
+  const handleExternalLink = (url: string | null) => {
     if (url == null) return;
     void Linking.openURL(url);
   };
@@ -74,18 +77,25 @@ export function ArtistDetail() {
     );
   }
 
-  // Prefer Spotify-sourced image if available; fall back to existing detail image
-  const heroImage = spotifyData?.image_url ?? data.image_url;
-  // Use Spotify genres list when available (more complete); fall back to detail genres
+  const richLoading = appleMusicLoading;
+  // Apple Music is primary; fall back to Spotify, then legacy detail
+  const heroImage =
+    appleMusicData?.image_url ?? spotifyData?.image_url ?? data.image_url;
   const genres =
-    spotifyData != null && spotifyData.genres.length > 0 ? spotifyData.genres : data.genres;
-  // Top 5 tracks from Spotify endpoint; single track fallback from detail
-  const topTracks: TopTrack[] =
-    spotifyData != null && spotifyData.top_tracks.length > 0
-      ? spotifyData.top_tracks
-      : data.top_track != null
-        ? [data.top_track]
-        : [];
+    (appleMusicData != null && appleMusicData.genres.length > 0)
+      ? appleMusicData.genres
+      : (spotifyData != null && spotifyData.genres.length > 0)
+        ? spotifyData.genres
+        : data.genres;
+  // Use Apple Music tracks as primary; fall back to Spotify, then legacy single track
+  const topTracks: Array<AppleMusicTrack | TopTrack> =
+    appleMusicData != null && appleMusicData.top_tracks.length > 0
+      ? appleMusicData.top_tracks
+      : spotifyData != null && spotifyData.top_tracks.length > 0
+        ? spotifyData.top_tracks
+        : data.top_track != null
+          ? [data.top_track]
+          : [];
 
   return (
     <ScreenContainer style={styles.screen}>
@@ -147,12 +157,12 @@ export function ArtistDetail() {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>TOP TRACKS</Text>
-            {spotifyLoading && (
+            {richLoading && (
               <ActivityIndicator size="small" color={colors.neon.violet} testID="tracks-loading" />
             )}
           </View>
 
-          {!spotifyLoading && topTracks.length === 0 && (
+          {!richLoading && topTracks.length === 0 && (
             <Text style={styles.emptyText}>More info coming soon</Text>
           )}
 
@@ -174,15 +184,23 @@ export function ArtistDetail() {
                   {isPlaying ? "■" : "▶"}
                 </Text>
               )}
-              {track.spotify_url != null && (
+              {"apple_music_url" in track && track.apple_music_url != null ? (
                 <TouchableOpacity
-                  onPress={() => handleSpotifyLink(track.spotify_url)}
+                  onPress={() => handleExternalLink(track.apple_music_url)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  testID={`apple-music-link-${i}`}
+                >
+                  <Text style={styles.appleMusicIcon}>♫</Text>
+                </TouchableOpacity>
+              ) : "spotify_url" in track && track.spotify_url != null ? (
+                <TouchableOpacity
+                  onPress={() => handleExternalLink(track.spotify_url)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   testID={`spotify-link-${i}`}
                 >
-                  <Text style={styles.spotifyIcon}>↗</Text>
+                  <Text style={styles.appleMusicIcon}>↗</Text>
                 </TouchableOpacity>
-              )}
+              ) : null}
             </TouchableOpacity>
           ))}
         </View>
@@ -360,10 +378,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.neon.violet,
   },
-  spotifyIcon: {
+  appleMusicIcon: {
     fontFamily: "Manrope-Bold",
     fontSize: 14,
-    color: colors.text.success,
+    color: colors.neon.pink,
   },
   // Similar artists
   similarGrid: {

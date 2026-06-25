@@ -36,6 +36,22 @@ class SpotifyArtistDetail(_Model):
     top_tracks: list[TopTrack]
 
 
+class AppleMusicTrack(_Model):
+    name: str
+    duration_ms: int | None = None
+    apple_music_url: str | None = None
+    preview_url: str | None = None
+
+
+class AppleMusicArtistDetail(_Model):
+    """Response for GET /api/artists/{name}/apple-music."""
+    artist_name: str
+    apple_music_artist_id: str | None
+    image_url: str | None
+    genres: list[str]
+    top_tracks: list[AppleMusicTrack]
+
+
 class ArtistDetailResponse(_Model):
     artist_name: str
     spotify_artist_id: str | None
