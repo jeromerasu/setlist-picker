@@ -115,8 +115,11 @@ async def test_sync_mixed_lww_results_returns_200_with_per_row_status(
     results = r.json()["results"]
     assert len(results) == 4
     accepted = [res["accepted"] for res in results]
-    assert accepted.count(True) == 2
-    assert accepted.count(False) == 2
+    # set_ids[0] and [1] are stale (clock=100 < seeded clock=9999) → False, False
+    # set_ids[2] appears twice: within-batch LWW keeps clock=now+1 (tombstoned),
+    # so clock=now entry is superseded → False; clock=now+1 entry → True
+    assert accepted.count(True) == 1
+    assert accepted.count(False) == 3
 
 
 async def test_sync_invalid_set_id_skips_row_logs_warning(

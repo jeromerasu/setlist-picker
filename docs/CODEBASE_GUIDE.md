@@ -106,7 +106,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `services/group_service.py` | `create_group`, `join_group`, `list_my_groups`, `get_group_state`, `get_group_schedule` (REALIGN-005) |
 | `services/member_service.py` | `resolve_member_out`, `resolve_member_out_batch` — COALESCE display_name_override → display_name → "Member" |
 | `services/event_service.py` | `list_events`, `get_event_lineup` — ILIKE search and full lineup with stages/sets/artists |
-| `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard and activity logging |
+| `services/pick_service.py` | `upsert_pick`, `upsert_picks_batch` — LWW upsert with clock-skew guard; `upsert_picks_batch` uses single `INSERT … ON CONFLICT RETURNING` (1 pick-table statement, within-batch dedup by highest clock) |
 | `services/snapshot_service.py` | `get_snapshot` — Q2 query: sets in window + stage + active picks + member/user denormalized |
 | `services/artist_normalize.py` | `normalize(name)` — lower → NFKD → strip diacritics → collapse whitespace |
 | `services/lineup_import_service.py` | `import_lineup` — full event/stage/set/artist UPSERT in one transaction; LWW for spotify/image; merge social_links |
