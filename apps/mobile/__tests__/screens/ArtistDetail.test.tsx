@@ -1,4 +1,5 @@
 import React from "react";
+import { Linking } from "react-native";
 import { render, fireEvent } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -117,6 +118,7 @@ beforeEach(() => {
   mockGoBack.mockReset();
   mockPlay.mockReset();
   mockStop.mockReset();
+  jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
   mockIsPlaying = false;
   mockUseArtistDetail.mockReturnValue({ data: MOCK_ARTIST, isLoading: false, error: null });
   mockUseArtistSpotify.mockReturnValue({ data: MOCK_SPOTIFY, isLoading: false });
@@ -275,12 +277,12 @@ test("back_chip_navigates_back", () => {
 
 // ─── Spotify external link ────────────────────────────────────────────────────
 
-test("spotify_external_link_shown_when_url_present", () => {
+test("renders_spotify_button_when_url_present", () => {
   const { getByTestId } = render(<ArtistDetail />, { wrapper });
   expect(getByTestId("spotify-external-link")).toBeTruthy();
 });
 
-test("spotify_external_link_hidden_when_url_null", () => {
+test("hides_spotify_button_when_url_null", () => {
   mockUseArtistDetail.mockReturnValue({
     data: { ...MOCK_ARTIST, spotify_url: null },
     isLoading: false,
@@ -288,4 +290,10 @@ test("spotify_external_link_hidden_when_url_null", () => {
   });
   const { queryByTestId } = render(<ArtistDetail />, { wrapper });
   expect(queryByTestId("spotify-external-link")).toBeNull();
+});
+
+test("tap_opens_external_url", () => {
+  const { getByTestId } = render(<ArtistDetail />, { wrapper });
+  fireEvent.press(getByTestId("spotify-external-link"));
+  expect(Linking.openURL).toHaveBeenCalledWith("https://open.spotify.com/artist/xyz");
 });

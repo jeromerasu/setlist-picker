@@ -94,7 +94,7 @@ The v1 data schema (users, groups, members, events, stages, sets, artists, picks
 | `schemas/picks.py` | `PickCreate`, `PickResult`, `PickSyncRequest`, `PickSyncResponse`, `PickRemoveRequest` |
 | `schemas/snapshot.py` | `SnapshotMember`, `SnapshotSet`, `SnapshotStage`, `GroupSnapshotResponse` |
 | `schemas/lineup.py` | `LineupSourceArtist`, `LineupSourceStage`, `LineupSourcePerformance`, `LineupImportRequest`, `LineupImportResponse` |
-| `schemas/artists.py` | `ArtistDetailResponse`, `SimilarArtist`, `TopTrack`, `CacheStatus` |
+| `schemas/artists.py` | `ArtistDetailResponse` (includes `spotify_url: str\|None` derived from `artist.social_links['spotify']`), `SimilarArtist`, `TopTrack`, `CacheStatus` |
 | `schemas/devices.py` | `DeviceRegisterRequest`, `DeviceOut`, `DeviceRevokeResponse`, `DevicePlatform`, `PushProvider` |
 
 ### `services/api/app/services/`

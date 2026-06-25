@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   spotifyButtonText: {
     fontFamily: "Manrope-SemiBold",
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text.success,
   },
   // Sections
