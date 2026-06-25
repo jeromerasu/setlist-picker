@@ -20,6 +20,7 @@ import { usePickToggle } from "@/hooks/usePickToggle";
 import { uniqueDays, setsForDay } from "@/utils/dayList";
 import { getHue } from "@/theme/heroes";
 import { ScreenContainer } from "@/components/ScreenContainer";
+import { OfflineBadge } from "@/components/OfflineBadge";
 import { colors } from "@/theme/tokens";
 import type { HomeStackParamList } from "@/navigation/types";
 import type { MemberOut, SetDetail, PickSummary, StageDetail } from "@/types/api";
@@ -388,6 +389,8 @@ export function GroupDetail() {
           onSnapshot={handleSnapshot}
           inviteCopied={inviteCopied}
         />
+
+        <OfflineBadge invite_code={invite_code} />
 
         {/* Artists section — prototype l.170–230 */}
         <View style={styles.artistsSection}>

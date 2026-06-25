@@ -4,6 +4,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { BackChip } from "@/components/BackChip";
+import { OfflineBadge } from "@/components/OfflineBadge";
 import { DayMenu } from "./DayMenu";
 import { AllStagesGrid } from "./AllStagesGrid";
 import { ScheduleTimeline } from "./ScheduleTimeline";
@@ -109,6 +110,8 @@ export function Schedule() {
         {/* Share icon placeholder — prototype l.289 */}
         <View style={styles.iconBtn} />
       </View>
+
+      <OfflineBadge invite_code={invite_code} />
 
       {/* Sub tabs: All Stages | Schedule — prototype l.293–296 */}
       <View style={styles.tabRow}>

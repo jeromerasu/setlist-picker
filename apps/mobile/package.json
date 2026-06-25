@@ -13,6 +13,8 @@
     "format": "prettier --check ."
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.11.0",
@@ -62,7 +64,9 @@
       "^@/(.*)$": "<rootDir>/src/$1",
       "^expo-av$": "<rootDir>/src/__mocks__/expo-av.ts",
       "^react-native-view-shot$": "<rootDir>/src/__mocks__/react-native-view-shot.ts",
-      "^expo-linear-gradient$": "<rootDir>/src/__mocks__/expo-linear-gradient.ts"
+      "^expo-linear-gradient$": "<rootDir>/src/__mocks__/expo-linear-gradient.ts",
+      "^@react-native-async-storage/async-storage$": "<rootDir>/src/__mocks__/asyncStorage.ts",
+      "^@react-native-community/netinfo$": "<rootDir>/src/__mocks__/netinfo.ts"
     }
   }
 }
